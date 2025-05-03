@@ -1,0 +1,21 @@
+{
+  parserClass="com.rannett.fixplugin.parser.FixParser"
+  parserUtilClass="com.rannett.fixplugin.parser.FixParserUtil"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Fix"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.rannett.fixplugin.psi"
+  psiImplPackage="com.rannett.fixplugin.psi.impl"
+
+  elementTypeHolderClass="com.rannett.fixplugin.psi.FixTypes"
+  elementTypeClass="com.rannett.fixplugin.psi.FixElementType"
+  tokenTypeClass="com.rannett.fixplugin.psi.FixTokenType"
+}
+
+fixFile ::= item_*
+
+private item_ ::= (field|FIELD_SEPARATOR|COMMENT|CRLF)
+
+field ::= (KEY? SEPARATOR VALUE?) | KEY
