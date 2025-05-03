@@ -1,6 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.rannett.fix-plugin</id>
+    <id>com.rannett.fix-viewer</id>
     <name>Fix Viewer</name>
     <vendor>robert-annett</vendor>
 
@@ -22,9 +22,4 @@
         <colorSettingsPage
                 implementation="com.rannett.fixplugin.FixColorSettingsPage"/>
     </extensions>
-
-<!--    <extensions defaultExtensionNs="com.intellij">-->
-<!--        <toolWindow factoryClass="com.github.robertannett.fixplugin2.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>-->
-<!--        <postStartupActivity implementation="com.github.robertannett.fixplugin2.startup.MyProjectActivity" />-->
-<!--    </extensions>-->
 </idea-plugin>
