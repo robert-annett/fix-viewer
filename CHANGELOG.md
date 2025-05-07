@@ -4,7 +4,7 @@
 
 ## [Unreleased]
 
-##
+## [0.0.1]
 ### Added
 - All basic code for colourising FIX files
 
