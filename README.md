@@ -22,7 +22,7 @@ with support for message types, tags, values, and separators, helping users spot
 - **Structural parsing and navigation** of FIX fields
 
 ---
-
+ 
 ## What is a FIX Message?
 
 **FIX (Financial Information eXchange)** is a standardized messaging protocol used globally by financial institutions to 
