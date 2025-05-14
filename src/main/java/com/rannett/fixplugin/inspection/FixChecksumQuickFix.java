@@ -3,6 +3,7 @@ package com.rannett.fixplugin.inspection;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.openapi.project.Project;
+import com.rannett.fixplugin.psi.FixField;
 import org.jetbrains.annotations.NotNull;
 
 public class FixChecksumQuickFix implements LocalQuickFix {
@@ -27,18 +28,12 @@ public class FixChecksumQuickFix implements LocalQuickFix {
 
     @Override
     public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-//        PsiElement element = descriptor.getPsiElement();
-//        if (!(element instanceof FixField)) return;
-//
-//        FixField field = (FixField) element;
-//        FixValue valueElement = field.getValue();
-//
-//        if (valueElement == null) return;
-//
-//        FixValue newValue = FixElementFactory.createValue(project, correctChecksum);
-//        if (newValue != null) {
-//            valueElement.replace(newValue);
-//        }
+        if ((descriptor.getPsiElement() instanceof FixField field)) {
+            if (field.getTag() != null && descriptor.getFixes() != null && descriptor.getFixes().length != 0 &&
+                    descriptor.getFixes()[0] instanceof FixChecksumQuickFix theFix) {
+                field.setValue(theFix.correctChecksum);
+            }
+        }
     }
 
 

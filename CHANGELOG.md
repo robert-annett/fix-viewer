@@ -11,3 +11,8 @@
 ## [0.0.2]
 ### Fixed
 - SVG logo to be compliant with intellij standards for approval
+
+## [0.0.3]
+### Added
+- Detection and highlighting of invalid checksums
+- Quick-fix actions to auto-correct invalid checksums 

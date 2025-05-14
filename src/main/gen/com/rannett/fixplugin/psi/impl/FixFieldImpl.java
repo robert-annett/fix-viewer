@@ -3,6 +3,7 @@ package com.rannett.fixplugin.psi.impl;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.rannett.fixplugin.psi.FixField;
 import com.rannett.fixplugin.psi.FixVisitor;
@@ -32,6 +33,11 @@ public class FixFieldImpl extends ASTWrapperPsiElement implements FixField {
   @Override
   public String getValue() {
     return FixPsiImplUtil.getValue(this);
+  }
+
+  @Override
+  public PsiElement setValue(String newValue) {
+    return FixPsiImplUtil.setValue(this, newValue);
   }
 
 }

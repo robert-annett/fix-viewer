@@ -21,5 +21,5 @@ fixFile ::= item_*
 private item_ ::= (field|FIELD_SEPARATOR|COMMENT|CRLF)
 
 field ::= (TAG? SEPARATOR VALUE?) | TAG {
-  methods=[getTag getValue]
+  methods=[getTag getValue setValue]
 }
