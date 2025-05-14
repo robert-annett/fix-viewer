@@ -1,15 +1,12 @@
 // This is a generated file. Not intended for manual editing.
 package com.rannett.fixplugin.psi.impl;
 
-import java.util.List;
-import org.jetbrains.annotations.*;
-import com.intellij.lang.ASTNode;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.util.PsiTreeUtil;
-import static com.rannett.fixplugin.psi.FixTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
-import com.rannett.fixplugin.psi.*;
+import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElementVisitor;
+import com.rannett.fixplugin.psi.FixField;
+import com.rannett.fixplugin.psi.FixVisitor;
+import org.jetbrains.annotations.NotNull;
 
 public class FixFieldImpl extends ASTWrapperPsiElement implements FixField {
 
@@ -25,6 +22,16 @@ public class FixFieldImpl extends ASTWrapperPsiElement implements FixField {
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof FixVisitor) accept((FixVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  public String getTag() {
+    return FixPsiImplUtil.getTag(this);
+  }
+
+  @Override
+  public String getValue() {
+    return FixPsiImplUtil.getValue(this);
   }
 
 }

@@ -4,6 +4,10 @@
     <name>Fix Viewer</name>
     <vendor>robert-annett</vendor>
 
+    <description>
+        Provides syntax highlighting, inspection, and quick-fix for FIX protocol messages.
+    </description>
+
     <depends>com.intellij.modules.platform</depends>
 
 
@@ -21,5 +25,12 @@
                 implementationClass="com.rannett.fixplugin.FixSyntaxHighlighterFactory"/>
         <colorSettingsPage
                 implementation="com.rannett.fixplugin.FixColorSettingsPage"/>
+
+        <localInspection language="Fix"
+                         shortName="FixChecksumInspection"
+                         displayName="Validate FIX checksum"
+                         groupName="Fix Protocol"
+                         enabledByDefault="true"
+                         implementationClass="com.rannett.fixplugin.inspection.FixChecksumInspection"/>
     </extensions>
 </idea-plugin>

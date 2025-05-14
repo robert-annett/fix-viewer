@@ -6,7 +6,7 @@ import com.intellij.psi.tree.TokenSet;
 
 public interface FixTokenSets {
 
-  TokenSet IDENTIFIERS = TokenSet.create(FixTypes.KEY);
+  TokenSet IDENTIFIERS = TokenSet.create(FixTypes.TAG);
 
   TokenSet COMMENTS = TokenSet.create(FixTypes.COMMENT);
 

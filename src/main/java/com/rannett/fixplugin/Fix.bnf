@@ -12,10 +12,14 @@
   elementTypeHolderClass="com.rannett.fixplugin.psi.FixTypes"
   elementTypeClass="com.rannett.fixplugin.psi.FixElementType"
   tokenTypeClass="com.rannett.fixplugin.psi.FixTokenType"
+
+  psiImplUtilClass="com.rannett.fixplugin.psi.impl.FixPsiImplUtil"
 }
 
 fixFile ::= item_*
 
 private item_ ::= (field|FIELD_SEPARATOR|COMMENT|CRLF)
 
-field ::= (KEY? SEPARATOR VALUE?) | KEY
+field ::= (TAG? SEPARATOR VALUE?) | TAG {
+  methods=[getTag getValue]
+}

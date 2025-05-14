@@ -21,7 +21,7 @@ public class FixSyntaxHighlighter extends SyntaxHighlighterBase {
   public static final TextAttributesKey FIELD_SEPARATOR =
           createTextAttributesKey("FIX_FIELD_SEPARATOR", DefaultLanguageHighlighterColors.LINE_COMMENT);
   public static final TextAttributesKey KEY =
-          createTextAttributesKey("FIX_KEY", DefaultLanguageHighlighterColors.KEYWORD);
+          createTextAttributesKey("FIX_TAG", DefaultLanguageHighlighterColors.KEYWORD);
   public static final TextAttributesKey VALUE =
           createTextAttributesKey("FIX_VALUE", DefaultLanguageHighlighterColors.STRING);
   public static final TextAttributesKey COMMENT =
@@ -52,7 +52,7 @@ public class FixSyntaxHighlighter extends SyntaxHighlighterBase {
     if (tokenType.equals(FixTypes.FIELD_SEPARATOR)) {
       return FIELD_SEPARATOR_KEYS;
     }
-    if (tokenType.equals(FixTypes.KEY)) {
+    if (tokenType.equals(FixTypes.TAG)) {
       return KEY_KEYS;
     }
     if (tokenType.equals(FixTypes.VALUE)) {

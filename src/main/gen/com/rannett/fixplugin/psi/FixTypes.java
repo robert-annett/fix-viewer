@@ -1,10 +1,10 @@
 // This is a generated file. Not intended for manual editing.
 package com.rannett.fixplugin.psi;
 
-import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.PsiElement;
 import com.intellij.lang.ASTNode;
-import com.rannett.fixplugin.psi.impl.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
+import com.rannett.fixplugin.psi.impl.FixFieldImpl;
 
 public interface FixTypes {
 
@@ -13,8 +13,8 @@ public interface FixTypes {
   IElementType COMMENT = new FixTokenType("COMMENT");
   IElementType CRLF = new FixTokenType("CRLF");
   IElementType FIELD_SEPARATOR = new FixTokenType("FIELD_SEPARATOR");
-  IElementType KEY = new FixTokenType("KEY");
   IElementType SEPARATOR = new FixTokenType("SEPARATOR");
+  IElementType TAG = new FixTokenType("TAG");
   IElementType VALUE = new FixTokenType("VALUE");
 
   class Factory {

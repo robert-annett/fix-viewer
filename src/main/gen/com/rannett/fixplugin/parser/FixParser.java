@@ -1,15 +1,15 @@
 // This is a generated file. Not intended for manual editing.
 package com.rannett.fixplugin.parser;
 
+import com.intellij.lang.ASTNode;
+import com.intellij.lang.LightPsiParser;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
-import static com.rannett.fixplugin.psi.FixTypes.*;
-import static com.rannett.fixplugin.parser.FixParserUtil.*;
-import com.intellij.psi.tree.IElementType;
-import com.intellij.lang.ASTNode;
-import com.intellij.psi.tree.TokenSet;
 import com.intellij.lang.PsiParser;
-import com.intellij.lang.LightPsiParser;
+import com.intellij.psi.tree.IElementType;
+
+import static com.rannett.fixplugin.parser.FixParserUtil.*;
+import static com.rannett.fixplugin.psi.FixTypes.*;
 
 @SuppressWarnings({"SimplifiableIfStatement", "UnusedAssignment"})
 public class FixParser implements PsiParser, LightPsiParser {
@@ -36,19 +36,19 @@ public class FixParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (KEY? SEPARATOR VALUE?) | KEY
+  // (TAG? SEPARATOR VALUE?) | TAG
   public static boolean field(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field")) return false;
-    if (!nextTokenIs(b, "<field>", KEY, SEPARATOR)) return false;
+    if (!nextTokenIs(b, "<field>", SEPARATOR, TAG)) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, FIELD, "<field>");
     r = field_0(b, l + 1);
-    if (!r) r = consumeToken(b, KEY);
+    if (!r) r = consumeToken(b, TAG);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // KEY? SEPARATOR VALUE?
+  // TAG? SEPARATOR VALUE?
   private static boolean field_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field_0")) return false;
     boolean r;
@@ -60,10 +60,10 @@ public class FixParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // KEY?
+  // TAG?
   private static boolean field_0_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field_0_0")) return false;
-    consumeToken(b, KEY);
+    consumeToken(b, TAG);
     return true;
   }
 
