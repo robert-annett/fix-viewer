@@ -1,10 +1,10 @@
 // This is a generated file. Not intended for manual editing.
 package com.rannett.fixplugin.psi;
 
-import com.intellij.lang.ASTNode;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
-import com.rannett.fixplugin.psi.impl.FixFieldImpl;
+import com.intellij.psi.PsiElement;
+import com.intellij.lang.ASTNode;
+import com.rannett.fixplugin.psi.impl.*;
 
 public interface FixTypes {
 

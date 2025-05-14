@@ -6,20 +6,21 @@ This is a simple intellij plugin for viewing FIX (.fix) files.
 
 The **FIX Plugin for IntelliJ** enhances developer productivity and accuracy when working with Financial Information eXchange 
 (FIX) protocol files. Designed for financial engineers, developers, and analysts, this plugin provides rich syntax highlighting 
-for `.fix` files, making complex trade messages easier to read and debug. Each field and value is color-coded for clarity, 
+for `.fix` files, making complex trade messages easier to read and debug. Each field and value is colour-coded for clarity, 
 with support for message types, tags, values, and separators, helping users spot issues quickly.
 
 ## Features
 
-- **Syntax highlighting** for FIX messages with clear color-coding of tags, values, and delimiters
+- **Syntax highlighting** for FIX messages with clear colour-coding of tags, values, and delimiters
+- **Live checksum validation and highlighting** for the `10=` tag
+- **Quick-fix actions** to auto-correct invalid checksums
 
 ## Coming Soon
 
-- **Live checksum validation and highlighting** for the `10=` tag
-- **Quick-fix actions** to auto-correct invalid checksums
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 - **Support for custom field delimiters** (`|` or SOH)
 - **Structural parsing and navigation** of FIX fields
+- **Bespoke Colours** for fix file coding
 
 ---
  

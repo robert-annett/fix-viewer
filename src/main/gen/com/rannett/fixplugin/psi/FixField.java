@@ -9,4 +9,6 @@ public interface FixField extends PsiElement {
 
   String getValue();
 
+  PsiElement setValue(String newValue);
+
 }
