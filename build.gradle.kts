@@ -19,6 +19,12 @@ kotlin {
     jvmToolchain(17)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 // Configure project's dependencies
 repositories {
     mavenCentral()
@@ -35,6 +41,9 @@ sourceSets {
         java {
             srcDirs("src/main/gen")
         }
+    }
+    test {
+        java.srcDirs("src/test/java")
     }
 }
 
@@ -144,6 +153,10 @@ tasks {
 
     named("buildSearchableOptions") {
         enabled = false
+    }
+
+    runIde {
+        systemProperty("idea.disabled.plugins", "org.jetbrains.plugins.maven,com.jetbrains.codeWithMe")
     }
 }
 

@@ -14,6 +14,7 @@ with support for message types, tags, values, and separators, helping users spot
 - **Syntax highlighting** for FIX messages with clear colour-coding of tags, values, and delimiters
 - **Live checksum validation and highlighting** for the `10=` tag
 - **Quick-fix actions** to auto-correct invalid checksums
+- **Annotate invalid characters** when included in a FIX message. 
 
 ## Coming Soon
 

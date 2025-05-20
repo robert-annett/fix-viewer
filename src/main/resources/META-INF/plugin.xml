@@ -32,5 +32,8 @@
                          groupName="Fix Protocol"
                          enabledByDefault="true"
                          implementationClass="com.rannett.fixplugin.inspection.FixChecksumInspection"/>
+
+        <annotator language="Fix"
+                   implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
     </extensions>
 </idea-plugin>

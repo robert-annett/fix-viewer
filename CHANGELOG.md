@@ -16,3 +16,9 @@
 ### Added
 - Detection and highlighting of invalid checksums
 - Quick-fix actions to auto-correct invalid checksums 
+
+## [0.0.4]
+### Added
+- Syntax highlighting for invalid characters
+### Fixed
+- Highlighting of checksums for multi-line files
