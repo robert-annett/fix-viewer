@@ -1,8 +1,8 @@
 # FIX Viewer Plugin for IntelliJ
 
 <!-- Plugin description -->
-This is a simple intellij plugin for viewing FIX (.fix) files.
-<!-- Plugin description end -->
+This is a simple intellij plugin for viewing FIX (Financial Information eXchange) (.fix) files.
+
 
 The **FIX Plugin for IntelliJ** enhances developer productivity and accuracy when working with Financial Information eXchange 
 (FIX) protocol files. Designed for financial engineers, developers, and analysts, this plugin provides rich syntax highlighting 
@@ -15,13 +15,14 @@ with support for message types, tags, values, and separators, helping users spot
 - **Live checksum validation and highlighting** for the `10=` tag
 - **Quick-fix actions** to auto-correct invalid checksums
 - **Annotate invalid characters** when included in a FIX message. 
+- **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 
 ## Coming Soon
 
-- **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
+- **Transposed View** to make reading messages easier
 - **Support for custom field delimiters** (`|` or SOH)
 - **Structural parsing and navigation** of FIX fields
-- **Bespoke Colours** for fix file coding
+
 
 ---
  
@@ -39,7 +40,7 @@ or reporting a trade execution.
 
     8=FIX.4.4|9=112|35=D|49=CLIENT12|56=BROKER34|55=IBM|54=1|38=100|40=2|10=004
 
-
 This plugin brings the power of IntelliJ’s developer tooling to this domain, helping users work more confidently and 
 efficiently with FIX-formatted data.
 
+<!-- Plugin description end -->

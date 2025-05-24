@@ -155,6 +155,10 @@ tasks {
         enabled = false
     }
 
+    named("prepareJarSearchableOptions") {
+        enabled = false
+    }
+
     runIde {
         systemProperty("idea.disabled.plugins", "org.jetbrains.plugins.maven,com.jetbrains.codeWithMe")
     }
