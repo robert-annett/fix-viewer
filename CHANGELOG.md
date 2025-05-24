@@ -22,3 +22,7 @@
 - Syntax highlighting for invalid characters
 ### Fixed
 - Highlighting of checksums for multi-line files
+
+## [0.0.5]
+### Added
+- Tooltip lookup for TAG and VALUE in the fix messages
