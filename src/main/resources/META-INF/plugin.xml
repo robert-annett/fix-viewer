@@ -11,6 +11,7 @@
     <depends>com.intellij.modules.platform</depends>
 
 
+
     <extensions defaultExtensionNs="com.intellij">
         <fileType
                 name="Fix File"
@@ -35,5 +36,7 @@
 
         <annotator language="Fix"
                    implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
+
+        <documentationProvider implementation="com.rannett.fixplugin.FixDocumentationProvider"/>
     </extensions>
 </idea-plugin>
