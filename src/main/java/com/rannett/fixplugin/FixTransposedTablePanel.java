@@ -5,11 +5,18 @@ import java.awt.*;
 import java.util.List;
 
 public class FixTransposedTablePanel extends JPanel {
+    private FixTransposedTableModel model;
+    private JTable table;
+
     public FixTransposedTablePanel(List<String> fixMessages) {
         super(new BorderLayout());
-        FixTransposedTableModel model = new FixTransposedTableModel(fixMessages);
-        JTable table = new JTable(model);
+        model = new FixTransposedTableModel(fixMessages);
+        table = new JTable(model);
         table.setFillsViewportHeight(true);
         add(new JScrollPane(table), BorderLayout.CENTER);
+    }
+
+    public void updateTable(List<String> fixMessages) {
+        model.updateMessages(fixMessages);
     }
 }
