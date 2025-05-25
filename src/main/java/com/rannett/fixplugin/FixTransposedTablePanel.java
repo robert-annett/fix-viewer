@@ -8,9 +8,9 @@ public class FixTransposedTablePanel extends JPanel {
     private FixTransposedTableModel model;
     private JTable table;
 
-    public FixTransposedTablePanel(List<String> fixMessages) {
+    public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater) {
         super(new BorderLayout());
-        model = new FixTransposedTableModel(fixMessages);
+        model = new FixTransposedTableModel(fixMessages, updater);
         table = new JTable(model);
         table.setFillsViewportHeight(true);
         add(new JScrollPane(table), BorderLayout.CENTER);

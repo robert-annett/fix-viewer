@@ -1,5 +1,6 @@
 package com.rannett.fixplugin;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,14 +10,26 @@ public class FixTransposedTableModel extends AbstractTableModel {
     private List<String> tagOrder;
     private Map<String, Map<String, String>> transposed;
     private String fixVersion;
+    private final DocumentUpdater documentUpdater;
 
-    public FixTransposedTableModel(List<String> fixMessages) {
+    public FixTransposedTableModel(List<String> fixMessages, DocumentUpdater updater) {
+        this.documentUpdater = updater;
         buildModel(fixMessages);
     }
 
     public void updateMessages(List<String> fixMessages) {
+        int oldRowCount = getRowCount();
+        int oldColCount = getColumnCount();
+
         buildModel(fixMessages);
-        fireTableDataChanged();
+
+        SwingUtilities.invokeLater(() -> {
+            if (getRowCount() != oldRowCount || getColumnCount() != oldColCount) {
+                fireTableStructureChanged();
+            } else {
+                fireTableDataChanged();
+            }
+        });
     }
 
     private void buildModel(List<String> fixMessages) {
@@ -31,6 +44,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
         int i = 1;
 
         for (String message : fixMessages) {
+            message = message.trim();
+            if (message.isEmpty() || message.startsWith("#")) continue;  // Skip comments and blank lines
+
             String msgId = "Message " + i++;
             columnHeaders.add(msgId);
             Map<String, String> tagValueMap = parseFixMessage(message);
@@ -69,17 +85,38 @@ public class FixTransposedTableModel extends AbstractTableModel {
     }
 
     @Override public int getRowCount() { return tagOrder.size(); }
+
     @Override public int getColumnCount() { return 2 + columnHeaders.size(); }
+
     @Override public String getColumnName(int column) {
         if (column == 0) return "Tag";
         if (column == 1) return "Name";
         return columnHeaders.get(column - 2);
     }
+
     @Override public Object getValueAt(int rowIndex, int columnIndex) {
         String tag = tagOrder.get(rowIndex);
         if (columnIndex == 0) return tag;
         if (columnIndex == 1) return FixTagDictionary.getTagName(fixVersion, tag);
         String msgId = columnHeaders.get(columnIndex - 2);
         return transposed.getOrDefault(tag, Collections.emptyMap()).getOrDefault(msgId, "");
+    }
+
+    @Override public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return columnIndex >= 2;  // Only message columns are editable
+    }
+
+    @Override public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        String tag = tagOrder.get(rowIndex);
+        String msgId = columnHeaders.get(columnIndex - 2);
+        String newValue = aValue.toString();
+
+        transposed.get(tag).put(msgId, newValue);
+        documentUpdater.updateTagValueInMessage(msgId, tag, newValue);
+        fireTableCellUpdated(rowIndex, columnIndex);
+    }
+
+    public interface DocumentUpdater {
+        void updateTagValueInMessage(String messageId, String tag, String newValue);
     }
 }

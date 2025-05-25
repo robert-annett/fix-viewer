@@ -1,5 +1,6 @@
 package com.rannett.fixplugin;
 
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
@@ -18,12 +19,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
-    private final FileEditor textEditor;  // Wrapped IntelliJ TextEditor
+    private final FileEditor textEditor;
     private final JPanel mainPanel;
+    private final JTabbedPane tabbedPane;
     private FixTransposedTablePanel tablePanel;
     private final Document document;
-    private boolean showingTable = false;
-    private final JScrollPane scrollPane;  // Holds the dynamic view
     private final VirtualFile file;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
@@ -32,49 +32,57 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         this.document = ((TextEditor) textEditor).getEditor().getDocument();
 
         mainPanel = new JPanel(new BorderLayout());
+        tabbedPane = new JTabbedPane();
 
-        JButton toggleButton = new JButton("Toggle View");
-        toggleButton.addActionListener(e -> toggleView());
+        tabbedPane.addTab("Text View", textEditor.getComponent());
 
-        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topBar.add(toggleButton);
+        List<String> messages = Arrays.asList(document.getText().split("\\R+"));
+        tablePanel = new FixTransposedTablePanel(messages, new FixTransposedTableModel.DocumentUpdater() {
+            @Override
+            public void updateTagValueInMessage(String messageId, String tag, String newValue) {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    String[] lines = document.getText().split("\\R+");
+                    int msgIndex = Integer.parseInt(messageId.replace("Message ", "")) - 1;
+                    if (msgIndex < 0 || msgIndex >= lines.length) return;
 
-        mainPanel.add(topBar, BorderLayout.NORTH);
+                    String message = lines[msgIndex];
+                    int tagIndex = message.indexOf(tag + "=");
+                    if (tagIndex < 0) return;
 
-        scrollPane = new JScrollPane(textEditor.getComponent());  // Start with text view
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+                    int valueStart = tagIndex + (tag + "=").length();
+                    int valueEnd = valueStart;
+                    while (valueEnd < message.length() && message.charAt(valueEnd) != '\u0001' && message.charAt(valueEnd) != '|') {
+                        valueEnd++;
+                    }
 
-        // Listen to document changes
+                    int lineStartOffset = getLineStartOffset(document, msgIndex);
+                    int startOffset = lineStartOffset + valueStart;
+                    int endOffset = lineStartOffset + valueEnd;
+
+                    document.replaceString(startOffset, endOffset, newValue);
+                });
+            }
+
+            private int getLineStartOffset(Document doc, int lineNumber) {
+                return doc.getLineStartOffset(lineNumber);
+            }
+        });
+        tabbedPane.addTab("Transposed Table", tablePanel);
+
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+
         document.addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(@NotNull DocumentEvent event) {
-                if (showingTable && tablePanel != null) {
-                    List<String> messages = Arrays.asList(document.getText().split("\\R+"));
-                    tablePanel.updateTable(messages);
-                }
+                List<String> updatedMessages = Arrays.asList(document.getText().split("\\R+"));
+                tablePanel.updateTable(updatedMessages);
             }
         });
     }
 
-    private void toggleView() {
-        scrollPane.setViewportView(null);
-
-        if (!showingTable) {
-            List<String> messages = Arrays.asList(document.getText().split("\\R+"));
-            tablePanel = new FixTransposedTablePanel(messages);
-            scrollPane.setViewportView(tablePanel);
-        } else {
-            scrollPane.setViewportView(textEditor.getComponent());
-        }
-
-        showingTable = !showingTable;
-        mainPanel.revalidate();
-        mainPanel.repaint();
-    }
-
     @Override public @NotNull JComponent getComponent() { return mainPanel; }
     @Override public @Nullable JComponent getPreferredFocusedComponent() {
-        return showingTable ? tablePanel : textEditor.getPreferredFocusedComponent();
+        return tabbedPane.getSelectedIndex() == 0 ? textEditor.getPreferredFocusedComponent() : tablePanel;
     }
     @Override public @NotNull String getName() { return "FIX Dual View"; }
     @Override public void setState(@NotNull FileEditorState state) { textEditor.setState(state); }
@@ -83,17 +91,13 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     @Override public @NotNull FileEditorState getState(@NotNull FileEditorStateLevel level) {
         return textEditor.getState(level);
     }
-    @Override public @Nullable FileEditorLocation getCurrentLocation() {
-        return textEditor.getCurrentLocation();
-    }
+    @Override public @Nullable FileEditorLocation getCurrentLocation() { return textEditor.getCurrentLocation(); }
     @Override public void addPropertyChangeListener(@NotNull PropertyChangeListener listener) {
         textEditor.addPropertyChangeListener(listener);
     }
     @Override public void removePropertyChangeListener(@NotNull PropertyChangeListener listener) {
         textEditor.removePropertyChangeListener(listener);
     }
-    @Override public void dispose() {
-        textEditor.dispose();
-    }
+    @Override public void dispose() { textEditor.dispose(); }
     @Override public @NotNull VirtualFile getFile() { return file; }
 }
