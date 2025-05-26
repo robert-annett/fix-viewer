@@ -1,5 +1,7 @@
 package com.rannett.fixplugin;
 
+import com.intellij.ui.table.JBTable;
+
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -9,8 +11,8 @@ import java.awt.Component;
 import java.util.List;
 
 public class FixTransposedTablePanel extends JPanel {
-    private FixTransposedTableModel model;
-    private JTable table;
+    private final FixTransposedTableModel model;
+    private final JBTable table;
     private Runnable onCellSelectedCallback;
     private String highlightedTag;
     private String highlightedMessageId;
@@ -18,7 +20,7 @@ public class FixTransposedTablePanel extends JPanel {
     public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater) {
         super(new BorderLayout());
         model = new FixTransposedTableModel(fixMessages, updater);
-        table = new JTable(model);
+        table = new JBTable(model);
         table.setFillsViewportHeight(true);
 
         // Custom renderer to display value + description (but keep raw value for editing)
