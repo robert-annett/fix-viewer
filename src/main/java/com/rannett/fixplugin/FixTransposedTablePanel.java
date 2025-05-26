@@ -13,6 +13,7 @@ public class FixTransposedTablePanel extends JPanel {
         model = new FixTransposedTableModel(fixMessages, updater);
         table = new JTable(model);
         table.setFillsViewportHeight(true);
+
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
@@ -20,13 +21,15 @@ public class FixTransposedTablePanel extends JPanel {
         model.updateMessages(fixMessages);
     }
 
-    public void highlightTagRow(String tag) {
+    public void highlightTagCell(String tag, String messageId) {
         int row = model.getRowForTag(tag);
-        if (row >= 0) {
-            table.setRowSelectionInterval(row, row);
-            table.scrollRectToVisible(table.getCellRect(row, 0, true));
+        int col = model.getColumnForMessageId(messageId);
+        if (row >= 0 && col >= 0) {
+            table.changeSelection(row, col, false, false); // Select the cell
+        } else if (row >= 0) {
+            table.setRowSelectionInterval(row, row); // Fallback: select row
         } else {
-            table.clearSelection();
+            clearHighlight();
         }
     }
 

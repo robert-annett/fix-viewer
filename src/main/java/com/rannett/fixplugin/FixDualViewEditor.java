@@ -7,7 +7,11 @@ import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorLocation;
+import com.intellij.openapi.fileEditor.FileEditorState;
+import com.intellij.openapi.fileEditor.FileEditorStateLevel;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
@@ -30,7 +34,6 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private FixTransposedTablePanel tablePanel;
     private final Document document;
     private final VirtualFile file;
-    private String caretTag = null;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.file = file;
@@ -61,23 +64,18 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                         valueEnd++;
                     }
 
-                    int lineStartOffset = getLineStartOffset(document, msgIndex);
+                    int lineStartOffset = document.getLineStartOffset(msgIndex);
                     int startOffset = lineStartOffset + valueStart;
                     int endOffset = lineStartOffset + valueEnd;
 
                     document.replaceString(startOffset, endOffset, newValue);
                 });
             }
-
-            private int getLineStartOffset(Document doc, int lineNumber) {
-                return doc.getLineStartOffset(lineNumber);
-            }
         });
         tabbedPane.addTab("Transposed Table", tablePanel);
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
-        // Live update table when document changes
         document.addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(@NotNull DocumentEvent event) {
@@ -86,7 +84,6 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             }
         });
 
-        // Caret tracking
         ((TextEditor) textEditor).getEditor().getCaretModel().addCaretListener(new CaretListener() {
             @Override
             public void caretPositionChanged(@NotNull CaretEvent e) {
@@ -98,14 +95,27 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                     Matcher matcher = pattern.matcher(text);
                     while (matcher.find()) {
                         if (matcher.start() <= offset && matcher.end() >= offset) {
-                            caretTag = matcher.group(1);
-                            tablePanel.highlightTagRow(caretTag);
+                            String tag = matcher.group(1);
+                            String messageId = getMessageIdForOffset(text, offset, matcher.start());
+                            tablePanel.highlightTagCell(tag, messageId);
                             return;
                         }
                     }
-                    caretTag = null;
                     tablePanel.clearHighlight();
                 }
+            }
+
+            private String getMessageIdForOffset(String text, int offset, int matchStart) {
+                String[] lines = text.split("\\R+");
+                int cumulative = 0;
+                for (int i = 0; i < lines.length; i++) {
+                    int lineLength = lines[i].length() + 1;
+                    if (cumulative + lineLength > matchStart) {
+                        return "Message " + (i + 1);
+                    }
+                    cumulative += lineLength;
+                }
+                return null;
             }
         });
     }
