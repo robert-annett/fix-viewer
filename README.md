@@ -16,10 +16,10 @@ with support for message types, tags, values, and separators, helping users spot
 - **Quick-fix actions** to auto-correct invalid checksums
 - **Annotate invalid characters** when included in a FIX message. 
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
+- **Transposed View** to make reading messages easier
 
 ## Coming Soon
 
-- **Transposed View** to make reading messages easier
 - **Support for custom field delimiters** (`|` or SOH)
 - **Structural parsing and navigation** of FIX fields
 
