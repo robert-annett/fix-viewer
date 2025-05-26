@@ -79,4 +79,10 @@ public class FixTagDictionary {
         if (tagMap == null) return null;
         return tagMap.get(value);
     }
+
+    public static @Nullable Map<String, String> getValueMap(String version, String tagNumber) {
+        var versionMap = valueDescriptions.get(version);
+        if (versionMap == null) return null;
+        return versionMap.get(tagNumber);
+    }
 }
