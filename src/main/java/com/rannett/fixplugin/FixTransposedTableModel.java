@@ -45,15 +45,13 @@ public class FixTransposedTableModel extends AbstractTableModel {
 
         for (String message : fixMessages) {
             message = message.trim();
-            if (message.isEmpty() || message.startsWith("#")) continue;  // Skip comments and blank lines
+            if (message.isEmpty() || message.startsWith("#")) continue;
 
             String msgId = "Message " + i++;
             columnHeaders.add(msgId);
             Map<String, String> tagValueMap = parseFixMessage(message);
 
-            if (i == 2) {
-                firstMessageTags.addAll(tagValueMap.keySet());
-            }
+            if (i == 2) firstMessageTags.addAll(tagValueMap.keySet());
 
             for (String tag : tagValueMap.keySet()) {
                 allTags.add(tag);
@@ -62,19 +60,12 @@ public class FixTransposedTableModel extends AbstractTableModel {
         }
 
         this.tagOrder = new ArrayList<>(firstMessageTags);
-        for (String tag : allTags) {
-            if (!this.tagOrder.contains(tag)) {
-                this.tagOrder.add(tag);
-            }
-        }
+        for (String tag : allTags) if (!this.tagOrder.contains(tag)) this.tagOrder.add(tag);
     }
 
     private String detectFixVersion(String message) {
         return Arrays.stream(message.split("[|\\u0001]"))
-                .filter(s -> s.startsWith("8="))
-                .map(s -> s.substring(2))
-                .findFirst()
-                .orElse(null);
+                .filter(s -> s.startsWith("8=")).map(s -> s.substring(2)).findFirst().orElse(null);
     }
 
     private Map<String, String> parseFixMessage(String msg) {
@@ -85,9 +76,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
     }
 
     @Override public int getRowCount() { return tagOrder.size(); }
-
     @Override public int getColumnCount() { return 2 + columnHeaders.size(); }
-
     @Override public String getColumnName(int column) {
         if (column == 0) return "Tag";
         if (column == 1) return "Name";
@@ -99,21 +88,26 @@ public class FixTransposedTableModel extends AbstractTableModel {
         if (columnIndex == 0) return tag;
         if (columnIndex == 1) return FixTagDictionary.getTagName(fixVersion, tag);
         String msgId = columnHeaders.get(columnIndex - 2);
-        return transposed.getOrDefault(tag, Collections.emptyMap()).getOrDefault(msgId, "");
+        String value = transposed.getOrDefault(tag, Collections.emptyMap()).getOrDefault(msgId, "");
+        String desc = FixTagDictionary.getValueName(fixVersion, tag, value);
+        return desc != null ? value + " (" + desc + ")" : value;
     }
 
     @Override public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex >= 2;  // Only message columns are editable
+        return columnIndex >= 2;
     }
 
     @Override public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String tag = tagOrder.get(rowIndex);
         String msgId = columnHeaders.get(columnIndex - 2);
         String newValue = aValue.toString();
-
         transposed.get(tag).put(msgId, newValue);
         documentUpdater.updateTagValueInMessage(msgId, tag, newValue);
         fireTableCellUpdated(rowIndex, columnIndex);
+    }
+
+    public int getRowForTag(String tag) {
+        return tagOrder.indexOf(tag);
     }
 
     public interface DocumentUpdater {

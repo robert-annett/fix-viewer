@@ -19,4 +19,18 @@ public class FixTransposedTablePanel extends JPanel {
     public void updateTable(List<String> fixMessages) {
         model.updateMessages(fixMessages);
     }
+
+    public void highlightTagRow(String tag) {
+        int row = model.getRowForTag(tag);
+        if (row >= 0) {
+            table.setRowSelectionInterval(row, row);
+            table.scrollRectToVisible(table.getCellRect(row, 0, true));
+        } else {
+            table.clearSelection();
+        }
+    }
+
+    public void clearHighlight() {
+        table.clearSelection();
+    }
 }

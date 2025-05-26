@@ -1,7 +1,10 @@
 package com.rannett.fixplugin;
 
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.event.CaretEvent;
+import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileEditor.*;
@@ -17,6 +20,8 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
     private final FileEditor textEditor;
@@ -25,6 +30,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private FixTransposedTablePanel tablePanel;
     private final Document document;
     private final VirtualFile file;
+    private String caretTag = null;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.file = file;
@@ -71,11 +77,35 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
+        // Live update table when document changes
         document.addDocumentListener(new DocumentListener() {
             @Override
             public void documentChanged(@NotNull DocumentEvent event) {
                 List<String> updatedMessages = Arrays.asList(document.getText().split("\\R+"));
                 tablePanel.updateTable(updatedMessages);
+            }
+        });
+
+        // Caret tracking
+        ((TextEditor) textEditor).getEditor().getCaretModel().addCaretListener(new CaretListener() {
+            @Override
+            public void caretPositionChanged(@NotNull CaretEvent e) {
+                Caret caret = e.getCaret();
+                if (caret != null) {
+                    String text = document.getText();
+                    int offset = caret.getOffset();
+                    Pattern pattern = Pattern.compile("(\\d+)=([^|\\u0001]*)");
+                    Matcher matcher = pattern.matcher(text);
+                    while (matcher.find()) {
+                        if (matcher.start() <= offset && matcher.end() >= offset) {
+                            caretTag = matcher.group(1);
+                            tablePanel.highlightTagRow(caretTag);
+                            return;
+                        }
+                    }
+                    caretTag = null;
+                    tablePanel.clearHighlight();
+                }
             }
         });
     }
