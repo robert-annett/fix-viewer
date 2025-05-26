@@ -1,5 +1,5 @@
 <!-- Plugin description -->
-# FIX Viewer Plugin for IntelliJ
+# FIX Message Viewer Plugin for IntelliJ
 
 This is an intellij plugin for viewing FIX (Financial Information eXchange) (.fix) files.
 
