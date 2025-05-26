@@ -1,13 +1,14 @@
+<!-- Plugin description -->
 # FIX Viewer Plugin for IntelliJ
 
-<!-- Plugin description -->
-This is a simple intellij plugin for viewing FIX (Financial Information eXchange) (.fix) files.
+This is an intellij plugin for viewing FIX (Financial Information eXchange) (.fix) files.
 
+This plugin provides rich syntax highlighting for FIX messages (`.fix` files), making complex trade messages easier to 
+read and debug. Each field and value is colour-coded for clarity, with support for message types, tags, values, and 
+separators, helping users spot issues quickly. Incorrect checksums are highlighted and can be automatically corrected. 
 
-The **FIX Plugin for IntelliJ** enhances developer productivity and accuracy when working with Financial Information eXchange 
-(FIX) protocol files. Designed for financial engineers, developers, and analysts, this plugin provides rich syntax highlighting 
-for `.fix` files, making complex trade messages easier to read and debug. Each field and value is colour-coded for clarity, 
-with support for message types, tags, values, and separators, helping users spot issues quickly.
+Users can also view these messages in a transposed table view, which is much easier that scrolling horizontally. The same 
+fields for different messages will be shown in the same row, making comparison easier. 
 
 ## Features
 
