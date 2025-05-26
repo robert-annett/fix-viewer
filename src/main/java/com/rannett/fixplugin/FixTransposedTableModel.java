@@ -1,6 +1,6 @@
 package com.rannett.fixplugin;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,36 +68,65 @@ public class FixTransposedTableModel extends AbstractTableModel {
                 .collect(Collectors.toMap(p -> p[0], p -> p[1], (a, b) -> b, LinkedHashMap::new));
     }
 
-    @Override public int getRowCount() { return tagOrder.size(); }
-    @Override public int getColumnCount() { return 2 + columnHeaders.size(); }
-    @Override public String getColumnName(int column) { return column == 0 ? "Tag" : column == 1 ? "Name" : columnHeaders.get(column - 2); }
-    @Override public Object getValueAt(int rowIndex, int columnIndex) {
+    @Override
+    public int getRowCount() {
+        return tagOrder.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return 2 + columnHeaders.size();
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return column == 0 ? "Tag" : column == 1 ? "Name" : columnHeaders.get(column - 2);
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
         String tag = tagOrder.get(rowIndex);
         if (columnIndex == 0) return tag;
         if (columnIndex == 1) return FixTagDictionary.getTagName(fixVersion, tag);
         String msgId = columnHeaders.get(columnIndex - 2);
-        String value = transposed.getOrDefault(tag, Collections.emptyMap()).getOrDefault(msgId, "");
-        String desc = FixTagDictionary.getValueName(fixVersion, tag, value);
-        return desc != null ? value + " (" + desc + ")" : value;
+        return transposed.getOrDefault(tag, Collections.emptyMap()).getOrDefault(msgId, "");
     }
 
-    @Override public boolean isCellEditable(int rowIndex, int columnIndex) { return columnIndex >= 2; }
-    @Override public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+    @Override
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return columnIndex >= 2;
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String tag = tagOrder.get(rowIndex), msgId = columnHeaders.get(columnIndex - 2), newValue = aValue.toString();
         transposed.get(tag).put(msgId, newValue);
         documentUpdater.updateTagValueInMessage(msgId, tag, newValue);
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
-    public int getRowForTag(String tag) { return tagOrder.indexOf(tag); }
+    public int getRowForTag(String tag) {
+        return tagOrder.indexOf(tag);
+    }
 
     public int getColumnForMessageId(String messageId) {
         int index = columnHeaders.indexOf(messageId);
         return index >= 0 ? index + 2 : -1;
     }
 
-    public String getTagAtRow(int rowIndex) { return tagOrder.get(rowIndex); }
-    public String getMessageIdForColumn(int columnIndex) { return columnIndex >= 2 ? columnHeaders.get(columnIndex - 2) : null; }
+    public String getTagAtRow(int rowIndex) {
+        return tagOrder.get(rowIndex);
+    }
 
-    public interface DocumentUpdater { void updateTagValueInMessage(String messageId, String tag, String newValue); }
+    public String getMessageIdForColumn(int columnIndex) {
+        return columnIndex >= 2 ? columnHeaders.get(columnIndex - 2) : null;
+    }
+
+    public String getFixVersion() {
+        return fixVersion;
+    }
+
+    public interface DocumentUpdater {
+        void updateTagValueInMessage(String messageId, String tag, String newValue);
+    }
 }
