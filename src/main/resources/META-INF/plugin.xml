@@ -38,5 +38,8 @@
                    implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
 
         <documentationProvider implementation="com.rannett.fixplugin.FixDocumentationProvider"/>
+
+        <fileEditorProvider implementation="com.rannett.fixplugin.FixDualViewEditorProvider"/>
+
     </extensions>
 </idea-plugin>

@@ -26,3 +26,7 @@
 ## [0.0.5]
 ### Added
 - Tooltip lookup for TAG and VALUE in the fix messages
+
+## [0.0.6]
+### Added
+- Transposed view to make inspection of multiple messages easier.
