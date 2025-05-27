@@ -1,5 +1,9 @@
 package com.rannett.fixplugin;
 
+import com.intellij.openapi.project.Project;
+import com.rannett.fixplugin.dictionary.FixDictionaryCache;
+import com.rannett.fixplugin.dictionary.FixTagDictionary;
+
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -18,9 +22,11 @@ public class FixTransposedTableModel extends AbstractTableModel {
     private Map<String, Map<String, String>> transposed;
     private String fixVersion;
     private final DocumentUpdater documentUpdater;
+    private final Project project;
 
-    public FixTransposedTableModel(List<String> fixMessages, DocumentUpdater updater) {
+    public FixTransposedTableModel(List<String> fixMessages, DocumentUpdater updater, Project project) {
         this.documentUpdater = updater;
+        this.project = project;
         buildModel(fixMessages);
     }
 
@@ -88,7 +94,8 @@ public class FixTransposedTableModel extends AbstractTableModel {
         String tag = tagOrder.get(rowIndex);
         if (columnIndex == 0) return tag;
         if (columnIndex == 1) {
-            String tagName = FixTagDictionary.getTagName(fixVersion, tag);
+            FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, fixVersion);
+            String tagName = dictionary.getTagName( tag);
             return tagName != null ? tagName : "";  // Show empty string instead of null
         }
         String msgId = columnHeaders.get(columnIndex - 2);
