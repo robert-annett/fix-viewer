@@ -1,6 +1,6 @@
 package com.rannett.fixplugin;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,10 +87,14 @@ public class FixTransposedTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         String tag = tagOrder.get(rowIndex);
         if (columnIndex == 0) return tag;
-        if (columnIndex == 1) return FixTagDictionary.getTagName(fixVersion, tag);
+        if (columnIndex == 1) {
+            String tagName = FixTagDictionary.getTagName(fixVersion, tag);
+            return tagName != null ? tagName : "";  // Show empty string instead of null
+        }
         String msgId = columnHeaders.get(columnIndex - 2);
         return transposed.getOrDefault(tag, Collections.emptyMap()).getOrDefault(msgId, "");
     }
+
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
