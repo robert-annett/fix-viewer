@@ -42,4 +42,11 @@
         <fileEditorProvider implementation="com.rannett.fixplugin.FixDualViewEditorProvider"/>
 
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable
+                id="fixViewerSettings"
+                displayName="FIX Viewer Settings"
+                instance="com.rannett.fixplugin.settings.FixViewerSettingsConfigurable"
+                parentId="tools" />
+    </extensions>
 </idea-plugin>

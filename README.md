@@ -21,11 +21,12 @@ fields for different messages will be shown in the same row, making comparison e
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 - **Transposed View** to make reading messages easier
 - **Enumerated Values** suggested as items in the table view
+- **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used. 
 
 ## Coming Soon
 
-- **Support for custom field delimiters** (`|` or SOH)
 - **Structural parsing and navigation** of FIX fields
+- **Repeating Groups** highlighting and structure
 
 ---
 

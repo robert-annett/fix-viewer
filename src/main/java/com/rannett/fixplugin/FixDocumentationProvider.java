@@ -5,6 +5,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.rannett.fixplugin.dictionary.FixDictionaryCache;
+import com.rannett.fixplugin.dictionary.FixTagDictionary;
 import com.rannett.fixplugin.psi.FixTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,8 +66,9 @@ public class FixDocumentationProvider implements DocumentationProvider {
             return null; // Can't generate doc without tag
         }
 
-        String tagName = FixTagDictionary.getTagName(version, tagNumber);
-        String valueName = (value != null) ? FixTagDictionary.getValueName(version, tagNumber, value) : null;
+        FixTagDictionary dictionary = FixDictionaryCache.getDictionary(element.getProject(), version);
+        String tagName = dictionary.getTagName(tagNumber);
+        String valueName = (value != null) ? dictionary.getValueName(tagNumber, value) : null;
 
         if (tagName != null) {
             StringBuilder doc = new StringBuilder("<html><body>");

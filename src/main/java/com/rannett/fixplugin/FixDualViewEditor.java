@@ -18,11 +18,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
@@ -64,7 +61,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 int lineStartOffset = document.getLineStartOffset(msgIndex);
                 document.replaceString(lineStartOffset + valueStart, lineStartOffset + valueEnd, newValue);
             });
-        });
+        }, project);
         tabbedPane.addTab("Transposed Table", tablePanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 

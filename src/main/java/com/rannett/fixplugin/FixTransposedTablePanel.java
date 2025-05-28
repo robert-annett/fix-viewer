@@ -1,16 +1,14 @@
 package com.rannett.fixplugin;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.table.JBTable;
+import com.rannett.fixplugin.dictionary.FixDictionaryCache;
+import com.rannett.fixplugin.dictionary.FixTagDictionary;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +19,12 @@ public class FixTransposedTablePanel extends JPanel {
     private Runnable onCellSelectedCallback;
     private String highlightedTag;
     private String highlightedMessageId;
+    private final Project project;
 
-    public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater) {
+    public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater, Project project) {
         super(new BorderLayout());
-        model = new FixTransposedTableModel(fixMessages, updater);
+        this.project = project;
+        model = new FixTransposedTableModel(fixMessages, updater, project);
         table = new JBTable(model);
         table.setFillsViewportHeight(true);
 
@@ -37,7 +37,8 @@ public class FixTransposedTablePanel extends JPanel {
                 if (column >= 2) {
                     String tag = model.getTagAtRow(row);
                     String valStr = String.valueOf(value);
-                    String desc = FixTagDictionary.getValueName(model.getFixVersion(), tag, valStr);
+                    FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, model.getFixVersion());
+                    String desc = dictionary.getValueName( tag, valStr);
                     if (desc != null && !desc.isEmpty()) {
                         displayValue = valStr + " (" + desc + ")";
                     }
@@ -56,7 +57,8 @@ public class FixTransposedTablePanel extends JPanel {
             @Override
             public Component getTableCellEditorComponent(JTable tbl, Object value, boolean isSelected, int row, int column) {
                 currentTag = model.getTagAtRow(row);
-                Map<String, String> enums = FixTagDictionary.getValueMap(model.getFixVersion(), currentTag);
+                FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, model.getFixVersion());
+                Map<String, String> enums = dictionary.getValueMap(currentTag);
 
                 if (column >= 2 && enums != null && !enums.isEmpty()) {
                     displayToValueMap = new LinkedHashMap<>();

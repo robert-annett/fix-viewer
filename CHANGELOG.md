@@ -50,3 +50,9 @@
 ### Added
 
 - Enumerated values suggested in combobox in table view for fix items
+- 
+## [0.0.8]
+
+### Added
+
+- Bespoke dictionaries can be associated with FIX versions and override the built in ones.
