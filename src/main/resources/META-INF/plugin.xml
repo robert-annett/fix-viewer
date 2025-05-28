@@ -46,6 +46,7 @@
         <projectConfigurable
                 id="fixViewerSettings"
                 displayName="FIX Viewer Settings"
-                instance="com.rannett.fixplugin.settings.FixViewerSettingsConfigurable"/>
+                instance="com.rannett.fixplugin.settings.FixViewerSettingsConfigurable"
+                parentId="tools" />
     </extensions>
 </idea-plugin>
