@@ -22,8 +22,10 @@ public class FixViewerSettingsConfigurable implements Configurable {
     private JBTable versionTable;
     private DefaultTableModel tableModel;
     private final FixViewerSettingsState settingsState;
+    private final Project project;
 
     public FixViewerSettingsConfigurable(Project project) {
+        this.project = project;
         this.settingsState = FixViewerSettingsState.getInstance(project);
     }
 
@@ -41,31 +43,48 @@ public class FixViewerSettingsConfigurable implements Configurable {
         tableModel = new DefaultTableModel(columnNames, 0);
         versionTable = new JBTable(tableModel);
 
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(versionTable);
-        decorator.setAddAction(button -> tableModel.addRow(new Object[]{"", ""}));
-        decorator.setRemoveAction(button -> {
-            int selectedRow = versionTable.getSelectedRow();
-            if (selectedRow != -1) {
-                tableModel.removeRow(selectedRow);
-            }
-        });
-        decorator.setEditAction(button -> {
-            int selectedRow = versionTable.getSelectedRow();
-            if (selectedRow != -1) {
-                String version = (String) tableModel.getValueAt(selectedRow, 0);
-                String path = (String) tableModel.getValueAt(selectedRow, 1);
+        // Setup file chooser descriptor
+        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor()
+                .withTitle("Select Custom Dictionary")
+                .withDescription("Choose an XML or JSON dictionary file.");
 
-                TextFieldWithBrowseButton chooser = new TextFieldWithBrowseButton();
-                FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-                chooser.addBrowseFolderListener("Select Custom Dictionary", "Choose a FIX Dictionary file", null, descriptor);
-                chooser.setText(path);
+        // Decorate the table with add/remove/edit
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(versionTable)
+                .setAddAction(button -> tableModel.addRow(new Object[]{"", ""}))
+                .setRemoveAction(button -> {
+                    int selectedRow = versionTable.getSelectedRow();
+                    if (selectedRow != -1) {
+                        tableModel.removeRow(selectedRow);
+                    }
+                })
+                .setEditAction(button -> {
+                    int selectedRow = versionTable.getSelectedRow();
+                    if (selectedRow != -1) {
+                        String currentVersion = (String) tableModel.getValueAt(selectedRow, 0);
+                        String currentPath = (String) tableModel.getValueAt(selectedRow, 1);
 
-                int result = JOptionPane.showConfirmDialog(mainPanel, chooser, "Edit Custom Path for " + version, JOptionPane.OK_CANCEL_OPTION);
-                if (result == JOptionPane.OK_OPTION) {
-                    tableModel.setValueAt(chooser.getText(), selectedRow, 1);
-                }
-            }
-        });
+                        JPanel panel = new JPanel();
+                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+                        JTextField versionField = new JTextField(currentVersion);
+                        TextFieldWithBrowseButton fileField = new TextFieldWithBrowseButton();
+                        fileField.setText(currentPath);
+                        fileField.addBrowseFolderListener("Select Custom Dictionary", null, project, fileDescriptor);
+
+                        panel.add(new JLabel("FIX Version:"));
+                        panel.add(versionField);
+                        panel.add(new JLabel("Custom Dictionary Path:"));
+                        panel.add(fileField);
+
+                        int result = JOptionPane.showConfirmDialog(mainPanel, panel, "Edit Mapping", JOptionPane.OK_CANCEL_OPTION);
+                        if (result == JOptionPane.OK_OPTION) {
+                            String newVersion = versionField.getText().trim();
+                            String newPath = fileField.getText().trim();
+                            tableModel.setValueAt(newVersion, selectedRow, 0);
+                            tableModel.setValueAt(newPath, selectedRow, 1);
+                        }
+                    }
+                });
 
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.add(new JLabel("Custom Dictionary Mappings (FIX Version → Path):"));
@@ -76,9 +95,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
 
     @Override
     public boolean isModified() {
-        Map<String, String> current = settingsState.getCustomDictionaryPaths();
-        Map<String, String> tableMap = tableToMap();
-        return !current.equals(tableMap);
+        return !settingsState.getCustomDictionaryPaths().equals(tableToMap());
     }
 
     @Override
