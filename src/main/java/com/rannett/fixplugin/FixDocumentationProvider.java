@@ -66,7 +66,7 @@ public class FixDocumentationProvider implements DocumentationProvider {
             return null; // Can't generate doc without tag
         }
 
-        FixTagDictionary dictionary = FixDictionaryCache.getDictionary(parent.getProject(), version);
+        FixTagDictionary dictionary = FixDictionaryCache.getDictionary(element.getProject(), version);
         String tagName = dictionary.getTagName(tagNumber);
         String valueName = (value != null) ? dictionary.getValueName(tagNumber, value) : null;
 
