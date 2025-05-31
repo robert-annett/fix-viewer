@@ -15,8 +15,9 @@ public class FixTagDictionary {
 
     private final Map<String, String> tagNameMap = new HashMap<>();
     private final Map<String, Map<String, String>> tagValueMap = new HashMap<>();
+    private final Map<String, String> fieldTypeMap = new HashMap<>(); // New map for field types
 
-    private FixTagDictionary() {
+    FixTagDictionary() {
     }
 
     public static FixTagDictionary fromFile(@NotNull File file) throws Exception {
@@ -62,6 +63,10 @@ public class FixTagDictionary {
         return valueMap != null ? valueMap.get(value) : null;
     }
 
+    public String getFieldType(String tag) {
+        return fieldTypeMap.get(tag); // New method to get field type
+    }
+
     public Map<String, String> getTagNameMap() {
         return Collections.unmodifiableMap(tagNameMap);
     }
@@ -78,8 +83,6 @@ public class FixTagDictionary {
         }
 
         String jsonContent = jsonBuilder.toString();
-        // Basic JSON parsing logic (replace with a library like org.json or Jackson for robustness)
-        // Example: {"8":"BeginString", "35":{"0":"Heartbeat","1":"Test Request"}}
         org.json.JSONObject root = new org.json.JSONObject(jsonContent);
 
         for (String key : root.keySet()) {
@@ -87,21 +90,28 @@ public class FixTagDictionary {
             if (value instanceof String) {
                 dictionary.tagNameMap.put(key, (String) value);
             } else if (value instanceof org.json.JSONObject) {
-                org.json.JSONObject valuesObject = (org.json.JSONObject) value;
-                Map<String, String> valueMap = new HashMap<>();
-                for (String valKey : valuesObject.keySet()) {
-                    valueMap.put(valKey, valuesObject.getString(valKey));
+                org.json.JSONObject fieldObject = (org.json.JSONObject) value;
+
+                if (fieldObject.has("name")) {
+                    dictionary.tagNameMap.put(key, fieldObject.getString("name"));
                 }
-                dictionary.tagValueMap.put(key, valueMap);
+                if (fieldObject.has("type")) {
+                    dictionary.fieldTypeMap.put(key, fieldObject.getString("type")); // Add field type
+                }
+
+                org.json.JSONObject valuesObject = fieldObject.optJSONObject("values");
+                if (valuesObject != null) {
+                    Map<String, String> valueMap = new HashMap<>();
+                    for (String valKey : valuesObject.keySet()) {
+                        valueMap.put(valKey, valuesObject.getString(valKey));
+                    }
+                    dictionary.tagValueMap.put(key, valueMap);
+                }
             }
         }
     }
 
     private static void parseXml(BufferedReader reader, FixTagDictionary dictionary) throws Exception {
-        // Simple XML parsing (replace with a library like JAXB or DOM for robustness)
-        // Example format:
-        // <dictionary><field number="8" name="BeginString"/><field number="35" name="MsgType"><value enum="0" description="Heartbeat"/></field></dictionary>
-
         String line;
         String currentTag = null;
 
@@ -110,9 +120,13 @@ public class FixTagDictionary {
             if (line.startsWith("<field")) {
                 String tagNumber = extractAttribute(line, "number");
                 String tagName = extractAttribute(line, "name");
+                String type = extractAttribute(line, "type"); // Extract type attribute
                 if (tagNumber != null && tagName != null) {
                     dictionary.tagNameMap.put(tagNumber, tagName);
                     currentTag = tagNumber;
+                }
+                if (tagNumber != null && type != null) {
+                    dictionary.fieldTypeMap.put(tagNumber, type); // Store type
                 }
             } else if (line.startsWith("<value") && currentTag != null) {
                 String enumValue = extractAttribute(line, "enum");

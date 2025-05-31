@@ -14,11 +14,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.OptionalInt;
-import java.util.stream.IntStream;
 
-public class FixChecksumInspection extends LocalInspectionTool  {
-
+public class FixChecksumInspection extends LocalInspectionTool {
 
     public static final String BEGIN_STRING = "8";
     public static final String CHECK_SUM_TAG = "10";
@@ -50,8 +47,6 @@ public class FixChecksumInspection extends LocalInspectionTool  {
                 .filter(Objects::nonNull)
                 .toArray(ProblemDescriptor[]::new);
     }
-
-
 
     private int calculateChecksum(String message) {
         return message.chars()
@@ -109,7 +104,8 @@ public class FixChecksumInspection extends LocalInspectionTool  {
         return raw.toString();
     }
 
-    private record MessageBlock(String body, FixField checksumField) {}
+    private record MessageBlock(String body, FixField checksumField) {
+    }
 
 }
 

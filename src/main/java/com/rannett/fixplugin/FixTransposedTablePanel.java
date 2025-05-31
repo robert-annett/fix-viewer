@@ -6,9 +6,28 @@ import com.intellij.ui.table.JBTable;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 
-import javax.swing.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +39,7 @@ public class FixTransposedTablePanel extends JPanel {
     private String highlightedTag;
     private String highlightedMessageId;
     private final Project project;
+    private final List<TableColumn> allColumns = new ArrayList<>();
 
     public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater, Project project) {
         super(new BorderLayout());
@@ -38,7 +58,7 @@ public class FixTransposedTablePanel extends JPanel {
                     String tag = model.getTagAtRow(row);
                     String valStr = String.valueOf(value);
                     FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, model.getFixVersion());
-                    String desc = dictionary.getValueName( tag, valStr);
+                    String desc = dictionary.getValueName(tag, valStr);
                     if (desc != null && !desc.isEmpty()) {
                         displayValue = valStr + " (" + desc + ")";
                     }
@@ -112,6 +132,9 @@ public class FixTransposedTablePanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
         table.getSelectionModel().addListSelectionListener(e -> notifySelection());
         table.getColumnModel().getSelectionModel().addListSelectionListener(e -> notifySelection());
+
+        setupHeaderContextMenu();
+        customizeTableHeaderWithIcon();
     }
 
     public void updateTable(List<String> fixMessages) {
@@ -150,5 +173,119 @@ public class FixTransposedTablePanel extends JPanel {
         this.highlightedTag = null;
         this.highlightedMessageId = null;
         table.clearSelection();
+    }
+
+    private void setupHeaderContextMenu() {
+        JTableHeader header = table.getTableHeader();
+        header.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger() || SwingUtilities.isRightMouseButton(e)) {
+                    int columnIndex = header.columnAtPoint(e.getPoint());
+                    if (columnIndex != -1) {
+                        showHeaderContextMenu(e, columnIndex);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                mousePressed(e);
+            }
+        });
+    }
+
+    private void showHeaderContextMenu(MouseEvent e, int columnIndex) {
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem hideColumn = new JMenuItem("Hide Column");
+        hideColumn.addActionListener(ae -> hideColumn(columnIndex));
+        menu.add(hideColumn);
+
+        JMenuItem showOnlyColumn = new JMenuItem("Show Only This Column");
+        showOnlyColumn.addActionListener(ae -> showOnlyColumn(columnIndex));
+        menu.add(showOnlyColumn);
+
+        JMenuItem showAllColumns = new JMenuItem("Show All Columns");
+        showAllColumns.addActionListener(ae -> showAllColumns());
+        menu.add(showAllColumns);
+
+        menu.show(e.getComponent(), e.getX(), e.getY());
+    }
+
+    private void hideColumn(int columnIndex) {
+        String columnName = table.getColumnName(columnIndex);
+        if ("Tag".equals(columnName) || "Name".equals(columnName)) {
+            // Prevent hiding Tag or Name columns
+            return;
+        }
+
+        TableColumnModel columnModel = table.getColumnModel();
+        TableColumn column = columnModel.getColumn(columnIndex);
+        columnModel.removeColumn(column);
+        if (!allColumns.contains(column)) {
+            allColumns.add(column);
+        }
+    }
+
+    private void showOnlyColumn(int columnIndex) {
+        TableColumnModel columnModel = table.getColumnModel();
+        List<TableColumn> toRemove = new ArrayList<>();
+
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            String columnName = table.getColumnName(i);
+            if (i != columnIndex && !"Tag".equals(columnName) && !"Name".equals(columnName)) {
+                toRemove.add(columnModel.getColumn(i));
+            }
+        }
+
+        for (TableColumn column : toRemove) {
+            columnModel.removeColumn(column);
+            if (!allColumns.contains(column)) {
+                allColumns.add(column);
+            }
+        }
+
+        // Ensure Tag and Name are always shown
+        for (TableColumn column : allColumns) {
+            String columnName = column.getHeaderValue().toString();
+            if (("Tag".equals(columnName) || "Name".equals(columnName)) && !isColumnPresent(columnModel, column)) {
+                columnModel.addColumn(column);
+            }
+        }
+    }
+
+    private void showAllColumns() {
+        TableColumnModel columnModel = table.getColumnModel();
+        for (TableColumn column : allColumns) {
+            if (!isColumnPresent(columnModel, column)) {
+                columnModel.addColumn(column);
+            }
+        }
+    }
+
+    private boolean isColumnPresent(TableColumnModel columnModel, TableColumn column) {
+        Enumeration<TableColumn> columns = columnModel.getColumns();
+        while (columns.hasMoreElements()) {
+            if (columns.nextElement() == column) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void customizeTableHeaderWithIcon() {
+        JTableHeader header = table.getTableHeader();
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                Icon icon = UIManager.getIcon("Tree.expandedIcon"); // Or use your custom icon
+                label.setIcon(icon);
+                label.setHorizontalTextPosition(SwingConstants.LEFT);
+                return label;
+            }
+        });
     }
 }
