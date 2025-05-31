@@ -7,13 +7,17 @@ import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -130,6 +134,7 @@ public class FixTransposedTablePanel extends JPanel {
         table.getColumnModel().getSelectionModel().addListSelectionListener(e -> notifySelection());
 
         setupHeaderContextMenu();
+        customizeTableHeaderWithIcon();
     }
 
     public void updateTable(List<String> fixMessages) {
@@ -209,6 +214,12 @@ public class FixTransposedTablePanel extends JPanel {
     }
 
     private void hideColumn(int columnIndex) {
+        String columnName = table.getColumnName(columnIndex);
+        if ("Tag".equals(columnName) || "Name".equals(columnName)) {
+            // Prevent hiding Tag or Name columns
+            return;
+        }
+
         TableColumnModel columnModel = table.getColumnModel();
         TableColumn column = columnModel.getColumn(columnIndex);
         columnModel.removeColumn(column);
@@ -220,15 +231,26 @@ public class FixTransposedTablePanel extends JPanel {
     private void showOnlyColumn(int columnIndex) {
         TableColumnModel columnModel = table.getColumnModel();
         List<TableColumn> toRemove = new ArrayList<>();
+
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
-            if (i != columnIndex) {
+            String columnName = table.getColumnName(i);
+            if (i != columnIndex && !"Tag".equals(columnName) && !"Name".equals(columnName)) {
                 toRemove.add(columnModel.getColumn(i));
             }
         }
+
         for (TableColumn column : toRemove) {
             columnModel.removeColumn(column);
             if (!allColumns.contains(column)) {
                 allColumns.add(column);
+            }
+        }
+
+        // Ensure Tag and Name are always shown
+        for (TableColumn column : allColumns) {
+            String columnName = column.getHeaderValue().toString();
+            if (("Tag".equals(columnName) || "Name".equals(columnName)) && !isColumnPresent(columnModel, column)) {
+                columnModel.addColumn(column);
             }
         }
     }
@@ -250,5 +272,20 @@ public class FixTransposedTablePanel extends JPanel {
             }
         }
         return false;
+    }
+
+    private void customizeTableHeaderWithIcon() {
+        JTableHeader header = table.getTableHeader();
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                Icon icon = UIManager.getIcon("Tree.expandedIcon"); // Or use your custom icon
+                label.setIcon(icon);
+                label.setHorizontalTextPosition(SwingConstants.LEFT);
+                return label;
+            }
+        });
     }
 }

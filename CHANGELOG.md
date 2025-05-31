@@ -63,3 +63,4 @@
 
 - Syntax highlighting for invalid values for FIX types. e.g. INT cannot contain non-numbers and CHAR must be a single
   character.
+- Ability to hide messages in the table format to make reading multiple messages easier.
