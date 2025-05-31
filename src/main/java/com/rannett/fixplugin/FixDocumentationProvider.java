@@ -8,6 +8,7 @@ import com.intellij.psi.PsiFile;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 import com.rannett.fixplugin.psi.FixTypes;
+import com.rannett.fixplugin.util.FixUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,30 +50,33 @@ public class FixDocumentationProvider implements DocumentationProvider {
         }
 
         PsiFile file = element.getContainingFile();
-
         String version = getOrComputeVersion(file);
         if (version == null) {
-            version = "FIX.4.2"; // Fallback
+            version = "FIX.4.2"; // Default fallback
         }
 
         PsiElement parent = element.getParent();
         PsiElement tagPsi = parent.getFirstChild();
         PsiElement valuePsi = parent.getLastChild();
 
-        String tagNumber = tagPsi.getText();
-        String value = valuePsi.getText();
-
-        if (tagNumber == null) {
-            return null; // Can't generate doc without tag
+        if (tagPsi == null) {
+            return null;
         }
+
+        String tagNumber = tagPsi.getText();
+        String value = (valuePsi != null) ? valuePsi.getText() : null;
 
         FixTagDictionary dictionary = FixDictionaryCache.getDictionary(element.getProject(), version);
         String tagName = dictionary.getTagName(tagNumber);
         String valueName = (value != null) ? dictionary.getValueName(tagNumber, value) : null;
+        String type = dictionary.getFieldType(tagNumber); // New addition: Fetch field type
 
         if (tagName != null) {
             StringBuilder doc = new StringBuilder("<html><body>");
             doc.append("<b>Tag ").append(tagNumber).append("</b>: ").append(tagName);
+            if (type != null) {
+                doc.append("<br/><b>Type</b>: ").append(type);
+            }
             if (value != null) {
                 doc.append("<br/><b>Value ").append(value).append("</b>");
                 if (valueName != null) {
@@ -87,38 +91,17 @@ public class FixDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
-
     private String getOrComputeVersion(PsiFile file) {
         String cachedVersion = file.getUserData(FIX_VERSION_KEY);
-        if (cachedVersion != null) return cachedVersion;
+        if (cachedVersion != null) {
+            return cachedVersion;
+        }
 
         String text = file.getText();
-        String version = extractFixVersion(text);
-        if (version != null) {
-            file.putUserData(FIX_VERSION_KEY, version);
-        }
+        String version = FixUtils.extractFixVersion(text).orElse("FIX.4.2");
+        file.putUserData(FIX_VERSION_KEY, version);
         return version;
     }
 
-    private @Nullable String extractFixVersion(String text) {
-        int start = text.indexOf("8=FIX.");
-        if (start == -1) return null;
-
-        int endPipe = text.indexOf('|', start);
-        int endSoh = text.indexOf('\u0001', start);
-        int end;
-
-        if (endPipe == -1 && endSoh == -1) {
-            end = text.length();
-        } else if (endPipe == -1) {
-            end = endSoh;
-        } else if (endSoh == -1) {
-            end = endPipe;
-        } else {
-            end = Math.min(endPipe, endSoh);
-        }
-
-        return text.substring(start + 2, end);
-    }
 
 }

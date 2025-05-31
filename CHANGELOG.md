@@ -50,9 +50,16 @@
 ### Added
 
 - Enumerated values suggested in combobox in table view for fix items
-- 
+
 ## [0.0.8]
 
 ### Added
 
 - Bespoke dictionaries can be associated with FIX versions and override the built in ones.
+
+## [0.0.9]
+
+### Added
+
+- Syntax highlighting for invalid values for FIX types. e.g. INT cannot contain non-numbers and CHAR must be a single
+  character.
