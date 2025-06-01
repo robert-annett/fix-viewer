@@ -1,10 +1,10 @@
-package com.rannett.fixplugin;
+package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,8 +94,8 @@ public class FixTransposedTableModel extends AbstractTableModel {
         String tag = tagOrder.get(rowIndex);
         if (columnIndex == 0) return tag;
         if (columnIndex == 1) {
-            FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, fixVersion);
-            String tagName = dictionary.getTagName( tag);
+            FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
+            String tagName = dictionary.getTagName(tag);
             return tagName != null ? tagName : "";  // Show empty string instead of null
         }
         String msgId = columnHeaders.get(columnIndex - 2);

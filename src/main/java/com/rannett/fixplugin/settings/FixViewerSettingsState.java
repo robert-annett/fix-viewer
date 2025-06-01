@@ -6,7 +6,6 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,12 +37,8 @@ public final class FixViewerSettingsState implements PersistentStateComponent<Fi
         return customDictionaryPaths.get(fixVersion);
     }
 
-    public void setCustomDictionaryPath(String fixVersion, String path) {
-        customDictionaryPaths.put(fixVersion, path);
-    }
-
     @Override
-    public @Nullable FixViewerSettingsState getState() {
+    public FixViewerSettingsState getState() {
         return this;
     }
 

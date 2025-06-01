@@ -1,4 +1,4 @@
-package com.rannett.fixplugin;
+package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -15,11 +15,15 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.components.JBTabbedPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
@@ -41,27 +45,25 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         this.document = ((TextEditor) textEditor).getEditor().getDocument();
 
         mainPanel = new JPanel(new BorderLayout());
-        tabbedPane = new JTabbedPane();
+        tabbedPane = new JBTabbedPane();
 
         tabbedPane.addTab("Text View", textEditor.getComponent());
 
         List<String> messages = Arrays.asList(document.getText().split("\\R+"));
-        tablePanel = new FixTransposedTablePanel(messages, (msgId, tag, newValue) -> {
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                String[] lines = document.getText().split("\\R+");
-                int msgIndex = Integer.parseInt(msgId.replace("Message ", "")) - 1;
-                if (msgIndex < 0 || msgIndex >= lines.length) return;
-                String message = lines[msgIndex];
-                int tagIndex = message.indexOf(tag + "=");
-                if (tagIndex < 0) return;
-                int valueStart = tagIndex + (tag + "=").length();
-                int valueEnd = valueStart;
-                while (valueEnd < message.length() && message.charAt(valueEnd) != '\u0001' && message.charAt(valueEnd) != '|')
-                    valueEnd++;
-                int lineStartOffset = document.getLineStartOffset(msgIndex);
-                document.replaceString(lineStartOffset + valueStart, lineStartOffset + valueEnd, newValue);
-            });
-        }, project);
+        tablePanel = new FixTransposedTablePanel(messages, (msgId, tag, newValue) -> WriteCommandAction.runWriteCommandAction(project, () -> {
+            String[] lines = document.getText().split("\\R+");
+            int msgIndex = Integer.parseInt(msgId.replace("Message ", "")) - 1;
+            if (msgIndex < 0 || msgIndex >= lines.length) return;
+            String message = lines[msgIndex];
+            int tagIndex = message.indexOf(tag + "=");
+            if (tagIndex < 0) return;
+            int valueStart = tagIndex + (tag + "=").length();
+            int valueEnd = valueStart;
+            while (valueEnd < message.length() && message.charAt(valueEnd) != '\u0001' && message.charAt(valueEnd) != '|')
+                valueEnd++;
+            int lineStartOffset = document.getLineStartOffset(msgIndex);
+            document.replaceString(lineStartOffset + valueStart, lineStartOffset + valueEnd, newValue);
+        }), project);
         tabbedPane.addTab("Transposed Table", tablePanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
@@ -88,7 +90,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                     while (matcher.find()) {
                         if (matcher.start() <= offset && matcher.end() >= offset) {
                             String tag = matcher.group(1);
-                            String messageId = getMessageIdForOffset(text, offset, matcher.start());
+                            String messageId = getMessageIdForOffset(text, matcher.start());
                             tablePanel.highlightTagCell(tag, messageId);
                             return;
                         }
@@ -97,7 +99,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 }
             }
 
-            private String getMessageIdForOffset(String text, int offset, int matchStart) {
+            private String getMessageIdForOffset(String text, int matchStart) {
                 String[] lines = text.split("\\R+");
                 int cumulative = 0;
                 for (int i = 0; i < lines.length; i++) {

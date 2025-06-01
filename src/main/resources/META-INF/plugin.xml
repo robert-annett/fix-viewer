@@ -29,16 +29,16 @@
         <localInspection language="Fix"
                          shortName="FixChecksumInspection"
                          displayName="Validate FIX checksum"
-                         groupName="Fix Protocol"
+                         groupName="Fix protocol"
                          enabledByDefault="true"
                          implementationClass="com.rannett.fixplugin.inspection.FixChecksumInspection"/>
 
         <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
         <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixCheckTypeAnnotator"/>
-        
+
         <documentationProvider implementation="com.rannett.fixplugin.FixDocumentationProvider"/>
 
-        <fileEditorProvider implementation="com.rannett.fixplugin.FixDualViewEditorProvider"/>
+        <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
 
     </extensions>
     <extensions defaultExtensionNs="com.intellij">

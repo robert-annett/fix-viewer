@@ -1,4 +1,4 @@
-package com.rannett.fixplugin;
+package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -33,17 +33,13 @@ import java.util.List;
 import java.util.Map;
 
 public class FixTransposedTablePanel extends JPanel {
-    private FixTransposedTableModel model;
-    private JBTable table;
+    private final FixTransposedTableModel model;
+    private final JBTable table;
     private Runnable onCellSelectedCallback;
-    private String highlightedTag;
-    private String highlightedMessageId;
-    private final Project project;
     private final List<TableColumn> allColumns = new ArrayList<>();
 
     public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater, Project project) {
         super(new BorderLayout());
-        this.project = project;
         model = new FixTransposedTableModel(fixMessages, updater, project);
         table = new JBTable(model);
         table.setFillsViewportHeight(true);
@@ -57,7 +53,7 @@ public class FixTransposedTablePanel extends JPanel {
                 if (column >= 2) {
                     String tag = model.getTagAtRow(row);
                     String valStr = String.valueOf(value);
-                    FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, model.getFixVersion());
+                    FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(model.getFixVersion());
                     String desc = dictionary.getValueName(tag, valStr);
                     if (desc != null && !desc.isEmpty()) {
                         displayValue = valStr + " (" + desc + ")";
@@ -72,12 +68,11 @@ public class FixTransposedTablePanel extends JPanel {
         table.setDefaultEditor(Object.class, new DefaultCellEditor(new JTextField()) {
             private ComboBox<String> comboBox;
             private Map<String, String> displayToValueMap;
-            private String currentTag;
 
             @Override
             public Component getTableCellEditorComponent(JTable tbl, Object value, boolean isSelected, int row, int column) {
-                currentTag = model.getTagAtRow(row);
-                FixTagDictionary dictionary = FixDictionaryCache.getDictionary(project, model.getFixVersion());
+                String currentTag = model.getTagAtRow(row);
+                FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(model.getFixVersion());
                 Map<String, String> enums = dictionary.getValueMap(currentTag);
 
                 if (column >= 2 && enums != null && !enums.isEmpty()) {
@@ -117,9 +112,10 @@ public class FixTransposedTablePanel extends JPanel {
             public Object getCellEditorValue() {
                 if (comboBox != null && comboBox.isDisplayable()) {
                     Object selected = comboBox.getEditor().getItem();
-                    String rawValue = displayToValueMap != null && displayToValueMap.containsKey(selected)
-                            ? displayToValueMap.get(selected)
-                            : selected.toString();  // Allow custom values
+                    String selectedStr = (selected != null) ? selected.toString() : "";
+                    String rawValue = (displayToValueMap != null)
+                            ? displayToValueMap.getOrDefault(selectedStr, selectedStr)
+                            : selectedStr;
                     comboBox = null;
                     displayToValueMap = null;
                     return rawValue;
@@ -160,8 +156,6 @@ public class FixTransposedTablePanel extends JPanel {
     }
 
     public void highlightTagCell(String tag, String messageId) {
-        this.highlightedTag = tag;
-        this.highlightedMessageId = messageId;
         int row = model.getRowForTag(tag);
         int col = model.getColumnForMessageId(messageId);
         if (row >= 0 && col >= 0) table.changeSelection(row, col, false, false);
@@ -170,8 +164,6 @@ public class FixTransposedTablePanel extends JPanel {
     }
 
     public void clearHighlight() {
-        this.highlightedTag = null;
-        this.highlightedMessageId = null;
         table.clearSelection();
     }
 
@@ -249,7 +241,7 @@ public class FixTransposedTablePanel extends JPanel {
         // Ensure Tag and Name are always shown
         for (TableColumn column : allColumns) {
             String columnName = column.getHeaderValue().toString();
-            if (("Tag".equals(columnName) || "Name".equals(columnName)) && !isColumnPresent(columnModel, column)) {
+            if (("Tag".equals(columnName) || "Name".equals(columnName)) && isColumnMissing(columnModel, column)) {
                 columnModel.addColumn(column);
             }
         }
@@ -258,20 +250,20 @@ public class FixTransposedTablePanel extends JPanel {
     private void showAllColumns() {
         TableColumnModel columnModel = table.getColumnModel();
         for (TableColumn column : allColumns) {
-            if (!isColumnPresent(columnModel, column)) {
+            if (isColumnMissing(columnModel, column)) {
                 columnModel.addColumn(column);
             }
         }
     }
 
-    private boolean isColumnPresent(TableColumnModel columnModel, TableColumn column) {
+    private boolean isColumnMissing(TableColumnModel columnModel, TableColumn column) {
         Enumeration<TableColumn> columns = columnModel.getColumns();
         while (columns.hasMoreElements()) {
             if (columns.nextElement() == column) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private void customizeTableHeaderWithIcon() {

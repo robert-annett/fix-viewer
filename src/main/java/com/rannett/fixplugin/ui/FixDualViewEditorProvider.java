@@ -1,4 +1,4 @@
-package com.rannett.fixplugin;
+package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;

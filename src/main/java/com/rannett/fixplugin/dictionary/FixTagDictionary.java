@@ -41,12 +41,15 @@ public class FixTagDictionary {
         FixTagDictionary dictionary = new FixTagDictionary();
 
         String resourcePath = "/dictionaries/" + version + ".xml";
-        try (InputStream inputStream = FixTagDictionary.class.getResourceAsStream(resourcePath);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (InputStream inputStream = FixTagDictionary.class.getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Built-in dictionary not found: " + version);
             }
-            parseXml(reader, dictionary);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                parseXml(reader, dictionary);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to load built-in dictionary: " + version, e);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to load built-in dictionary: " + version, e);
         }
@@ -71,10 +74,6 @@ public class FixTagDictionary {
         return Collections.unmodifiableMap(tagNameMap);
     }
 
-    public Map<String, Map<String, String>> getTagValueMap() {
-        return Collections.unmodifiableMap(tagValueMap);
-    }
-
     private static void parseJson(BufferedReader reader, FixTagDictionary dictionary) throws Exception {
         StringBuilder jsonBuilder = new StringBuilder();
         String line;
@@ -89,8 +88,7 @@ public class FixTagDictionary {
             Object value = root.get(key);
             if (value instanceof String) {
                 dictionary.tagNameMap.put(key, (String) value);
-            } else if (value instanceof org.json.JSONObject) {
-                org.json.JSONObject fieldObject = (org.json.JSONObject) value;
+            } else if (value instanceof org.json.JSONObject fieldObject) {
 
                 if (fieldObject.has("name")) {
                     dictionary.tagNameMap.put(key, fieldObject.getString("name"));
