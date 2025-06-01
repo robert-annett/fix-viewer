@@ -11,7 +11,6 @@
     <depends>com.intellij.modules.platform</depends>
 
 
-
     <extensions defaultExtensionNs="com.intellij">
         <fileType
                 name="Fix File"
@@ -34,9 +33,9 @@
                          enabledByDefault="true"
                          implementationClass="com.rannett.fixplugin.inspection.FixChecksumInspection"/>
 
-        <annotator language="Fix"
-                   implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
-
+        <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
+        <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixCheckTypeAnnotator"/>
+        
         <documentationProvider implementation="com.rannett.fixplugin.FixDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.FixDualViewEditorProvider"/>
@@ -47,6 +46,6 @@
                 id="fixViewerSettings"
                 displayName="FIX Viewer Settings"
                 instance="com.rannett.fixplugin.settings.FixViewerSettingsConfigurable"
-                parentId="tools" />
+                parentId="tools"/>
     </extensions>
 </idea-plugin>

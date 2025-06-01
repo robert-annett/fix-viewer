@@ -18,10 +18,13 @@ fields for different messages will be shown in the same row, making comparison e
 - **Live checksum validation and highlighting** for the `10=` tag
 - **Quick-fix actions** to auto-correct invalid checksums
 - **Annotate invalid characters** when included in a FIX message.
+- **Syntax highlighting** for invalid values for FIX types. e.g. INT cannot contain non-numbers and CHAR must be a
+  single character.
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 - **Transposed View** to make reading messages easier
+- **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
-- **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used. 
+- **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 
 ## Coming Soon
 
