@@ -1,6 +1,8 @@
 package com.rannett.fixplugin.util;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FixUtils {
 
@@ -12,12 +14,12 @@ public class FixUtils {
 
         String candidate = text.substring(start + 2);
 
-        java.util.regex.Matcher m = java.util.regex.Pattern
+        Matcher matcher = Pattern
                 .compile("^(FIX(?:T)?\\.[0-9]+(?:\\.[0-9]+)*)(?:[\\u0001|\\s]|$)")
                 .matcher(candidate);
 
-        if (m.find()) {
-            return Optional.of(m.group(1));
+        if (matcher.find()) {
+            return Optional.of(matcher.group(1));
         }
 
         return Optional.empty();
