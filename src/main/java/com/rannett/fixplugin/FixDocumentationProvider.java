@@ -56,17 +56,22 @@ public class FixDocumentationProvider implements DocumentationProvider {
         }
 
         PsiElement parent = element.getParent();
+
+        if (parent == null) {
+            return null;
+        }
+
         PsiElement tagPsi = parent.getFirstChild();
         PsiElement valuePsi = parent.getLastChild();
 
-        if (tagPsi == null) {
+        if (tagPsi == null || valuePsi == null) {
             return null;
         }
 
         String tagNumber = tagPsi.getText();
-        String value = (valuePsi != null) ? valuePsi.getText() : null;
+        String value = valuePsi.getText();
 
-        FixTagDictionary dictionary = FixDictionaryCache.getDictionary(element.getProject(), version);
+        FixTagDictionary dictionary = element.getProject().getService(FixDictionaryCache.class).getDictionary(version);
         String tagName = dictionary.getTagName(tagNumber);
         String valueName = (value != null) ? dictionary.getValueName(tagNumber, value) : null;
         String type = dictionary.getFieldType(tagNumber); // New addition: Fetch field type

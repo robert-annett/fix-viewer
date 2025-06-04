@@ -41,7 +41,7 @@ public class FixCheckTypeAnnotator implements Annotator {
         String version = FixUtils.extractFixVersion(fileElement.getText()).orElse("FIX.4.2"); // Fallback default
 
 
-        FixTagDictionary dictionary = FixDictionaryCache.getDictionary(element.getProject(), version);
+        FixTagDictionary dictionary = element.getProject().getService(FixDictionaryCache.class).getDictionary(version);
         String expectedType = dictionary.getFieldType(tagNumber);
 
         if (expectedType != null && !FieldTypeValidator.isValueValidForType(expectedType, value)) {
