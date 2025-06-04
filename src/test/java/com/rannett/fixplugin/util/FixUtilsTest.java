@@ -48,4 +48,20 @@ public class FixUtilsTest {
         assertTrue(version.isPresent());
         assertEquals("FIX.4.2", version.get());
     }
+
+    @Test
+    public void testExtractFixVersion_missingDelimiter() {
+        String text = "8=FIXT.1.1 9=123|35=A|";
+        Optional<String> version = FixUtils.extractFixVersion(text);
+        assertTrue(version.isPresent());
+        assertEquals("FIXT.1.1", version.get());
+    }
+
+    @Test
+    public void testExtractFixVersion_noDelimitersAtAll() {
+        String text = "8=FIX.4.2 9=5 35=A";
+        Optional<String> version = FixUtils.extractFixVersion(text);
+        assertTrue(version.isPresent());
+        assertEquals("FIX.4.2", version.get());
+    }
 }
