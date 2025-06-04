@@ -10,21 +10,16 @@ public class FixUtils {
             return Optional.empty();
         }
 
-        int endPipe = text.indexOf('|', start);
-        int endSoh = text.indexOf('\u0001', start);
-        int end;
+        String candidate = text.substring(start + 2);
 
-        if (endPipe == -1 && endSoh == -1) {
-            end = text.length();
-        } else if (endPipe == -1) {
-            end = endSoh;
-        } else if (endSoh == -1) {
-            end = endPipe;
-        } else {
-            end = Math.min(endPipe, endSoh);
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("^(FIX(?:T)?\\.[0-9]+(?:\\.[0-9]+)*)(?:[\\u0001|\\s]|$)")
+                .matcher(candidate);
+
+        if (m.find()) {
+            return Optional.of(m.group(1));
         }
 
-        String versionField = text.substring(start + 2, end);
-        return Optional.of(versionField);
+        return Optional.empty();
     }
 }
