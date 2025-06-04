@@ -28,11 +28,8 @@ public class FixChecksumQuickFix implements LocalQuickFix {
 
     @Override
     public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-        if ((descriptor.getPsiElement() instanceof FixField field)) {
-            if (field.getTag() != null && descriptor.getFixes() != null && descriptor.getFixes().length != 0 &&
-                    descriptor.getFixes()[0] instanceof FixChecksumQuickFix theFix) {
-                field.setValue(theFix.correctChecksum);
-            }
+        if (descriptor.getPsiElement() instanceof FixField field && field.getTag() != null) {
+            field.setValue(correctChecksum);
         }
     }
 
