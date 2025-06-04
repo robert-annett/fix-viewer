@@ -8,7 +8,7 @@ This plugin provides rich syntax highlighting for FIX messages (`.fix` files), m
 read and debug. Each field and value is colour-coded for clarity, with support for message types, tags, values, and
 separators, helping users spot issues quickly. Incorrect checksums are highlighted and can be automatically corrected.
 
-Users can also view these messages in a transposed table view, which is much easier that scrolling horizontally. The
+Users can also view these messages in a transposed table view, which is much easier than scrolling horizontally. The
 same
 fields for different messages will be shown in the same row, making comparison easier.
 
