@@ -1,5 +1,6 @@
 package com.rannett.fixplugin.dictionary;
 
+import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -13,6 +14,8 @@ import java.util.Map;
 
 public class FixTagDictionary {
 
+    private static final Logger LOG = Logger.getInstance(FixTagDictionary.class);
+
     private final Map<String, String> tagNameMap = new HashMap<>();
     private final Map<String, Map<String, String>> tagValueMap = new HashMap<>();
     private final Map<String, String> fieldTypeMap = new HashMap<>(); // New map for field types
@@ -20,7 +23,7 @@ public class FixTagDictionary {
     FixTagDictionary() {
     }
 
-    public static FixTagDictionary fromFile(@NotNull File file) throws Exception {
+    public static FixTagDictionary fromFile(@NotNull File file) {
         FixTagDictionary dictionary = new FixTagDictionary();
         String fileName = file.getName().toLowerCase();
 
@@ -30,8 +33,10 @@ public class FixTagDictionary {
             } else if (fileName.endsWith(".xml")) {
                 parseXml(reader, dictionary);
             } else {
-                throw new IllegalArgumentException("Unsupported file format: " + fileName);
+                LOG.warn("Unsupported file format: " + fileName);
             }
+        } catch (Exception e) {
+            LOG.warn("Failed to load dictionary file: " + fileName, e);
         }
 
         return dictionary;
@@ -43,15 +48,16 @@ public class FixTagDictionary {
         String resourcePath = "/dictionaries/" + version + ".xml";
         try (InputStream inputStream = FixTagDictionary.class.getResourceAsStream(resourcePath)) {
             if (inputStream == null) {
-                throw new IllegalArgumentException("Built-in dictionary not found: " + version);
+                LOG.warn("Built-in dictionary not found: " + version);
+                return dictionary;
             }
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
                 parseXml(reader, dictionary);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to load built-in dictionary: " + version, e);
+                LOG.warn("Failed to load built-in dictionary: " + version, e);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load built-in dictionary: " + version, e);
+            LOG.warn("Failed to load built-in dictionary: " + version, e);
         }
 
         return dictionary;

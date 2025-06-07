@@ -9,14 +9,13 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 
 public class FixTagDictionaryTest {
 
     @Test
-    public void testGetTagNameAndValueName_JSON() throws Exception {
+    public void testGetTagNameAndValueName_JSON() {
         String jsonContent = """
                     {
                       "35": {
@@ -48,7 +47,7 @@ public class FixTagDictionaryTest {
     }
 
     @Test
-    public void testGetTagNameAndValueName_XML() throws Exception {
+    public void testGetTagNameAndValueName_XML() {
         String xmlContent = """
                     <dictionary>
                         <field number="35" name="MsgType" type="CHAR">
@@ -79,7 +78,7 @@ public class FixTagDictionaryTest {
     }
 
     @Test
-    public void testGetTagNameMapAndValueMap() throws Exception {
+    public void testGetTagNameMapAndValueMap() {
         String jsonContent = """
                     {
                       "35": {
@@ -104,11 +103,53 @@ public class FixTagDictionaryTest {
     }
 
     @Test
+    public void testFromBuiltInVersion_valid() {
+        FixTagDictionary dictionary = FixTagDictionary.fromBuiltInVersion("FIX.4.2");
+        assertEquals("MsgType", dictionary.getTagName("35"));
+        // verify field type lookup from built-in dictionaries
+        assertEquals("STRING", dictionary.getFieldType("35"));
+    }
+
+    @Test
     public void testFromBuiltInVersion_missingFile() {
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            FixTagDictionary.fromBuiltInVersion("nonexistent-version");
-        });
-        String message = exception.getMessage();
-        assertTrue(message.contains("Failed to load built-in dictionary"));
+        FixTagDictionary dictionary = FixTagDictionary.fromBuiltInVersion("nonexistent-version");
+        assertNull(dictionary.getTagName("35"));
+    }
+
+    @Test
+    public void testFromFile_missingFile() {
+        File missing = new File("does-not-exist.json");
+        FixTagDictionary dictionary = FixTagDictionary.fromFile(missing);
+        assertNull(dictionary.getTagName("35"));
+    }
+
+    @Test
+    public void testFromFile_unsupportedFormat() throws Exception {
+        File tempFile = File.createTempFile("dict", ".txt");
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write("dummy");
+        }
+        FixTagDictionary dictionary = FixTagDictionary.fromFile(tempFile);
+        assertNull(dictionary.getTagName("35"));
+    }
+
+    @Test
+    public void testFromFile_corruptJson() throws Exception {
+        File tempFile = File.createTempFile("bad", ".json");
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write("{ bad json");
+        }
+        FixTagDictionary dictionary = FixTagDictionary.fromFile(tempFile);
+        assertNull(dictionary.getTagName("35"));
+    }
+
+    @Test
+    public void testFromFile_corruptXml() throws Exception {
+        File tempFile = File.createTempFile("bad", ".xml");
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write("<dictionary><field></dictionary>");
+        }
+        FixTagDictionary dictionary = FixTagDictionary.fromFile(tempFile);
+        assertNull(dictionary.getTagName("35"));
     }
 }
