@@ -65,7 +65,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
     }
 
     private String detectFixVersion(String message) {
-        return Arrays.stream(message.split("[|\\u0001]")).filter(s -> s.startsWith("8=")).map(s -> s.substring(2)).findFirst().orElse(null);
+        return com.rannett.fixplugin.util.FixUtils.extractFixVersion(message).orElse(null);
     }
 
     private Map<String, String> parseFixMessage(String msg) {
