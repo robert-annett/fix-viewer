@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 public class FixTagDictionaryTest {
 
     @Test
-    public void testGetTagNameAndValueName_JSON() {
+    public void testGetTagNameAndValueName_JSON() throws Exception {
         String jsonContent = """
                     {
                       "35": {
@@ -47,7 +47,7 @@ public class FixTagDictionaryTest {
     }
 
     @Test
-    public void testGetTagNameAndValueName_XML() {
+    public void testGetTagNameAndValueName_XML() throws Exception {
         String xmlContent = """
                     <dictionary>
                         <field number="35" name="MsgType" type="CHAR">
@@ -78,7 +78,7 @@ public class FixTagDictionaryTest {
     }
 
     @Test
-    public void testGetTagNameMapAndValueMap() {
+    public void testGetTagNameMapAndValueMap() throws Exception {
         String jsonContent = """
                     {
                       "35": {
