@@ -28,11 +28,7 @@ public final class FixDictionaryCache {
 
         String customPath = settings.getCustomDictionaryPath(fixVersion);
         if (customPath != null && !customPath.isEmpty()) {
-            try {
-                return FixTagDictionary.fromFile(new java.io.File(customPath));
-            } catch (Exception e) {
-                //System.err.println("Failed to load custom dictionary for version " + fixVersion + ": " + e.getMessage());
-            }
+            return FixTagDictionary.fromFile(new java.io.File(customPath));
         }
 
         return FixTagDictionary.fromBuiltInVersion(fixVersion);
