@@ -130,7 +130,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
     }
 
     public String getMessageIdForColumn(int columnIndex) {
-        return columnIndex >= 2 ? columnHeaders.get(columnIndex - 2) : null;
+        if (columnIndex < 2) return null;
+        int modelIndex = columnIndex - 2;
+        return modelIndex >= 0 && modelIndex < columnHeaders.size() ? columnHeaders.get(modelIndex) : null;
     }
 
     public String getFixVersion() {
