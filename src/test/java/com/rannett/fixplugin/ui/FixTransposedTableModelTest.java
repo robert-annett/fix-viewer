@@ -10,7 +10,7 @@ public class FixTransposedTableModelTest {
     @Test
     public void testGetMessageIdForColumn_bounds() {
         List<String> messages = List.of("8=FIX.4.4|35=A|10=000|");
-        FixTransposedTableModel model = new FixTransposedTableModel(messages, (id, tag, value) -> {}, null);
+        FixTransposedTableModel model = new FixTransposedTableModel(messages, (id, tag, occ, value) -> {}, null);
 
         assertEquals("Message 1", model.getMessageIdForColumn(2));
         assertNull(model.getMessageIdForColumn(1));
