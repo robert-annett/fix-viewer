@@ -57,8 +57,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
         fixVersion = version != null ? version : "FIX.4.2";
 
         List<List<TagValue>> parsed = new ArrayList<>();
-        Map<String, Integer> maxOcc = new LinkedHashMap<>();
-        List<String> firstOrder = new ArrayList<>();
+        // Maintain the order of tag occurrences as they first appear across all messages
+        tagOrder = new ArrayList<>();
+        Set<String> seenRows = new LinkedHashSet<>();
 
         int i = 1;
         for (String message : fixMessages) {
@@ -72,19 +73,12 @@ public class FixTransposedTableModel extends AbstractTableModel {
 
             Map<String, Integer> counts = new LinkedHashMap<>();
             for (TagValue tv : pairs) {
-                counts.merge(tv.tag, 1, Integer::sum);
-                maxOcc.put(tv.tag, Math.max(maxOcc.getOrDefault(tv.tag, 0), counts.get(tv.tag)));
-                if (!firstOrder.contains(tv.tag)) firstOrder.add(tv.tag);
-            }
-        }
-
-        tagOrder = new ArrayList<>();
-        for (String tag : firstOrder) {
-            int occ = maxOcc.getOrDefault(tag, 1);
-            for (int j = 1; j <= occ; j++) {
-                String rowId = tag + "#" + j;
-                tagOrder.add(rowId);
-                transposed.put(rowId, new LinkedHashMap<>());
+                int occ = counts.merge(tv.tag, 1, Integer::sum);
+                String rowId = tv.tag + "#" + occ;
+                if (seenRows.add(rowId)) {
+                    tagOrder.add(rowId);
+                    transposed.put(rowId, new LinkedHashMap<>());
+                }
             }
         }
 
