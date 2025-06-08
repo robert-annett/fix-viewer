@@ -50,12 +50,18 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         tabbedPane.addTab("Text View", textEditor.getComponent());
 
         List<String> messages = Arrays.asList(document.getText().split("\\R+"));
-        tablePanel = new FixTransposedTablePanel(messages, (msgId, tag, newValue) -> WriteCommandAction.runWriteCommandAction(project, () -> {
+        tablePanel = new FixTransposedTablePanel(messages, (msgId, tag, occurrence, newValue) -> WriteCommandAction.runWriteCommandAction(project, () -> {
             String[] lines = document.getText().split("\\R+");
             int msgIndex = Integer.parseInt(msgId.replace("Message ", "")) - 1;
             if (msgIndex < 0 || msgIndex >= lines.length) return;
             String message = lines[msgIndex];
-            int tagIndex = message.indexOf(tag + "=");
+            int tagIndex = -1;
+            int fromIndex = 0;
+            for (int occ = 1; occ <= occurrence; occ++) {
+                tagIndex = message.indexOf(tag + "=", fromIndex);
+                if (tagIndex < 0) break;
+                fromIndex = tagIndex + 1;
+            }
             if (tagIndex < 0) return;
             int valueStart = tagIndex + (tag + "=").length();
             int valueEnd = valueStart;
