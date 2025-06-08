@@ -33,5 +33,5 @@ public final class FixDictionaryCache {
 
         return FixTagDictionary.fromBuiltInVersion(fixVersion);
     }
-    
+
 }
