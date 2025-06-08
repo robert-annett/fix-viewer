@@ -71,3 +71,4 @@
 
 - Some build issues and warnings
 - Fixed some exceptions when data not found that crashed the plugin.
+- Stopped the removal of duplicates from the transposed view
