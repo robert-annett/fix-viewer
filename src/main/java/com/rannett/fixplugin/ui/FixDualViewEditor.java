@@ -35,6 +35,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private final JPanel mainPanel;
     private final JTabbedPane tabbedPane;
     private final FixTransposedTablePanel tablePanel;
+    private final FixMessageTreePanel treePanel;
     private final Document document;
     private final VirtualFile file;
     private Integer pendingCaretOffset = null;
@@ -71,6 +72,9 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             document.replaceString(lineStartOffset + valueStart, lineStartOffset + valueEnd, newValue);
         }), project);
         tabbedPane.addTab("Transposed Table", tablePanel);
+
+        treePanel = new FixMessageTreePanel(messages, project);
+        tabbedPane.addTab("Tree View", treePanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         // Full rebuild and revalidation on document change
@@ -80,6 +84,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 SwingUtilities.invokeLater(() -> {
                     List<String> updatedMessages = Arrays.asList(document.getText().split("\\R+"));
                     tablePanel.updateTable(updatedMessages);
+                    treePanel.updateTree(updatedMessages);
                 });
             }
         });
@@ -164,7 +169,10 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
-        return tabbedPane.getSelectedIndex() == 0 ? textEditor.getPreferredFocusedComponent() : tablePanel;
+        int index = tabbedPane.getSelectedIndex();
+        if (index == 0) return textEditor.getPreferredFocusedComponent();
+        if (index == 1) return tablePanel;
+        return treePanel;
     }
 
     @Override

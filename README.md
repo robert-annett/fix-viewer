@@ -22,13 +22,13 @@ fields for different messages will be shown in the same row, making comparison e
   single character.
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 - **Transposed View** to make reading messages easier
+- **Tree View** to navigate message structure
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 
 ## Coming Soon
 
-- **Structural parsing and navigation** of FIX fields
 - **Repeating Groups** highlighting and structure
 
 ---
