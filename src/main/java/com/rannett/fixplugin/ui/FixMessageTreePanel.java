@@ -1,5 +1,6 @@
 package com.rannett.fixplugin.ui;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
 import com.rannett.fixplugin.util.FixUtils;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public class FixMessageTreePanel extends JPanel {
 
+    private static final Logger LOG = Logger.getInstance(FixMessageTreePanel.class);
     private JTree tree;
     private String fixVersion;
     private final Project project;
@@ -73,7 +75,8 @@ public class FixMessageTreePanel extends JPanel {
                 msgNode.add(trailerNode);
 
             } catch (Exception e) {
-                msgNode.add(new DefaultMutableTreeNode("Parse error"));
+                LOG.warn("Failed to parse FIX message: " + message, e);
+                msgNode.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
             }
             root.add(msgNode);
         }
