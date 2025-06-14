@@ -20,6 +20,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
     private List<String> columnHeaders;
     private List<String> tagOrder;
     private Map<String, Map<String, String>> transposed;
+    private Map<String, String> tagNames;
     private String fixVersion;
     private final DocumentUpdater documentUpdater;
     private final Project project;
@@ -53,8 +54,13 @@ public class FixTransposedTableModel extends AbstractTableModel {
     private void buildModel(List<String> fixMessages) {
         columnHeaders = new ArrayList<>();
         transposed = new LinkedHashMap<>();
+        tagNames = new LinkedHashMap<>();
         String version = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
         fixVersion = version != null ? version : "FIX.4.2";
+        FixTagDictionary dictionary = null;
+        if (project != null) {
+            dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
+        }
 
         List<List<TagValue>> parsed = new ArrayList<>();
         // Maintain the order of tag occurrences as they first appear across all messages
@@ -78,6 +84,10 @@ public class FixTransposedTableModel extends AbstractTableModel {
                 if (seenRows.add(rowId)) {
                     tagOrder.add(rowId);
                     transposed.put(rowId, new LinkedHashMap<>());
+                    if (dictionary != null) {
+                        String name = dictionary.getTagName(tv.tag);
+                        if (name != null) tagNames.put(rowId, name);
+                    }
                 }
             }
         }
@@ -126,9 +136,17 @@ public class FixTransposedTableModel extends AbstractTableModel {
         String tag = rowId.contains("#") ? rowId.substring(0, rowId.indexOf('#')) : rowId;
         if (columnIndex == 0) return tag;
         if (columnIndex == 1) {
-            FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
-            String tagName = dictionary.getTagName(tag);
-            return tagName != null ? tagName : "";  // Show empty string instead of null
+            String name = tagNames.get(rowId);
+            if (name != null) return name;
+            FixTagDictionary dictionary = null;
+            if (project != null) {
+                dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
+                name = dictionary.getTagName(tag);
+                if (name != null) {
+                    tagNames.put(rowId, name);
+                }
+            }
+            return name != null ? name : "";  // Show empty string instead of null
         }
         String msgId = columnHeaders.get(columnIndex - 2);
         return transposed.getOrDefault(rowId, Collections.emptyMap()).getOrDefault(msgId, "");
