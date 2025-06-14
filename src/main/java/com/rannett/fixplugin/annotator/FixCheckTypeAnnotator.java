@@ -38,7 +38,7 @@ public class FixCheckTypeAnnotator implements Annotator {
 
         // Retrieve the version from the containing file or fallback
         PsiElement fileElement = element.getContainingFile();
-        String version = FixUtils.extractFixVersion(fileElement.getText()).orElse("FIX.4.2"); // Fallback default
+        String version = FixUtils.extractFixVersion(fileElement.getText()).orElse("FIXT.1.1"); // Fallback default
 
 
         FixTagDictionary dictionary = element.getProject().getService(FixDictionaryCache.class).getDictionary(version);

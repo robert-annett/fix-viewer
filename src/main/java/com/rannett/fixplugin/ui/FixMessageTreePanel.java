@@ -46,7 +46,7 @@ public class FixMessageTreePanel extends JPanel {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Messages");
 
         fixVersion = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
-        if (fixVersion == null) fixVersion = "FIX.4.2";
+        if (fixVersion == null) fixVersion = "FIXT.1.1";
 
         DataDictionary dd = loadDataDictionary(fixVersion);
 

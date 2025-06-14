@@ -54,7 +54,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
         columnHeaders = new ArrayList<>();
         transposed = new LinkedHashMap<>();
         String version = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
-        fixVersion = version != null ? version : "FIX.4.2";
+        fixVersion = version != null ? version : "FIXT.1.1";
 
         List<List<TagValue>> parsed = new ArrayList<>();
         // Maintain the order of tag occurrences as they first appear across all messages
