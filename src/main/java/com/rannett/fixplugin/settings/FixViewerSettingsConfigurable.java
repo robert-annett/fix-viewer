@@ -6,6 +6,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import org.jetbrains.annotations.Nls;
@@ -44,7 +45,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
         versionTable = new JBTable(tableModel);
 
         // Setup file chooser descriptor
-        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor()
+        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleLocalFileDescriptor()
                 .withTitle("Select Custom Dictionary")
                 .withDescription("Choose an XML or JSON dictionary file.");
 
@@ -69,7 +70,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
                         JTextField versionField = new JTextField(currentVersion);
                         TextFieldWithBrowseButton fileField = new TextFieldWithBrowseButton();
                         fileField.setText(currentPath);
-                        fileField.addBrowseFolderListener("Select Custom Dictionary", null, project, fileDescriptor);
+                        fileField.addBrowseFolderListener(new TextBrowseFolderListener(fileDescriptor, project));
 
                         panel.add(new JLabel("FIX Version:"));
                         panel.add(versionField);
