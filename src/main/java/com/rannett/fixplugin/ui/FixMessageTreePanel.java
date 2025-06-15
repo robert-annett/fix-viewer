@@ -49,14 +49,14 @@ public class FixMessageTreePanel extends JPanel {
 
         DataDictionary dd = FixMessageParser.loadDataDictionary(fixVersion, project);
 
-        int i = 1;
         for (String message : fixMessages) {
             message = message.strip();
             if (message.isEmpty() || message.startsWith("#")) continue;
-            String msgId = "Message " + i++;
-            DefaultMutableTreeNode msgNode = new DefaultMutableTreeNode(msgId);
+            DefaultMutableTreeNode msgNode;
             try {
                 Message qfMsg = FixMessageParser.parse(message, dd);
+                String label = FixMessageParser.buildMessageLabel(qfMsg, dd);
+                msgNode = new DefaultMutableTreeNode(label);
 
                 DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
                 buildNodes(qfMsg.getHeader(), headerNode, dd);
@@ -71,6 +71,7 @@ public class FixMessageTreePanel extends JPanel {
                 msgNode.add(trailerNode);
 
             } catch (Exception e) {
+                msgNode = new DefaultMutableTreeNode("Parse error");
                 LOG.warn("Failed to parse FIX message: " + message, e);
                 msgNode.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
             }

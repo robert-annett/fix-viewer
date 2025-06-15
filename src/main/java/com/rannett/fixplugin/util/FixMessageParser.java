@@ -7,6 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
 import quickfix.Message;
+import quickfix.FieldMap;
+import quickfix.FieldNotFound;
 
 import java.io.File;
 import java.io.InputStream;
@@ -41,7 +43,20 @@ public final class FixMessageParser {
             }
             return new DataDictionary(version);
         } catch (ConfigError e) {
-            throw new RuntimeException("Failed to load dictionary for " + version, e);
+            // Fallback to FIXT.1.1 if we fail to load the requested dictionary
+            if (!"FIXT.1.1".equals(version)) {
+                try {
+                    return loadDataDictionary("FIXT.1.1", project);
+                } catch (Exception ignored) {
+                    // ignore and fall through
+                }
+            }
+            // Last resort: attempt to load the default dictionary again without throwing
+            try {
+                return new DataDictionary("FIXT.1.1");
+            } catch (ConfigError ignored2) {
+                return null;
+            }
         }
     }
 
@@ -58,5 +73,39 @@ public final class FixMessageParser {
         Message qfMsg = new Message();
         qfMsg.fromString(message, dd, false);
         return qfMsg;
+    }
+
+    /**
+     * Build a descriptive label for the given message using common header fields.
+     */
+    public static String buildMessageLabel(Message msg, DataDictionary dd) {
+        String typeCode = getFieldSafe(msg.getHeader(), 35);
+        String typeName = typeCode != null ? dd.getValueName(35, typeCode) : null;
+        String sender = getFieldSafe(msg.getHeader(), 49);
+        String target = getFieldSafe(msg.getHeader(), 56);
+
+        StringBuilder label = new StringBuilder();
+        if (typeName != null) label.append(typeName);
+        else if (typeCode != null) label.append(typeCode);
+        else label.append("Message");
+
+        if (sender != null || target != null) {
+            label.append(" ");
+            label.append(sender != null ? sender : "?");
+            label.append("->");
+            label.append(target != null ? target : "?");
+        }
+        return label.toString();
+    }
+
+    private static String getFieldSafe(FieldMap map, int tag) {
+        if (map.isSetField(tag)) {
+            try {
+                return map.getString(tag);
+            } catch (FieldNotFound ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 }

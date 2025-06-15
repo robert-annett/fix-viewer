@@ -25,4 +25,22 @@ public class FixMessageParserTest {
         assertEquals("FIX.4.4", m.getHeader().getString(8));
         assertEquals("0", m.getHeader().getString(35));
     }
+
+    @Test
+    public void testBuildMessageLabel() throws Exception {
+        String msg = "8=FIX.4.2|9=65|35=A|49=S|56=T|10=000|";
+        DataDictionary dd = FixMessageParser.loadDataDictionary("FIX.4.2", null);
+        Message m = FixMessageParser.parse(msg, dd);
+        String label = FixMessageParser.buildMessageLabel(m, dd);
+        assertTrue(label.contains("Logon"));
+        assertTrue(label.contains("S->T"));
+    }
+
+    @Test
+    public void testLoadFallbackDictionary() throws Exception {
+        DataDictionary dd = FixMessageParser.loadDataDictionary("NONEXISTENT", null);
+        assertNotNull(dd);
+        Message m = FixMessageParser.parse("8=FIX.5.0|9=12|35=0|10=000|", dd);
+        assertEquals("0", m.getHeader().getString(35));
+    }
 }
