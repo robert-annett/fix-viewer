@@ -2,10 +2,9 @@ package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.rannett.fixplugin.settings.FixViewerSettingsState;
+import com.rannett.fixplugin.util.FixMessageParser;
 import com.rannett.fixplugin.util.FixUtils;
 import org.jetbrains.annotations.NotNull;
-import quickfix.ConfigError;
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
@@ -18,8 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.BorderLayout;
-import java.io.File;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,19 +47,16 @@ public class FixMessageTreePanel extends JPanel {
         fixVersion = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
         if (fixVersion == null) fixVersion = "FIXT.1.1";
 
-        DataDictionary dd = loadDataDictionary(fixVersion);
+        DataDictionary dd = FixMessageParser.loadDataDictionary(fixVersion, project);
 
         int i = 1;
         for (String message : fixMessages) {
-            // Avoid trim() as it would strip the \u0001 delimiter required by
-            // QuickFIX/J. Only remove standard whitespace characters.
             message = message.strip();
             if (message.isEmpty() || message.startsWith("#")) continue;
             String msgId = "Message " + i++;
             DefaultMutableTreeNode msgNode = new DefaultMutableTreeNode(msgId);
             try {
-                Message qfMsg = new Message();
-                qfMsg.fromString(message, dd, true);
+                Message qfMsg = FixMessageParser.parse(message, dd);
 
                 DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
                 buildNodes(qfMsg.getHeader(), headerNode, dd);
@@ -120,23 +114,6 @@ public class FixMessageTreePanel extends JPanel {
         return FixUtils.extractFixVersion(message).orElse(null);
     }
 
-    private DataDictionary loadDataDictionary(@NotNull String version) {
-        FixViewerSettingsState settings = FixViewerSettingsState.getInstance(project);
-        String customPath = settings.getCustomDictionaryPath(version);
-        try {
-            if (customPath != null && !customPath.isEmpty()) {
-                return new DataDictionary(new File(customPath).getAbsolutePath());
-            }
-            String resourcePath = "/dictionaries/" + version + ".xml";
-            InputStream stream = FixMessageTreePanel.class.getResourceAsStream(resourcePath);
-            if (stream != null) {
-                return new DataDictionary(stream);
-            }
-            return new DataDictionary(version);
-        } catch (ConfigError e) {
-            throw new RuntimeException("Failed to load dictionary for " + version, e);
-        }
-    }
 
     public JComponent getTreeComponent() {
         return tree;
