@@ -54,7 +54,9 @@ public class FixMessageTreePanel extends JPanel {
 
         int i = 1;
         for (String message : fixMessages) {
-            message = message.trim();
+            // Avoid trim() as it would strip the \u0001 delimiter required by
+            // QuickFIX/J. Only remove standard whitespace characters.
+            message = message.strip();
             if (message.isEmpty() || message.startsWith("#")) continue;
             String msgId = "Message " + i++;
             DefaultMutableTreeNode msgNode = new DefaultMutableTreeNode(msgId);
