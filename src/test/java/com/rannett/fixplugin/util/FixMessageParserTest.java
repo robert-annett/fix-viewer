@@ -28,12 +28,14 @@ public class FixMessageParserTest {
 
     @Test
     public void testBuildMessageLabel() throws Exception {
-        String msg = "8=FIX.4.2|9=65|35=A|49=S|56=T|10=000|";
+        String msg = "8=FIX.4.2|9=65|35=A|49=S|56=T|34=2|52=20200101-00:00:00.000|10=000|";
         DataDictionary dd = FixMessageParser.loadDataDictionary("FIX.4.2", null);
         Message m = FixMessageParser.parse(msg, dd);
         String label = FixMessageParser.buildMessageLabel(m, dd);
         assertTrue(label.contains("Logon"));
         assertTrue(label.contains("S->T"));
+        assertTrue(label.contains("Seq 2"));
+        assertTrue(label.contains("20200101-00:00:00.000"));
     }
 
     @Test

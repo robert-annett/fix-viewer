@@ -83,6 +83,8 @@ public final class FixMessageParser {
         String typeName = typeCode != null ? dd.getValueName(35, typeCode) : null;
         String sender = getFieldSafe(msg.getHeader(), 49);
         String target = getFieldSafe(msg.getHeader(), 56);
+        String seqNum = getFieldSafe(msg.getHeader(), 34);
+        String sendTime = getFieldSafe(msg.getHeader(), 52);
 
         StringBuilder label = new StringBuilder();
         if (typeName != null) label.append(typeName);
@@ -94,6 +96,17 @@ public final class FixMessageParser {
             label.append(sender != null ? sender : "?");
             label.append("->");
             label.append(target != null ? target : "?");
+        }
+        if (seqNum != null || sendTime != null) {
+            label.append(" [");
+            if (seqNum != null) {
+                label.append("Seq ").append(seqNum);
+            }
+            if (sendTime != null) {
+                if (seqNum != null) label.append(" ");
+                label.append(sendTime);
+            }
+            label.append("]");
         }
         return label.toString();
     }
