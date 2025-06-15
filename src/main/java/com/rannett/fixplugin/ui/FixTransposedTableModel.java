@@ -54,7 +54,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
         columnHeaders = new ArrayList<>();
         transposed = new LinkedHashMap<>();
         String version = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
-        fixVersion = version != null ? version : "FIX.4.2";
+        fixVersion = version != null ? version : "FIXT.1.1";
 
         List<List<TagValue>> parsed = new ArrayList<>();
         // Maintain the order of tag occurrences as they first appear across all messages
@@ -63,7 +63,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
 
         int i = 1;
         for (String message : fixMessages) {
-            message = message.trim();
+            // Preserve any \u0001 delimiters by avoiding trim().
+            // Only strip Unicode whitespace from the ends.
+            message = message.strip();
             if (message.isEmpty() || message.startsWith("#")) continue;
             String msgId = "Message " + i++;
             columnHeaders.add(msgId);

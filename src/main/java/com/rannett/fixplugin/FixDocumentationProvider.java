@@ -52,7 +52,7 @@ public class FixDocumentationProvider implements DocumentationProvider {
         PsiFile file = element.getContainingFile();
         String version = getOrComputeVersion(file);
         if (version == null) {
-            version = "FIX.4.2"; // Default fallback
+            version = "FIXT.1.1"; // Default fallback
         }
 
         PsiElement parent = element.getParent();
@@ -103,7 +103,7 @@ public class FixDocumentationProvider implements DocumentationProvider {
         }
 
         String text = file.getText();
-        String version = FixUtils.extractFixVersion(text).orElse("FIX.4.2");
+        String version = FixUtils.extractFixVersion(text).orElse("FIXT.1.1");
         file.putUserData(FIX_VERSION_KEY, version);
         return version;
     }
