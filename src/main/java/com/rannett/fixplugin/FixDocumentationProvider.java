@@ -97,6 +97,10 @@ public class FixDocumentationProvider implements DocumentationProvider {
     }
 
     private String getOrComputeVersion(PsiFile file) {
+        if (file == null) {
+            return null;
+        }
+
         String cachedVersion = file.getUserData(FIX_VERSION_KEY);
         if (cachedVersion != null) {
             return cachedVersion;
