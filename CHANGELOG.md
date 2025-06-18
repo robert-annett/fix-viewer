@@ -74,7 +74,14 @@
 
 ## [0.0.11]
 
+### Added
+
+- Treeview based on the groups used within a message
+
+## [0.0.12]
+
 ### Fixed
 
 - NPE when a holding file was not available for a psi element
 - Stopped using an obsolete API
+- Correct tree implementation for a plugin
