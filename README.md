@@ -1,3 +1,7 @@
+Note that this plugin has been written with the help of OpenAI's codex for adding features and solving some bugs.
+This has lead to some inconsistent styling (which is interesting in its own right). PLease be aware of this when
+reading!
+
 <!-- Plugin description -->
 
 # FIX Message Viewer Plugin for IntelliJ

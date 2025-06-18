@@ -71,3 +71,10 @@
 
 - Some build issues and warnings
 - Fixed some exceptions when data not found that crashed the plugin.
+
+## [0.0.11]
+
+### Fixed
+
+- NPE when a holding file was not available for a psi element
+- Stopped using an obsolete API

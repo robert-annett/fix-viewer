@@ -2,16 +2,15 @@ package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.treeStructure.Tree;
 import com.rannett.fixplugin.util.FixMessageParser;
 import com.rannett.fixplugin.util.FixUtils;
-import org.jetbrains.annotations.NotNull;
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
 import quickfix.Group;
 import quickfix.Message;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -27,8 +26,6 @@ import java.util.List;
 public class FixMessageTreePanel extends JPanel {
 
     private static final Logger LOG = Logger.getInstance(FixMessageTreePanel.class);
-    private JTree tree;
-    private String fixVersion;
     private final Project project;
 
     public FixMessageTreePanel(List<String> fixMessages, Project project) {
@@ -44,7 +41,7 @@ public class FixMessageTreePanel extends JPanel {
     private void buildTree(List<String> fixMessages) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Messages");
 
-        fixVersion = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
+        String fixVersion = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
         if (fixVersion == null) fixVersion = "FIXT.1.1";
 
         DataDictionary dd = FixMessageParser.loadDataDictionary(fixVersion, project);
@@ -78,7 +75,7 @@ public class FixMessageTreePanel extends JPanel {
             root.add(msgNode);
         }
 
-        tree = new JTree(root);
+        JTree tree = new Tree(root);
         tree.setRootVisible(false);
 
         removeAll();
@@ -115,9 +112,5 @@ public class FixMessageTreePanel extends JPanel {
         return FixUtils.extractFixVersion(message).orElse(null);
     }
 
-
-    public JComponent getTreeComponent() {
-        return tree;
-    }
 }
 

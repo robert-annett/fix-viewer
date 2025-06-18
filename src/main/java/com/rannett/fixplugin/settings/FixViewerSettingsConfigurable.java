@@ -3,16 +3,20 @@ package com.rannett.fixplugin.settings;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.TextBrowseFolderListener;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +49,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
         versionTable = new JBTable(tableModel);
 
         // Setup file chooser descriptor
-        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleLocalFileDescriptor()
+        FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor()
                 .withTitle("Select Custom Dictionary")
                 .withDescription("Choose an XML or JSON dictionary file.");
 
@@ -71,6 +75,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
                         TextFieldWithBrowseButton fileField = new TextFieldWithBrowseButton();
                         fileField.setText(currentPath);
                         fileField.addBrowseFolderListener(new TextBrowseFolderListener(fileDescriptor, project));
+
 
                         panel.add(new JLabel("FIX Version:"));
                         panel.add(versionField);
@@ -100,7 +105,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
     }
 
     @Override
-    public void apply() throws ConfigurationException {
+    public void apply() {
         settingsState.setCustomDictionaryPaths(tableToMap());
     }
 
