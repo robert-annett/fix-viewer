@@ -24,14 +24,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
     private final DocumentUpdater documentUpdater;
     private final Project project;
 
-    private static class TagValue {
-        final String tag;
-        final String value;
-
-        TagValue(String tag, String value) {
-            this.tag = tag;
-            this.value = value;
-        }
+    private record TagValue(String tag, String value) {
     }
 
     public FixTransposedTableModel(List<String> fixMessages, DocumentUpdater updater, Project project) {
@@ -176,7 +169,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
     public String getMessageIdForColumn(int columnIndex) {
         if (columnIndex < 2) return null;
         int modelIndex = columnIndex - 2;
-        return modelIndex >= 0 && modelIndex < columnHeaders.size() ? columnHeaders.get(modelIndex) : null;
+        return modelIndex < columnHeaders.size() ? columnHeaders.get(modelIndex) : null;
     }
 
     public String getFixVersion() {

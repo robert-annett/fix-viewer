@@ -1,6 +1,5 @@
 package com.rannett.fixplugin;
 
-import com.intellij.lang.documentation.DocumentationProvider;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
@@ -12,7 +11,7 @@ import com.rannett.fixplugin.util.FixUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FixDocumentationProvider implements DocumentationProvider {
+public class FixDocumentationProvider extends com.intellij.lang.documentation.AbstractDocumentationProvider {
 
     private static final Key<String> FIX_VERSION_KEY = Key.create("FIX_VERSION_CACHE");
 

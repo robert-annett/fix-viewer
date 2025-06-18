@@ -6,9 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import quickfix.ConfigError;
 import quickfix.DataDictionary;
-import quickfix.Message;
 import quickfix.FieldMap;
 import quickfix.FieldNotFound;
+import quickfix.Message;
 
 import java.io.File;
 import java.io.InputStream;
@@ -18,11 +18,12 @@ import java.io.InputStream;
  */
 public final class FixMessageParser {
 
-    private FixMessageParser() {}
+    private FixMessageParser() {
+    }
 
     /**
      * Load a {@link DataDictionary} for the given FIX version. If a project is provided,
-     * its settings will be consulted for custom dictionary paths. Otherwise only the
+     * its settings will be consulted for custom dictionary paths. Otherwise, only the
      * built-in dictionaries are used.
      */
     public static DataDictionary loadDataDictionary(@NotNull String version, @Nullable Project project) {

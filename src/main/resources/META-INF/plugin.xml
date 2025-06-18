@@ -37,7 +37,8 @@
         <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
         <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixCheckTypeAnnotator"/>
 
-        <documentationProvider language="Fix" implementation="com.rannett.fixplugin.FixDocumentationProvider"/>
+        <lang.documentationProvider language="Fix"
+                                    implementationClass="com.rannett.fixplugin.FixDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
 
