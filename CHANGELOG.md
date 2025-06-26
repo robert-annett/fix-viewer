@@ -2,6 +2,8 @@
 
 # fix-plugin2 Changelog
 
+## [Unreleased]
+
 ## [0.0.1]
 
 ### Added
