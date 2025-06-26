@@ -172,6 +172,13 @@ public class FixTransposedTablePanel extends JPanel {
         }
     }
 
+    public void resetFilters() {
+        filteredTags.clear();
+        sorter.setRowFilter(null);
+        sorter.setSortKeys(null);
+        sorter.sort();
+    }
+
     public void setOnCellSelected(Runnable callback) {
         this.onCellSelectedCallback = callback;
     }
@@ -271,6 +278,10 @@ public class FixTransposedTablePanel extends JPanel {
         JMenuItem filterTags = new JMenuItem("Filter Tags...");
         filterTags.addActionListener(ae -> showTagFilterDialog());
         menu.add(filterTags);
+
+        JMenuItem resetFilters = new JMenuItem("Reset Filters");
+        resetFilters.addActionListener(ae -> resetFilters());
+        menu.add(resetFilters);
 
         if (columnIndex >= 2) {
             JMenuItem compareWith = new JMenuItem("Compare With...");
