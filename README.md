@@ -30,6 +30,7 @@ fields for different messages will be shown in the same row, making comparison e
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
+- **Side-by-side diff viewer** for comparing two messages
 
 ## Coming Soon
 
