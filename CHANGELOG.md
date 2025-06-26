@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Display enum descriptions alongside field names in the tree view
+
 ## [0.0.1]
 
 ### Added
