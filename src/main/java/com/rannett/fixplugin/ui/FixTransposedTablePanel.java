@@ -27,6 +27,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -36,6 +38,8 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 public class FixTransposedTablePanel extends JPanel {
     private final FixTransposedTableModel model;
@@ -44,6 +48,8 @@ public class FixTransposedTablePanel extends JPanel {
     private final List<TableColumn> allColumns = new ArrayList<>();
     private final Project project;
     private List<String> messages;
+    private final TableRowSorter<FixTransposedTableModel> sorter;
+    private Set<String> filteredTags = new LinkedHashSet<>();
 
     public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater, Project project) {
         super(new BorderLayout());
@@ -52,6 +58,8 @@ public class FixTransposedTablePanel extends JPanel {
         model = new FixTransposedTableModel(fixMessages, updater, project);
         table = new JBTable(model);
         table.setFillsViewportHeight(true);
+        sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
 
         // Custom renderer to show value + description
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -145,6 +153,30 @@ public class FixTransposedTablePanel extends JPanel {
     public void updateTable(List<String> fixMessages) {
         this.messages = new ArrayList<>(fixMessages);
         model.updateMessages(fixMessages);
+        applyTagFilter(filteredTags);
+    }
+
+    public void applyTagFilter(Set<String> tags) {
+        filteredTags = new LinkedHashSet<>(tags);
+        if (filteredTags.isEmpty()) {
+            sorter.setRowFilter(null);
+        } else {
+            sorter.setRowFilter(new RowFilter<>() {
+                @Override
+                public boolean include(Entry<? extends FixTransposedTableModel, ? extends Integer> entry) {
+                    String tag = entry.getStringValue(0);
+                    String name = entry.getStringValue(1);
+                    return filteredTags.contains(tag) || (name != null && filteredTags.contains(name));
+                }
+            });
+        }
+    }
+
+    public void resetFilters() {
+        filteredTags.clear();
+        sorter.setRowFilter(null);
+        sorter.setSortKeys(null);
+        sorter.sort();
     }
 
     public void setOnCellSelected(Runnable callback) {
@@ -175,12 +207,33 @@ public class FixTransposedTablePanel extends JPanel {
         }
     }
 
+    public Set<String> getAllTags() {
+        Set<String> tags = new LinkedHashSet<>();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            tags.add(model.getTagAtRow(i));
+        }
+        return tags;
+    }
+
     public void highlightTagCell(String tag, String messageId) {
         int row = model.getRowForTag(tag);
         int col = model.getColumnForMessageId(messageId);
-        if (row >= 0 && col >= 0) table.changeSelection(row, col, false, false);
-        else if (row >= 0) table.setRowSelectionInterval(row, row);
-        else table.clearSelection();
+        if (row >= 0 && col >= 0) {
+            int viewRow = table.convertRowIndexToView(row);
+            int viewCol = table.convertColumnIndexToView(col);
+            if (viewRow >= 0 && viewCol >= 0) {
+                table.changeSelection(viewRow, viewCol, false, false);
+                return;
+            }
+        }
+        if (row >= 0) {
+            int viewRow = table.convertRowIndexToView(row);
+            if (viewRow >= 0) {
+                table.setRowSelectionInterval(viewRow, viewRow);
+                return;
+            }
+        }
+        table.clearSelection();
     }
 
     public void clearHighlight() {
@@ -221,6 +274,14 @@ public class FixTransposedTablePanel extends JPanel {
         JMenuItem showAllColumns = new JMenuItem("Show All Columns");
         showAllColumns.addActionListener(ae -> showAllColumns());
         menu.add(showAllColumns);
+
+        JMenuItem filterTags = new JMenuItem("Filter Tags...");
+        filterTags.addActionListener(ae -> showTagFilterDialog());
+        menu.add(filterTags);
+
+        JMenuItem resetFilters = new JMenuItem("Reset Filters");
+        resetFilters.addActionListener(ae -> resetFilters());
+        menu.add(resetFilters);
 
         if (columnIndex >= 2) {
             JMenuItem compareWith = new JMenuItem("Compare With...");
@@ -312,6 +373,14 @@ public class FixTransposedTablePanel extends JPanel {
         var content2 = contentFactory.create(project, text2, FixFileType.INSTANCE);
         var request = new SimpleDiffRequest("Compare FIX Messages", content1, content2, firstId, secondId);
         DiffManager.getInstance().showDiff(project, request);
+    }
+
+    private void showTagFilterDialog() {
+        Set<String> allTags = getAllTags();
+        TagFilterDialog dialog = new TagFilterDialog(project, allTags, filteredTags, model.getFixVersion());
+        if (dialog.showAndGet()) {
+            applyTagFilter(dialog.getSelectedTags());
+        }
     }
 
     private boolean isColumnMissing(TableColumnModel columnModel, TableColumn column) {
