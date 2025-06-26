@@ -6,6 +6,10 @@
 ### Added
 - Side-by-side comparison of FIX messages using IntelliJ diff viewer
 
+### Added
+
+- Display enum descriptions alongside field names in the tree view
+
 ## [0.0.1]
 
 ### Added

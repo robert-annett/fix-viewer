@@ -90,7 +90,18 @@ public class FixMessageTreePanel extends JPanel {
             int tag = field.getTag();
             String name = dd.getFieldName(tag);
             String value = String.valueOf(field.getObject());
-            parent.add(new DefaultMutableTreeNode(tag + "=" + value + (name != null ? " (" + name + ")" : "")));
+            String enumName = dd.getValueName(tag, value);
+
+            StringBuilder label = new StringBuilder();
+            label.append(tag).append("=").append(value);
+            if (name != null) {
+                label.append(" (").append(name);
+                if (enumName != null) {
+                    label.append("=").append(enumName);
+                }
+                label.append(")");
+            }
+            parent.add(new DefaultMutableTreeNode(label.toString()));
         }
 
         Iterator<Integer> groupKeys = map.groupKeyIterator();
