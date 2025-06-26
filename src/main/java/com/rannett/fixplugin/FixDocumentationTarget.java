@@ -1,7 +1,5 @@
 package com.rannett.fixplugin;
 
-import com.intellij.lang.documentation.DocumentationImageResolver;
-import com.intellij.lang.documentation.DocumentationProvider;
 import com.intellij.model.Pointer;
 import com.intellij.openapi.project.Project;
 import com.intellij.pom.Navigatable;
