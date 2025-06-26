@@ -1,5 +1,5 @@
 Note that this plugin has been written with the help of OpenAI's codex for adding features and solving some bugs.
-This has lead to some inconsistent styling (which is interesting in its own right). PLease be aware of this when
+This has lead to some inconsistent styling (which is interesting). Please be aware of this when
 reading!
 
 <!-- Plugin description -->
@@ -20,13 +20,13 @@ fields for different messages will be shown in the same row, making comparison e
 
 - **Syntax highlighting** for FIX messages with clear colour-coding of tags, values, and delimiters
 - **Live checksum validation and highlighting** for the `10=` tag
-- **Quick-fix actions** to auto-correct invalid checksums
+- **Quick-fix actions** to autocorrect invalid checksums
 - **Annotate invalid characters** when included in a FIX message.
 - **Syntax highlighting** for invalid values for FIX types. e.g. INT cannot contain non-numbers and CHAR must be a
   single character.
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
-- **Transposed View** to make reading messages easier
-- **Tree View** to navigate message structure
+- **Transposed View** to make reading messages easier including filtering and field selection
+- **Tree View** to navigate message structure including groups
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.

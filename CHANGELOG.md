@@ -3,12 +3,6 @@
 # fix-plugin2 Changelog
 
 ## [Unreleased]
-### Added
-- Side-by-side comparison of FIX messages using IntelliJ diff viewer
-
-### Added
-
-- Display enum descriptions alongside field names in the tree view
 
 ## [0.0.1]
 
@@ -91,3 +85,11 @@
 - NPE when a holding file was not available for a psi element
 - Stopped using an obsolete API
 - Correct tree implementation for a plugin
+
+## [0.0.13]
+
+### Added
+
+- Side-by-side comparison of FIX messages using IntelliJ diff viewer
+- Display enum descriptions alongside field names in the tree view
+- Filtering in the transposed table view and ability to reset filtering and ordering.
