@@ -1,8 +1,13 @@
 package com.rannett.fixplugin.ui;
 
+import com.intellij.diff.DiffContentFactory;
+import com.intellij.diff.DiffManager;
+import com.intellij.diff.requests.SimpleDiffRequest;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.table.JBTable;
+import com.rannett.fixplugin.FixFileType;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 
@@ -37,9 +42,13 @@ public class FixTransposedTablePanel extends JPanel {
     private final JBTable table;
     private Runnable onCellSelectedCallback;
     private final List<TableColumn> allColumns = new ArrayList<>();
+    private final Project project;
+    private List<String> messages;
 
     public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater, Project project) {
         super(new BorderLayout());
+        this.project = project;
+        this.messages = new ArrayList<>(fixMessages);
         model = new FixTransposedTableModel(fixMessages, updater, project);
         table = new JBTable(model);
         table.setFillsViewportHeight(true);
@@ -134,6 +143,7 @@ public class FixTransposedTablePanel extends JPanel {
     }
 
     public void updateTable(List<String> fixMessages) {
+        this.messages = new ArrayList<>(fixMessages);
         model.updateMessages(fixMessages);
     }
 
@@ -153,6 +163,16 @@ public class FixTransposedTablePanel extends JPanel {
     public String getSelectedMessageId() {
         int col = table.getSelectedColumn();
         return col >= 2 ? model.getMessageIdForColumn(col) : null;
+    }
+
+    public String getMessageText(String messageId) {
+        if (messageId == null || !messageId.startsWith("Message ")) return "";
+        try {
+            int idx = Integer.parseInt(messageId.substring(8)) - 1;
+            return (idx >= 0 && idx < messages.size()) ? messages.get(idx) : "";
+        } catch (NumberFormatException ignore) {
+            return "";
+        }
     }
 
     public void highlightTagCell(String tag, String messageId) {
@@ -201,6 +221,12 @@ public class FixTransposedTablePanel extends JPanel {
         JMenuItem showAllColumns = new JMenuItem("Show All Columns");
         showAllColumns.addActionListener(ae -> showAllColumns());
         menu.add(showAllColumns);
+
+        if (columnIndex >= 2) {
+            JMenuItem compareWith = new JMenuItem("Compare With...");
+            compareWith.addActionListener(ae -> showCompareDialog(columnIndex));
+            menu.add(compareWith);
+        }
 
         menu.show(e.getComponent(), e.getX(), e.getY());
     }
@@ -254,6 +280,38 @@ public class FixTransposedTablePanel extends JPanel {
                 columnModel.addColumn(column);
             }
         }
+    }
+
+    private void showCompareDialog(int columnIndex) {
+        String firstId = model.getMessageIdForColumn(columnIndex);
+        if (firstId == null) return;
+        TableColumnModel columnModel = table.getColumnModel();
+        List<String> options = new ArrayList<>();
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            if (i == columnIndex) continue;
+            String id = model.getMessageIdForColumn(i);
+            if (id != null) options.add(id);
+        }
+        if (options.isEmpty()) return;
+
+        String secondId = Messages.showEditableChooseDialog(
+                "Select message to compare with",
+                "Compare Messages",
+                null,
+                options.toArray(new String[0]),
+                options.get(0),
+                null
+        );
+        if (secondId == null) return;
+
+        String text1 = getMessageText(firstId);
+        String text2 = getMessageText(secondId);
+
+        var contentFactory = DiffContentFactory.getInstance();
+        var content1 = contentFactory.create(project, text1, FixFileType.INSTANCE);
+        var content2 = contentFactory.create(project, text2, FixFileType.INSTANCE);
+        var request = new SimpleDiffRequest("Compare FIX Messages", content1, content2, firstId, secondId);
+        DiffManager.getInstance().showDiff(project, request);
     }
 
     private boolean isColumnMissing(TableColumnModel columnModel, TableColumn column) {

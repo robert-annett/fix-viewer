@@ -3,6 +3,8 @@
 # fix-plugin2 Changelog
 
 ## [Unreleased]
+### Added
+- Side-by-side comparison of FIX messages using IntelliJ diff viewer
 
 ## [0.0.1]
 
