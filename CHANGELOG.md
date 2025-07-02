@@ -3,6 +3,7 @@
 # fix-plugin2 Changelog
 
 ## [Unreleased]
+- Added language injection for FIX messages embedded in code strings
 
 ## [0.0.1]
 
