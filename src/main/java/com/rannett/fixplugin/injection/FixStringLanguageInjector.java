@@ -18,10 +18,10 @@ import java.util.List;
  */
 public class FixStringLanguageInjector implements MultiHostInjector {
 
-    @Override
     /**
      * Inject the Fix language into a string literal if the text resembles a FIX message.
      */
+    @Override
     public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
         if (!(context instanceof PsiLanguageInjectionHost host) || !host.isValidHost()) {
             return;
@@ -35,7 +35,7 @@ public class FixStringLanguageInjector implements MultiHostInjector {
         // Strip common quoting characters
         char first = text.charAt(0);
         char last = text.charAt(text.length() - 1);
-        if ((first == '"' || first == '\'') && first == last && text.length() > 1) {
+        if ((first == '"' || first == '\'') && first == last ) {
             text = text.substring(1, text.length() - 1);
         }
 
@@ -55,11 +55,11 @@ public class FixStringLanguageInjector implements MultiHostInjector {
         registrar.doneInjecting();
     }
 
-    @Override
     /**
      * Specify that all {@link PsiLanguageInjectionHost} elements may be processed
      * for potential injection.
      */
+    @Override
     public @NotNull List<Class<? extends PsiElement>> elementsToInjectIn() {
         return List.of(PsiLanguageInjectionHost.class);
     }
