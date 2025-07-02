@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 - Added language injection for FIX messages embedded in code strings
+- Added tests for language injection
 
 ## [0.0.1]
 
