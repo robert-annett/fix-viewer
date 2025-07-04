@@ -6,6 +6,10 @@
 - Added language injection for FIX messages embedded in code strings
 - Added tests for language injection
 
+### Added
+
+- Support for extended precision UTCTimestamps with optional trailing `Z`.
+
 ## [0.0.1]
 
 ### Added

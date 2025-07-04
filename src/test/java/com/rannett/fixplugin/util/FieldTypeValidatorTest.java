@@ -89,6 +89,7 @@ public class FieldTypeValidatorTest {
     public void testValidUTCTimestamp() {
         assertTrue(FieldTypeValidator.isValueValidForType("UTCTimestamp", "20240531-15:20:30"));
         assertTrue(FieldTypeValidator.isValueValidForType("UTCTimestamp", "20240531-15:20:30.123"));
+        assertTrue(FieldTypeValidator.isValueValidForType("UTCTimestamp", "20241011-12:45:18.938000000Z"));
     }
 
     @Test
