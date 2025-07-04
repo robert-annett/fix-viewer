@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Support for extended precision UTCTimestamps with optional trailing `Z`.
+
 ## [0.0.1]
 
 ### Added

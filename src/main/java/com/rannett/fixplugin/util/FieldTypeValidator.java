@@ -36,7 +36,7 @@ public class FieldTypeValidator {
                 return value.matches("^(\\d{4}(0[1-9]|1[0-2]))" +  // YYYYMM
                         "((0[1-9]|[12][0-9]|3[01])|(w[1-5]))?$");  // Optional DD or w1-w5
             case "UTCTIMESTAMP":
-                return value.matches("^\\d{8}-\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$");
+                return value.matches("^\\d{8}-\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?[Zz]?$");
             case "UTCTIMEONLY":
                 return value.matches("^\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?$");
             case "UTCDATEONLY":
