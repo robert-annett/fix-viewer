@@ -31,6 +31,7 @@ fields for different messages will be shown in the same row, making comparison e
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 - **Side-by-side diff viewer** for comparing two messages
+- **Language injection** for FIX messages embedded in code strings
 
 ## Coming Soon
 

@@ -42,6 +42,9 @@
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
 
+        <multiHostInjector
+                implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
+
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable
