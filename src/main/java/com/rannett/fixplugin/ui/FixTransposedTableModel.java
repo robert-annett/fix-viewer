@@ -3,6 +3,10 @@ package com.rannett.fixplugin.ui;
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import quickfix.field.EncodedSecurityDesc;
+import quickfix.field.EncodedSecurityDescLen;
+import quickfix.field.XmlData;
+import quickfix.field.XmlDataLen;
 
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -15,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import quickfix.field.EncodedSecurityDesc;
+import quickfix.field.EncodedSecurityDescLen;
+import quickfix.field.XmlData;
+import quickfix.field.XmlDataLen;
 
 public class FixTransposedTableModel extends AbstractTableModel {
     private List<String> columnHeaders;
@@ -38,8 +46,11 @@ public class FixTransposedTableModel extends AbstractTableModel {
         int oldColCount = getColumnCount();
         buildModel(fixMessages);
         SwingUtilities.invokeLater(() -> {
-            if (getRowCount() != oldRowCount || getColumnCount() != oldColCount) fireTableStructureChanged();
-            else fireTableDataChanged();
+            if (getRowCount() != oldRowCount || getColumnCount() != oldColCount) {
+                fireTableStructureChanged();
+            } else {
+                fireTableDataChanged();
+            }
         });
     }
 
@@ -59,7 +70,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
             // Preserve any \u0001 delimiters by avoiding trim().
             // Only strip Unicode whitespace from the ends.
             message = message.strip();
-            if (message.isEmpty() || message.startsWith("#")) continue;
+            if (message.isEmpty() || message.startsWith("#")) {
+                continue;
+            }
             String msgId = "Message " + i++;
             columnHeaders.add(msgId);
 
@@ -95,10 +108,11 @@ public class FixTransposedTableModel extends AbstractTableModel {
     /**
      * Parse a FIX message into tag/value pairs while preserving embedded data.
      * <p>
-     * Certain FIX fields such as {@code 213} (XMLData) and {@code 351}
-     * (EncodedSecurityDesc) may contain XML that itself includes delimiter
-     * characters. These fields are preceded by a length tag ({@code 212} or
-     * {@code 350}) specifying how many characters to read. This method keeps
+     * Certain FIX fields such as {@code XmlData.FIELD} and
+     * {@code EncodedSecurityDesc.FIELD} may contain XML that itself includes
+     * delimiter characters. These fields are preceded by a length tag
+     * ({@code XmlDataLen.FIELD} or {@code EncodedSecurityDescLen.FIELD})
+     * specifying how many characters to read. This method keeps
      * track of these lengths so that the embedded XML is extracted correctly.
      *
      * @param msg raw FIX message using either {@code |} or SOH as delimiters
@@ -111,9 +125,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
         // Cursor into the raw message string
         int index = 0;
 
-        // When a length field (212 or 350) is encountered the following tag
-        // will contain raw data of this length. 'expectedLength' holds the
-        // number of characters to read and 'dataTag' stores the tag number
+        // When a length field (XmlDataLen or EncodedSecurityDescLen) is encountered
+        // the following tag will contain raw data of this length. 'expectedLength'
+        // holds the number of characters to read and 'dataTag' stores the tag number
         // that should receive that data.
         int expectedLength = -1;
         String dataTag = null;
@@ -155,19 +169,19 @@ public class FixTransposedTableModel extends AbstractTableModel {
             index = delimPos + 1; // skip the delimiter
 
             // Check for length fields that signal the next tag contains raw data
-            if ("212".equals(tag)) { // XMLDataLen
+            if (String.valueOf(XmlDataLen.FIELD).equals(tag)) { // XMLDataLen
                 try {
                     expectedLength = Integer.parseInt(value);
-                    dataTag = "213"; // XMLData follows
+                    dataTag = String.valueOf(XmlData.FIELD); // XMLData follows
                 } catch (NumberFormatException ignore) {
                     // Invalid length values are treated as normal fields
                     expectedLength = -1;
                     dataTag = null;
                 }
-            } else if ("350".equals(tag)) { // EncodedSecurityDescLen
+            } else if (String.valueOf(EncodedSecurityDescLen.FIELD).equals(tag)) { // EncodedSecurityDescLen
                 try {
                     expectedLength = Integer.parseInt(value);
-                    dataTag = "351"; // EncodedSecurityDesc follows
+                    dataTag = String.valueOf(EncodedSecurityDesc.FIELD); // EncodedSecurityDesc follows
                 } catch (NumberFormatException ignore) {
                     expectedLength = -1;
                     dataTag = null;
@@ -182,10 +196,16 @@ public class FixTransposedTableModel extends AbstractTableModel {
         int pipe = msg.indexOf('|', start);
         int soh = msg.indexOf('\u0001', start);
         int end = -1;
-        if (pipe == -1) end = soh;
-        else if (soh == -1) end = pipe;
-        else end = Math.min(pipe, soh);
-        if (end == -1) end = msg.length();
+        if (pipe == -1) {
+            end = soh;
+        } else if (soh == -1) {
+            end = pipe;
+        } else {
+            end = Math.min(pipe, soh);
+        }
+        if (end == -1) {
+            end = msg.length();
+        }
         return end;
     }
 
@@ -208,7 +228,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         String rowId = tagOrder.get(rowIndex);
         String tag = rowId.contains("#") ? rowId.substring(0, rowId.indexOf('#')) : rowId;
-        if (columnIndex == 0) return tag;
+        if (columnIndex == 0) {
+            return tag;
+        }
         if (columnIndex == 1) {
             FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
             String tagName = dictionary.getTagName(tag);
@@ -230,7 +252,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
         String tag = rowId.contains("#") ? rowId.substring(0, rowId.indexOf('#')) : rowId;
         int occurrence = 1;
         int hashIndex = rowId.indexOf('#');
-        if (hashIndex >= 0) occurrence = Integer.parseInt(rowId.substring(hashIndex + 1));
+        if (hashIndex >= 0) {
+            occurrence = Integer.parseInt(rowId.substring(hashIndex + 1));
+        }
         String msgId = columnHeaders.get(columnIndex - 2);
         String newValue = aValue.toString();
         transposed.get(rowId).put(msgId, newValue);
@@ -240,7 +264,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
 
     public int getRowForTag(String tag) {
         for (int i = 0; i < tagOrder.size(); i++) {
-            if (getTagAtRow(i).equals(tag)) return i;
+            if (getTagAtRow(i).equals(tag)) {
+                return i;
+            }
         }
         return -1;
     }
@@ -256,7 +282,9 @@ public class FixTransposedTableModel extends AbstractTableModel {
     }
 
     public String getMessageIdForColumn(int columnIndex) {
-        if (columnIndex < 2) return null;
+        if (columnIndex < 2) {
+            return null;
+        }
         int modelIndex = columnIndex - 2;
         return modelIndex < columnHeaders.size() ? columnHeaders.get(modelIndex) : null;
     }

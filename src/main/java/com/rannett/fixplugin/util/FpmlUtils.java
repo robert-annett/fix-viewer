@@ -19,11 +19,15 @@ public final class FpmlUtils {
      * @return true if the text looks like FpML, false otherwise
      */
     public static boolean isLikelyFpml(String text) {
-        if (text == null) return false;
+        if (text == null) {
+            return false;
+        }
+
         String trimmed = text.trim();
         if (!trimmed.startsWith("<")) {
             return false;
         }
+
         try {
             Document doc = DocumentBuilderFactory.newInstance()
                     .newDocumentBuilder()
