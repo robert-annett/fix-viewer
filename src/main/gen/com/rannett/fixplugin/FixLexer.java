@@ -40,12 +40,11 @@ class FixLexer implements FlexLexer {
   private static final String ZZ_CMAP_TOP_PACKED_0 =
     "\1\0\5\u0100\1\u0200\1\u0300\1\u0100\5\u0400\1\u0500\1\u0600"+
     "\1\u0700\6\u0100\1\u0800\1\u0900\1\u0a00\1\u0b00\1\u0c00\1\u0d00"+
-    "\3\u0100\1\u0e00\205\u0100\1\u0600\1\u0100\1\u0f00\1\u1000\1\u1100"+
-    "\1\u1200\54\u0100\10\u1300\37\u0100\1\u0900\4\u0100\1\u1400\10\u0100"+
-    "\1\u1500\2\u0100\1\u1600\1\u1700\1\u1200\1\u0100\1\u0500\1\u0100"+
-    "\1\u1800\1\u1500\1\u0800\3\u0100\1\u1100\1\u1900\114\u0100\1\u1a00"+
-    "\1\u1100\153\u0100\1\u1b00\11\u0100\1\u1c00\1\u1200\6\u0100\1\u1100"+
-    "\u0f16\u0100";
+    "\211\u0100\1\u0600\1\u0100\1\u0e00\1\u0f00\1\u1000\1\u1100\123\u0100"+
+    "\1\u0900\4\u0100\1\u1200\10\u0100\1\u1300\2\u0100\1\u1400\1\u1500"+
+    "\1\u1100\1\u0100\1\u0500\1\u0100\1\u1600\1\u1300\1\u0800\3\u0100"+
+    "\1\u1000\1\u1700\114\u0100\1\u1800\1\u1000\153\u0100\1\u1900\11\u0100"+
+    "\1\u1a00\1\u1100\6\u0100\1\u1000\u0f16\u0100";
 
   private static int [] zzUnpackcmap_top() {
     int [] result = new int[4352];
@@ -73,23 +72,22 @@ class FixLexer implements FlexLexer {
   private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-    "\1\0\1\1\7\0\1\2\1\3\1\4\1\5\1\6"+
-    "\22\0\1\7\1\10\1\0\1\10\14\0\12\11\3\0"+
-    "\1\12\24\0\1\13\11\0\1\14\37\0\1\1\10\0"+
-    "\1\4\u01da\0\12\11\206\0\12\11\306\0\12\11\234\0"+
-    "\12\11\166\0\12\11\140\0\12\11\166\0\12\11\106\0"+
-    "\12\11\u0116\0\12\11\106\0\12\11\u0146\0\12\11\46\0"+
-    "\12\11\u012c\0\12\11\200\0\12\11\246\0\12\11\6\0"+
-    "\12\11\266\0\12\11\126\0\12\11\206\0\12\11\6\0"+
-    "\12\11\316\0\2\4\u01a6\0\12\11\46\0\12\11\306\0"+
-    "\12\11\26\0\12\11\126\0\12\11\u0196\0\12\11\6\0"+
-    "\u0100\4\240\0\12\11\206\0\12\11\u012c\0\12\11\200\0"+
-    "\12\11\74\0\12\11\220\0\12\11\166\0\12\11\146\0"+
-    "\12\11\206\0\12\11\106\0\12\11\266\0\12\11\u0164\0"+
-    "\62\11\100\0\12\11\266\0";
+    "\1\0\1\1\7\0\1\2\1\3\1\0\1\2\1\4"+
+    "\22\0\1\2\1\5\1\0\1\5\14\0\12\6\3\0"+
+    "\1\7\24\0\1\2\51\0\1\1\u01e3\0\12\6\206\0"+
+    "\12\6\306\0\12\6\234\0\12\6\166\0\12\6\140\0"+
+    "\12\6\166\0\12\6\106\0\12\6\u0116\0\12\6\106\0"+
+    "\12\6\u0146\0\12\6\46\0\12\6\u012c\0\12\6\200\0"+
+    "\12\6\246\0\12\6\6\0\12\6\266\0\12\6\126\0"+
+    "\12\6\206\0\12\6\6\0\12\6\u0176\0\12\6\46\0"+
+    "\12\6\306\0\12\6\26\0\12\6\126\0\12\6\u0196\0"+
+    "\12\6\246\0\12\6\206\0\12\6\u012c\0\12\6\200\0"+
+    "\12\6\74\0\12\6\220\0\12\6\166\0\12\6\146\0"+
+    "\12\6\206\0\12\6\106\0\12\6\266\0\12\6\u0164\0"+
+    "\62\6\100\0\12\6\266\0";
 
   private static int [] zzUnpackcmap_blocks() {
-    int [] result = new int[7424];
+    int [] result = new int[6912];
     int offset = 0;
     offset = zzUnpackcmap_blocks(ZZ_CMAP_BLOCKS_PACKED_0, offset, result);
     return result;
@@ -113,11 +111,10 @@ class FixLexer implements FlexLexer {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\2\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7"+
-    "\2\10\1\7\1\1\1\0";
+    "\2\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[14];
+    int [] result = new int[9];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -142,11 +139,11 @@ class FixLexer implements FlexLexer {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\15\0\32\0\32\0\47\0\64\0\101\0\32"+
-    "\0\116\0\133\0\150\0\165\0\202\0\202";
+    "\0\0\0\10\0\20\0\20\0\30\0\40\0\50\0\20"+
+    "\0\60";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[14];
+    int [] result = new int[9];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -169,20 +166,12 @@ class FixLexer implements FlexLexer {
   private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\3\1\4\2\5\1\3\1\5\1\3\1\5\1\6"+
-    "\1\7\1\10\1\5\1\3\2\11\1\12\1\13\1\11"+
-    "\1\13\1\11\1\13\3\11\1\14\1\15\17\0\2\5"+
-    "\1\0\1\5\1\0\1\5\3\0\1\5\1\0\3\6"+
-    "\1\0\2\6\1\0\6\6\11\0\1\7\3\0\1\11"+
-    "\1\0\1\11\1\0\1\11\1\0\6\11\1\16\1\11"+
-    "\1\0\1\12\1\13\1\11\1\13\1\11\1\12\3\11"+
-    "\1\14\1\16\2\0\2\13\1\0\1\13\1\0\1\13"+
-    "\3\0\1\5\1\0\1\11\1\0\1\14\1\5\1\11"+
-    "\1\5\1\11\1\14\3\11\1\14\1\16\3\11\4\0"+
-    "\6\11";
+    "\1\3\1\4\2\5\1\3\1\6\1\7\1\10\1\11"+
+    "\1\3\6\11\12\0\2\5\4\0\3\6\2\0\3\6"+
+    "\6\0\1\7\1\0\1\11\1\0\6\11";
 
   private static int [] zzUnpacktrans() {
-    int [] result = new int[143];
+    int [] result = new int[56];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -220,10 +209,10 @@ class FixLexer implements FlexLexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\2\0\2\11\3\1\1\11\5\1\1\0";
+    "\2\0\2\11\3\1\1\11\1\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[14];
+    int [] result = new int[9];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -548,43 +537,38 @@ class FixLexer implements FlexLexer {
             { return TokenType.BAD_CHARACTER;
             }
           // fall through
-          case 9: break;
+          case 8: break;
           case 2:
             { yybegin(YYINITIAL); return FixTypes.FIELD_SEPARATOR;
             }
           // fall through
-          case 10: break;
+          case 9: break;
           case 3:
             { yybegin(YYINITIAL); return TokenType.WHITE_SPACE;
             }
           // fall through
-          case 11: break;
+          case 10: break;
           case 4:
             { yybegin(YYINITIAL);
     return FixTypes.TAG;
             }
           // fall through
-          case 12: break;
+          case 11: break;
           case 5:
             { yybegin(YYINITIAL); return FixTypes.TAG;
             }
           // fall through
-          case 13: break;
+          case 12: break;
           case 6:
             { yybegin(WAITING_VALUE); return FixTypes.SEPARATOR;
             }
           // fall through
-          case 14: break;
+          case 13: break;
           case 7:
             { yybegin(YYINITIAL); return FixTypes.VALUE;
             }
           // fall through
-          case 15: break;
-          case 8:
-            { yybegin(WAITING_VALUE); return TokenType.WHITE_SPACE;
-            }
-          // fall through
-          case 16: break;
+          case 14: break;
           default:
             zzScanError(ZZ_NO_MATCH);
           }

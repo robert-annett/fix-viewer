@@ -33,6 +33,7 @@ fields for different messages will be shown in the same row, making comparison e
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213
+- **Lexer support** for multi-line FpML blocks
 
 ## Coming Soon
 
