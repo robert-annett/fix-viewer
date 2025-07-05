@@ -9,6 +9,7 @@
 ### Added
 
 - Support for extended precision UTCTimestamps with optional trailing `Z`.
+- Detection and parsing of FpML in XMLData and EncodedSecurityDesc fields.
 
 ## [0.0.1]
 

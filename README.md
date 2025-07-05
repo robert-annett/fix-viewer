@@ -32,6 +32,7 @@ fields for different messages will be shown in the same row, making comparison e
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
+- **FpML Detection** for XML embedded in tags 351 and 213
 
 ## Coming Soon
 

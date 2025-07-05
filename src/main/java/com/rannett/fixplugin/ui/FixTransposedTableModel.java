@@ -93,11 +93,64 @@ public class FixTransposedTableModel extends AbstractTableModel {
     }
 
     private List<TagValue> parseFixMessage(String msg) {
-        return Arrays.stream(msg.split("[|\\u0001]"))
-                .map(p -> p.split("=", 2))
-                .filter(p -> p.length == 2)
-                .map(p -> new TagValue(p[0], p[1]))
-                .collect(Collectors.toList());
+        List<TagValue> result = new ArrayList<>();
+        int index = 0;
+        int expectedLength = -1;
+        String dataTag = null;
+        while (index < msg.length()) {
+            int eq = msg.indexOf('=', index);
+            if (eq == -1) break;
+            String tag = msg.substring(index, eq);
+            index = eq + 1;
+
+            if (dataTag != null && tag.equals(dataTag) && expectedLength >= 0) {
+                int end = Math.min(index + expectedLength, msg.length());
+                String value = msg.substring(index, end);
+                result.add(new TagValue(tag, value));
+                index = end;
+                if (index < msg.length() && (msg.charAt(index) == '|' || msg.charAt(index) == '\u0001')) {
+                    index++;
+                }
+                dataTag = null;
+                expectedLength = -1;
+                continue;
+            }
+
+            int delimPos = findDelimiter(msg, index);
+            String value = msg.substring(index, delimPos);
+            result.add(new TagValue(tag, value));
+            index = delimPos + 1;
+
+            if ("212".equals(tag)) {
+                try {
+                    expectedLength = Integer.parseInt(value);
+                    dataTag = "213";
+                } catch (NumberFormatException ignore) {
+                    expectedLength = -1;
+                    dataTag = null;
+                }
+            } else if ("350".equals(tag)) {
+                try {
+                    expectedLength = Integer.parseInt(value);
+                    dataTag = "351";
+                } catch (NumberFormatException ignore) {
+                    expectedLength = -1;
+                    dataTag = null;
+                }
+            }
+        }
+        return result;
+    }
+
+    private int findDelimiter(String msg, int start) {
+        int pipe = msg.indexOf('|', start);
+        int soh = msg.indexOf('\u0001', start);
+        int end = -1;
+        if (pipe == -1) end = soh;
+        else if (soh == -1) end = pipe;
+        else end = Math.min(pipe, soh);
+        if (end == -1) end = msg.length();
+        return end;
     }
 
     @Override
