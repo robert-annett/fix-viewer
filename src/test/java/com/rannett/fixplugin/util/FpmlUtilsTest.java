@@ -12,8 +12,26 @@ public class FpmlUtilsTest {
     }
 
     @Test
+    public void testIsLikelyFpmlWithNewlines() {
+        String fpml = "<FpML>\n<trade>test</trade>\n</FpML>";
+        assertTrue(FpmlUtils.isLikelyFpml(fpml));
+    }
+
+    @Test
+    public void testIsLikelyFpmlPrefixedRoot() {
+        String fpml = "<ir:FpML xmlns:ir='http://example.com/fpml'></ir:FpML>";
+        assertTrue(FpmlUtils.isLikelyFpml(fpml));
+    }
+
+    @Test
     public void testIsLikelyFpmlFalse() {
         String not = "<root><child/></root>";
         assertFalse(FpmlUtils.isLikelyFpml(not));
+    }
+
+    @Test
+    public void testIsLikelyFpmlInvalidXml() {
+        String invalid = "<FpML>";
+        assertFalse(FpmlUtils.isLikelyFpml(invalid));
     }
 }

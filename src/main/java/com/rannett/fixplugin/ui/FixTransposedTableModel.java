@@ -3,10 +3,6 @@ package com.rannett.fixplugin.ui;
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
-import quickfix.field.EncodedSecurityDesc;
-import quickfix.field.EncodedSecurityDescLen;
-import quickfix.field.XmlData;
-import quickfix.field.XmlDataLen;
 
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
