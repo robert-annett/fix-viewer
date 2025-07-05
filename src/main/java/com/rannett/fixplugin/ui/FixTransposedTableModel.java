@@ -92,53 +92,89 @@ public class FixTransposedTableModel extends AbstractTableModel {
         return com.rannett.fixplugin.util.FixUtils.extractFixVersion(message).orElse(null);
     }
 
+    /**
+     * Parse a FIX message into tag/value pairs while preserving embedded data.
+     * <p>
+     * Certain FIX fields such as {@code 213} (XMLData) and {@code 351}
+     * (EncodedSecurityDesc) may contain XML that itself includes delimiter
+     * characters. These fields are preceded by a length tag ({@code 212} or
+     * {@code 350}) specifying how many characters to read. This method keeps
+     * track of these lengths so that the embedded XML is extracted correctly.
+     *
+     * @param msg raw FIX message using either {@code |} or SOH as delimiters
+     * @return ordered list of tag/value pairs from the message
+     */
     private List<TagValue> parseFixMessage(String msg) {
+        // Parsed output
         List<TagValue> result = new ArrayList<>();
+
+        // Cursor into the raw message string
         int index = 0;
+
+        // When a length field (212 or 350) is encountered the following tag
+        // will contain raw data of this length. 'expectedLength' holds the
+        // number of characters to read and 'dataTag' stores the tag number
+        // that should receive that data.
         int expectedLength = -1;
         String dataTag = null;
+
+        // Iterate over the message: tag=value<delimiter>
         while (index < msg.length()) {
+            // Find the '=' separating the tag from the value
             int eq = msg.indexOf('=', index);
-            if (eq == -1) break;
+            if (eq == -1) {
+                break; // malformed message
+            }
+
             String tag = msg.substring(index, eq);
             index = eq + 1;
 
+            // If we previously saw a length tag, read the exact number of
+            // characters for the current value regardless of delimiters.
             if (dataTag != null && tag.equals(dataTag) && expectedLength >= 0) {
                 int end = Math.min(index + expectedLength, msg.length());
                 String value = msg.substring(index, end);
                 result.add(new TagValue(tag, value));
+
+                // Move the cursor past the consumed data and optional delimiter
                 index = end;
                 if (index < msg.length() && (msg.charAt(index) == '|' || msg.charAt(index) == '\u0001')) {
                     index++;
                 }
+
+                // Reset special parsing state for the next iteration
                 dataTag = null;
                 expectedLength = -1;
                 continue;
             }
 
+            // Read a value terminated by the next delimiter character
             int delimPos = findDelimiter(msg, index);
             String value = msg.substring(index, delimPos);
             result.add(new TagValue(tag, value));
-            index = delimPos + 1;
+            index = delimPos + 1; // skip the delimiter
 
-            if ("212".equals(tag)) {
+            // Check for length fields that signal the next tag contains raw data
+            if ("212".equals(tag)) { // XMLDataLen
                 try {
                     expectedLength = Integer.parseInt(value);
-                    dataTag = "213";
+                    dataTag = "213"; // XMLData follows
                 } catch (NumberFormatException ignore) {
+                    // Invalid length values are treated as normal fields
                     expectedLength = -1;
                     dataTag = null;
                 }
-            } else if ("350".equals(tag)) {
+            } else if ("350".equals(tag)) { // EncodedSecurityDescLen
                 try {
                     expectedLength = Integer.parseInt(value);
-                    dataTag = "351";
+                    dataTag = "351"; // EncodedSecurityDesc follows
                 } catch (NumberFormatException ignore) {
                     expectedLength = -1;
                     dataTag = null;
                 }
             }
         }
+
         return result;
     }
 
