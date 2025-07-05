@@ -148,6 +148,11 @@ public class FixTransposedTableModel extends AbstractTableModel {
 
                 // Move the cursor past the consumed data and optional delimiter
                 index = end;
+                // Some producers do not include trailing line breaks in the
+                // length field. Skip over any whitespace before the delimiter
+                while (index < msg.length() && Character.isWhitespace(msg.charAt(index))) {
+                    index++;
+                }
                 if (index < msg.length() && (msg.charAt(index) == '|' || msg.charAt(index) == '\u0001')) {
                     index++;
                 }
