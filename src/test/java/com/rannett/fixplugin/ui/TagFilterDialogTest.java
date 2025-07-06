@@ -7,9 +7,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class TagFilterDialogTest extends BasePlatformTestCase {
 
     @Override
@@ -42,6 +39,6 @@ public class TagFilterDialogTest extends BasePlatformTestCase {
         allDisplaysField.setAccessible(true);
         @SuppressWarnings("unchecked")
         List<String> displays = (List<String>) allDisplaysField.get(holder[0]);
-        assertTrue(displays.stream().anyMatch(d -> d.contains("MsgType")));
+        assertTrue(displays.stream().anyMatch(d -> d.contains("35 (MsgType)")));
     }
 }
