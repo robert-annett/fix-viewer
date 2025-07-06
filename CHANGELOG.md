@@ -7,6 +7,7 @@
 - Added tests for language injection
 - Added tests for dictionary caching and additional lexer scenarios
 - Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
+- Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
 
 ### Added
 

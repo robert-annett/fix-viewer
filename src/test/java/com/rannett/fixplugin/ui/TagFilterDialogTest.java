@@ -1,6 +1,7 @@
 package com.rannett.fixplugin.ui;
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import com.rannett.fixplugin.settings.FixViewerSettingsState;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -10,6 +11,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TagFilterDialogTest extends BasePlatformTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        FixViewerSettingsState.getInstance(getProject()).getCustomDictionaryPaths().clear();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            FixViewerSettingsState.getInstance(getProject()).getCustomDictionaryPaths().clear();
+        } finally {
+            super.tearDown();
+        }
+    }
 
     public void testInitialSelectionAndDictionaryNames() throws Exception {
         Set<String> tags = Set.of("35", "49");
