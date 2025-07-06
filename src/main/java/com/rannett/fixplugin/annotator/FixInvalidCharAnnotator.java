@@ -7,11 +7,21 @@ import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.rannett.fixplugin.psi.FixField;
 import com.rannett.fixplugin.psi.FixTypes;
+import quickfix.field.EncodedSecurityDesc;
+import quickfix.field.XmlData;
 import org.jetbrains.annotations.NotNull;
 
 public class FixInvalidCharAnnotator implements Annotator {
 
+    /**
+     * Annotates invalid characters within FIX message elements.
+     *
+     * @param element the PSI element to check
+     * @param holder  the annotation holder used to report problems
+     */
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
 
@@ -22,6 +32,15 @@ public class FixInvalidCharAnnotator implements Annotator {
                 type != FixTypes.SEPARATOR &&
                 type != FixTypes.FIELD_SEPARATOR) {
             return;
+        }
+
+        FixField field = PsiTreeUtil.getParentOfType(element, FixField.class);
+        if (type == FixTypes.VALUE && field != null) {
+            String tag = field.getTag();
+            if (String.valueOf(XmlData.FIELD).equals(tag) ||
+                    String.valueOf(EncodedSecurityDesc.FIELD).equals(tag)) {
+                return;
+            }
         }
 
         String text = element.getText();

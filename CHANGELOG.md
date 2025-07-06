@@ -6,6 +6,11 @@
 - Added language injection for FIX messages embedded in code strings
 - Added tests for language injection
 
+### Fixed
+
+- Invalid character warnings are no longer reported for FpML text in XmlData or
+  EncodedSecurityDesc fields.
+
 ### Added
 
 - Support for extended precision UTCTimestamps with optional trailing `Z`.
