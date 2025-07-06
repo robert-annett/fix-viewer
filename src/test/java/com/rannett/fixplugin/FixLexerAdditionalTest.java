@@ -64,4 +64,30 @@ public class FixLexerAdditionalTest {
         );
         assertEquals(expected, tokens);
     }
+
+    @Test
+    public void testLexerHandlesBadCharacter() throws Exception {
+        String msg = "8=FIX.4.2|35=0|$";
+        FixLexer lexer = new FixLexer(new StringReader(msg));
+        lexer.reset(msg, 0, msg.length(), FixLexer.YYINITIAL);
+
+        List<IElementType> tokens = new ArrayList<>();
+        IElementType token;
+        while ((token = lexer.advance()) != null) {
+            tokens.add(token);
+        }
+
+        List<IElementType> expected = List.of(
+                FixTypes.TAG,
+                FixTypes.SEPARATOR,
+                FixTypes.VALUE,
+                FixTypes.FIELD_SEPARATOR,
+                FixTypes.TAG,
+                FixTypes.SEPARATOR,
+                FixTypes.VALUE,
+                FixTypes.FIELD_SEPARATOR,
+                TokenType.BAD_CHARACTER
+        );
+        assertEquals(expected, tokens);
+    }
 }

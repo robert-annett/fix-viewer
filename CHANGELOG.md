@@ -6,6 +6,7 @@
 - Added language injection for FIX messages embedded in code strings
 - Added tests for language injection
 - Added tests for dictionary caching and additional lexer scenarios
+- Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
 
 ### Added
 
