@@ -35,10 +35,8 @@ FIELD_SEPARATOR=[\|\u0001]
 <YYINITIAL> {FIELD_SEPARATOR}                               { yybegin(YYINITIAL); return FixTypes.FIELD_SEPARATOR; }
 <YYINITIAL> {TAG_CHARACTER}+                                { yybegin(YYINITIAL); return FixTypes.TAG; }
 <YYINITIAL> {SEPARATOR}                                     { yybegin(WAITING_VALUE); return FixTypes.SEPARATOR; }
-<WAITING_VALUE> {CRLF}({CRLF}|{WHITE_SPACE})+               { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-<WAITING_VALUE> {WHITE_SPACE}+                              { yybegin(WAITING_VALUE); return TokenType.WHITE_SPACE; }
-<WAITING_VALUE> {FIRST_VALUE_CHARACTER}{VALUE_CHARACTER}*   { yybegin(YYINITIAL); return FixTypes.VALUE; }
+<WAITING_VALUE> [^|\u0001]+                              { yybegin(YYINITIAL); return FixTypes.VALUE; }
 
-({CRLF}|{WHITE_SPACE})+                                     { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+<YYINITIAL> ({CRLF}|{WHITE_SPACE})+                         { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
 
 [^]                                                         { return TokenType.BAD_CHARACTER; }
