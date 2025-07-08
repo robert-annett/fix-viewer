@@ -60,6 +60,7 @@ public class FixTransposedTablePanel extends JPanel {
         table.setFillsViewportHeight(true);
         sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         // Custom renderer to show value + description
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -148,12 +149,14 @@ public class FixTransposedTablePanel extends JPanel {
 
         setupHeaderContextMenu();
         customizeTableHeaderWithIcon();
+        configureColumnWidths();
     }
 
     public void updateTable(List<String> fixMessages) {
         this.messages = new ArrayList<>(fixMessages);
         model.updateMessages(fixMessages);
         applyTagFilter(filteredTags);
+        configureColumnWidths();
     }
 
     public void applyTagFilter(Set<String> tags) {
@@ -305,6 +308,7 @@ public class FixTransposedTablePanel extends JPanel {
         if (!allColumns.contains(column)) {
             allColumns.add(column);
         }
+        configureColumnWidths();
     }
 
     private void showOnlyColumn(int columnIndex) {
@@ -332,6 +336,7 @@ public class FixTransposedTablePanel extends JPanel {
                 columnModel.addColumn(column);
             }
         }
+        configureColumnWidths();
     }
 
     private void showAllColumns() {
@@ -341,6 +346,7 @@ public class FixTransposedTablePanel extends JPanel {
                 columnModel.addColumn(column);
             }
         }
+        configureColumnWidths();
     }
 
     private void showCompareDialog(int columnIndex) {
@@ -406,5 +412,18 @@ public class FixTransposedTablePanel extends JPanel {
                 return label;
             }
         });
+    }
+
+    private void configureColumnWidths() {
+        TableColumnModel columnModel = table.getColumnModel();
+        if (columnModel.getColumnCount() > 0) {
+            columnModel.getColumn(0).setPreferredWidth(60); // Tag
+        }
+        if (columnModel.getColumnCount() > 1) {
+            columnModel.getColumn(1).setPreferredWidth(150); // Name
+        }
+        for (int i = 2; i < columnModel.getColumnCount(); i++) {
+            columnModel.getColumn(i).setPreferredWidth(200);
+        }
     }
 }
