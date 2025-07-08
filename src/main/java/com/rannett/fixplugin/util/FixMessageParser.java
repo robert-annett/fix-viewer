@@ -122,4 +122,102 @@ public final class FixMessageParser {
         }
         return null;
     }
+
+    /**
+     * Split a block of text into individual FIX messages. Newline characters
+     * occurring within length-based DATA fields (e.g. {@code 212/213},
+     * {@code 350/351}) are preserved and do not terminate a message.
+     * <p>
+     * Messages are detected by scanning for the {@code 8=} BeginString tag and
+     * continue until the checksum field ({@code 10=###}) delimiter. Any text
+     * before the first {@code 8=} or between messages is treated as a separate
+     * entry, allowing comment lines to be preserved.
+     *
+     * @param text raw text potentially containing multiple messages
+     * @return list of extracted message strings in order of appearance
+     */
+    public static java.util.List<String> splitMessages(@NotNull String text) {
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return messages;
+        }
+
+        int index = 0;
+        while (index < text.length()) {
+            // Skip leading newline characters
+            while (index < text.length() && (text.charAt(index) == '\n' || text.charAt(index) == '\r')) {
+                index++;
+            }
+            if (index >= text.length()) {
+                break;
+            }
+
+            // Treat comment lines as standalone entries
+            if (text.charAt(index) == '#') {
+                int nl = text.indexOf('\n', index);
+                if (nl == -1) {
+                    nl = text.length();
+                }
+                messages.add(text.substring(index, nl));
+                index = nl + 1;
+                continue;
+            }
+
+            int start = text.indexOf("8=", index);
+            if (start == -1) {
+                messages.add(text.substring(index).trim());
+                break;
+            }
+
+            if (start > index) {
+                String pre = text.substring(index, start).trim();
+                if (!pre.isEmpty()) {
+                    messages.add(pre);
+                }
+                index = start;
+            }
+
+            int checksumIndex = text.indexOf("10=", start);
+            if (checksumIndex == -1) {
+                int nl = text.indexOf('\n', start);
+                if (nl == -1) {
+                    messages.add(text.substring(start).trim());
+                    break;
+                } else {
+                    messages.add(text.substring(start, nl).trim());
+                    index = nl + 1;
+                    continue;
+                }
+            }
+
+            int digitsStart = checksumIndex + 3;
+            int digitsEnd = digitsStart;
+            while (digitsEnd < text.length() && Character.isDigit(text.charAt(digitsEnd))) {
+                digitsEnd++;
+            }
+            if (digitsEnd == digitsStart) {
+                int nl = text.indexOf('\n', start);
+                if (nl == -1) {
+                    messages.add(text.substring(start).trim());
+                    break;
+                } else {
+                    messages.add(text.substring(start, nl).trim());
+                    index = nl + 1;
+                    continue;
+                }
+            }
+
+            int msgEnd = digitsEnd;
+            if (msgEnd < text.length() && (text.charAt(msgEnd) == '\u0001' || text.charAt(msgEnd) == '|')) {
+                msgEnd++;
+            }
+            messages.add(text.substring(start, msgEnd));
+            index = msgEnd;
+            while (index < text.length() && (text.charAt(index) == '\n' || text.charAt(index) == '\r')) {
+                index++;
+            }
+        }
+
+        return messages;
+    }
 }

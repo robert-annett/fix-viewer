@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.rannett.fixplugin.util.FixMessageParser;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
     private final FileEditor textEditor;
@@ -50,7 +51,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
         tabbedPane.addTab("Text View", textEditor.getComponent());
 
-        List<String> messages = Arrays.asList(document.getText().split("\\R+"));
+        List<String> messages = FixMessageParser.splitMessages(document.getText());
         tablePanel = new FixTransposedTablePanel(messages, (msgId, tag, occurrence, newValue) -> WriteCommandAction.runWriteCommandAction(project, () -> {
             String[] lines = document.getText().split("\\R+");
             int msgIndex = Integer.parseInt(msgId.replace("Message ", "")) - 1;
@@ -82,7 +83,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             @Override
             public void documentChanged(@NotNull com.intellij.openapi.editor.event.DocumentEvent event) {
                 SwingUtilities.invokeLater(() -> {
-                    List<String> updatedMessages = Arrays.asList(document.getText().split("\\R+"));
+                    List<String> updatedMessages = FixMessageParser.splitMessages(document.getText());
                     tablePanel.updateTable(updatedMessages);
                     treePanel.updateTree(updatedMessages);
                 });
@@ -111,10 +112,10 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             }
 
             private String getMessageIdForOffset(String text, int matchStart) {
-                String[] lines = text.split("\\R+");
+                List<String> lines = FixMessageParser.splitMessages(text);
                 int cumulative = 0;
-                for (int i = 0; i < lines.length; i++) {
-                    int lineLength = lines[i].length() + 1;
+                for (int i = 0; i < lines.size(); i++) {
+                    int lineLength = lines.get(i).length() + 1;
                     if (cumulative + lineLength > matchStart) {
                         return "Message " + (i + 1);
                     }
@@ -152,14 +153,17 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     }
 
     private int findTagOffsetInDocument(String tag, String messageId) {
-        String[] lines = document.getText().split("\\R+");
+        List<String> lines = FixMessageParser.splitMessages(document.getText());
         int msgIndex = Integer.parseInt(messageId.replace("Message ", "")) - 1;
-        if (msgIndex < 0 || msgIndex >= lines.length) return -1;
-        String message = lines[msgIndex];
+        if (msgIndex < 0 || msgIndex >= lines.size()) return -1;
+        String message = lines.get(msgIndex);
         int tagIndex = message.indexOf(tag + "=");
         if (tagIndex < 0) return -1;
-        int lineStartOffset = document.getLineStartOffset(msgIndex);
-        return lineStartOffset + tagIndex;
+        int offset = 0;
+        for (int i = 0; i < msgIndex; i++) {
+            offset += lines.get(i).length() + 1;
+        }
+        return offset + tagIndex;
     }
 
     @Override
