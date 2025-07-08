@@ -8,6 +8,21 @@ import java.nio.file.Files;
 
 public class FixDictionaryCacheTest extends BasePlatformTestCase {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        FixViewerSettingsState.getInstance(getProject()).getCustomDictionaryPaths().clear();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            FixViewerSettingsState.getInstance(getProject()).getCustomDictionaryPaths().clear();
+        } finally {
+            super.tearDown();
+        }
+    }
+
     public void testCustomPathIsUsed() throws Exception {
         File file = File.createTempFile("dict", ".xml");
         Files.writeString(file.toPath(), "<dictionary>\n<field number=\"1\" name=\"One\" type=\"STRING\"/>\n</dictionary>");

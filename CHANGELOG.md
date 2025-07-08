@@ -11,8 +11,8 @@
 
 ### Fixed
 
-- Invalid character warnings are no longer reported for FpML text in XmlData or
-  EncodedSecurityDesc fields.
+- Multi-line FpML fields no longer split messages when parsing
+- Invalid character warnings are no longer reported for FpML text in XmlData or EncodedSecurityDesc fields.
 
 ### Added
 
