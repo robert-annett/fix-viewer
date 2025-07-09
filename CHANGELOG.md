@@ -11,6 +11,8 @@
 
 ### Fixed
 
+- Multi-line FpML fields no longer split messages when parsing
+- Invalid character warnings are no longer reported for FpML text in XmlData or EncodedSecurityDesc fields.
 - Invalid character warnings are no longer reported for FpML text in XmlData or
   EncodedSecurityDesc fields.
 - Transposed table no longer shrinks columns when many messages are displayed; a horizontal scrollbar appears instead.
