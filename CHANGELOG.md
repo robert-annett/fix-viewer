@@ -13,6 +13,9 @@
 
 - Multi-line FpML fields no longer split messages when parsing
 - Invalid character warnings are no longer reported for FpML text in XmlData or EncodedSecurityDesc fields.
+- Invalid character warnings are no longer reported for FpML text in XmlData or
+  EncodedSecurityDesc fields.
+- Transposed table no longer shrinks columns when many messages are displayed; a horizontal scrollbar appears instead.
 
 ### Added
 
@@ -109,3 +112,21 @@
 - Side-by-side comparison of FIX messages using IntelliJ diff viewer
 - Display enum descriptions alongside field names in the tree view
 - Filtering in the transposed table view and ability to reset filtering and ordering.
+
+## [0.0.14]
+
+### Fixed
+
+- Invalid character warnings are no longer reported for FpML text in XmlData or
+  EncodedSecurityDesc fields.
+
+### Added
+
+- Support for extended precision UTCTimestamps with optional trailing `Z`.
+- Detection and parsing of FpML in XMLData and EncodedSecurityDesc fields.
+- Fixed lexer handling of whitespace inside embedded FpML and added lexer tests.
+- Added language injection for FIX messages embedded in code strings
+- Added tests for language injection
+- Added tests for dictionary caching and additional lexer scenarios
+- Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
+- Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
