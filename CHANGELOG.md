@@ -9,6 +9,11 @@
 - Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
 - Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
 
+### Added
+
+- Custom colours for field types in the table and tree views
+- Configurable header fields for message labels in table and tree views
+
 ### Fixed
 
 - Multi-line FpML fields no longer split messages when parsing

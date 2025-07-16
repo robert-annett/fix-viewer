@@ -79,35 +79,32 @@ public final class FixMessageParser {
     /**
      * Build a descriptive label for the given message using common header fields.
      */
-    public static String buildMessageLabel(Message msg, DataDictionary dd) {
-        String typeCode = getFieldSafe(msg.getHeader(), 35);
-        String typeName = typeCode != null ? dd.getValueName(35, typeCode) : null;
-        String sender = getFieldSafe(msg.getHeader(), 49);
-        String target = getFieldSafe(msg.getHeader(), 56);
-        String seqNum = getFieldSafe(msg.getHeader(), 34);
-        String sendTime = getFieldSafe(msg.getHeader(), 52);
-
+    public static String buildMessageLabel(Message msg, DataDictionary dd, java.util.List<Integer> headerFields) {
         StringBuilder label = new StringBuilder();
-        if (typeName != null) label.append(typeName);
-        else if (typeCode != null) label.append(typeCode);
-        else label.append("Message");
-
-        if (sender != null || target != null) {
-            label.append(" ");
-            label.append(sender != null ? sender : "?");
-            label.append("->");
-            label.append(target != null ? target : "?");
+        for (int tag : headerFields) {
+            String value = getFieldSafe(msg.getHeader(), tag);
+            if (value == null) {
+                continue;
+            }
+            String part;
+            if (tag == 35) {
+                String name = dd.getValueName(35, value);
+                part = name != null ? name : value;
+            } else {
+                String name = dd.getFieldName(tag);
+                String enumName = dd.getValueName(tag, value);
+                part = (name != null ? name : tag) + "=" + value;
+                if (enumName != null) {
+                    part += "(" + enumName + ")";
+                }
+            }
+            if (label.length() > 0) {
+                label.append(' ');
+            }
+            label.append(part);
         }
-        if (seqNum != null || sendTime != null) {
-            label.append(" [");
-            if (seqNum != null) {
-                label.append("Seq ").append(seqNum);
-            }
-            if (sendTime != null) {
-                if (seqNum != null) label.append(" ");
-                label.append(sendTime);
-            }
-            label.append("]");
+        if (label.length() == 0) {
+            label.append("Message");
         }
         return label.toString();
     }

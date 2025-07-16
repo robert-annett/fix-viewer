@@ -19,6 +19,8 @@ import quickfix.field.EncodedSecurityDesc;
 import quickfix.field.EncodedSecurityDescLen;
 import quickfix.field.XmlData;
 import quickfix.field.XmlDataLen;
+import quickfix.Message;
+import quickfix.DataDictionary;
 
 public class FixTransposedTableModel extends AbstractTableModel {
     private List<String> columnHeaders;
@@ -55,6 +57,13 @@ public class FixTransposedTableModel extends AbstractTableModel {
         transposed = new LinkedHashMap<>();
         String version = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
         fixVersion = version != null ? version : "FIXT.1.1";
+        quickfix.DataDictionary dd = com.rannett.fixplugin.util.FixMessageParser.loadDataDictionary(fixVersion, project);
+        com.rannett.fixplugin.settings.FixViewerSettingsState settings = project != null
+                ? com.rannett.fixplugin.settings.FixViewerSettingsState.getInstance(project)
+                : null;
+        java.util.List<Integer> headerFields = settings != null
+                ? settings.getHeaderFieldList()
+                : java.util.Collections.emptyList();
 
         List<List<TagValue>> parsed = new ArrayList<>();
         // Maintain the order of tag occurrences as they first appear across all messages
@@ -69,7 +78,18 @@ public class FixTransposedTableModel extends AbstractTableModel {
             if (message.isEmpty() || message.startsWith("#")) {
                 continue;
             }
-            String msgId = "Message " + i++;
+            String msgId;
+            if (settings != null) {
+                try {
+                    quickfix.Message qfMsg = com.rannett.fixplugin.util.FixMessageParser.parse(message, dd);
+                    msgId = com.rannett.fixplugin.util.FixMessageParser.buildMessageLabel(qfMsg, dd, headerFields);
+                } catch (Exception e) {
+                    msgId = "Message " + i;
+                }
+            } else {
+                msgId = "Message " + i;
+            }
+            i++;
             columnHeaders.add(msgId);
 
             List<TagValue> pairs = parseFixMessage(message);
