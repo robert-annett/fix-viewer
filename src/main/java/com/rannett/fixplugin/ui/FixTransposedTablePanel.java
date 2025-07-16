@@ -10,6 +10,7 @@ import com.intellij.ui.table.JBTable;
 import com.rannett.fixplugin.FixFileType;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import com.rannett.fixplugin.settings.FixViewerSettingsState;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
@@ -71,8 +72,16 @@ public class FixTransposedTablePanel extends JPanel {
                 if (column >= 2) {
                     String tag = model.getTagAtRow(row);
                     String valStr = String.valueOf(value);
-                    FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(model.getFixVersion());
-                    String desc = dictionary.getValueName(tag, valStr);
+                    FixTagDictionary dictionary = project != null ?
+                            project.getService(FixDictionaryCache.class).getDictionary(model.getFixVersion()) : null;
+                    String desc = dictionary != null ? dictionary.getValueName(tag, valStr) : null;
+                    String type = dictionary != null ? dictionary.getFieldType(tag) : null;
+                    java.awt.Color custom = project != null ? FixViewerSettingsState.getInstance(project).getColorForFieldType(type) : null;
+                    if (!isSelected && custom != null) {
+                        setForeground(custom);
+                    } else {
+                        setForeground(javax.swing.UIManager.getColor("Table.foreground"));
+                    }
                     if (desc != null && !desc.isEmpty()) {
                         displayValue = valStr + " (" + desc + ")";
                     }

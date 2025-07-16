@@ -30,6 +30,8 @@ fields for different messages will be shown in the same row, making comparison e
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
+- **Custom Field Colours** based on field type in table and tree views
+- **Configurable Header Labels** choose which fields appear in message labels
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213

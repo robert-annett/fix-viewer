@@ -5,6 +5,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.treeStructure.Tree;
 import com.rannett.fixplugin.util.FixMessageParser;
 import com.rannett.fixplugin.util.FixUtils;
+import com.rannett.fixplugin.dictionary.FixDictionaryCache;
+import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import com.rannett.fixplugin.settings.FixViewerSettingsState;
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
@@ -45,6 +48,9 @@ public class FixMessageTreePanel extends JPanel {
         if (fixVersion == null) fixVersion = "FIXT.1.1";
 
         DataDictionary dd = FixMessageParser.loadDataDictionary(fixVersion, project);
+        FixViewerSettingsState settings = FixViewerSettingsState.getInstance(project);
+        java.util.List<Integer> headerFields = settings.getHeaderFieldList();
+        FixTagDictionary tagDictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
 
         for (String message : fixMessages) {
             message = message.strip();
@@ -52,7 +58,7 @@ public class FixMessageTreePanel extends JPanel {
             DefaultMutableTreeNode msgNode;
             try {
                 Message qfMsg = FixMessageParser.parse(message, dd);
-                String label = FixMessageParser.buildMessageLabel(qfMsg, dd);
+                String label = FixMessageParser.buildMessageLabel(qfMsg, dd, headerFields);
                 msgNode = new DefaultMutableTreeNode(label);
 
                 DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
@@ -77,6 +83,27 @@ public class FixMessageTreePanel extends JPanel {
 
         JTree tree = new Tree(root);
         tree.setRootVisible(false);
+        tree.setCellRenderer(new javax.swing.tree.DefaultTreeCellRenderer() {
+            @Override
+            public java.awt.Component getTreeCellRendererComponent(JTree t, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                java.awt.Component c = super.getTreeCellRendererComponent(t, value, sel, expanded, leaf, row, hasFocus);
+                if (value instanceof DefaultMutableTreeNode node) {
+                    Object obj = node.getUserObject();
+                    if (obj instanceof String str && str.contains("=")) {
+                        String tagPart = str.substring(0, str.indexOf('='));
+                        String digits = tagPart.replaceAll("[^0-9]", "");
+                        String type = tagDictionary.getFieldType(digits);
+                        java.awt.Color col = settings.getColorForFieldType(type);
+                        if (!sel && col != null) {
+                            setForeground(col);
+                        } else {
+                            setForeground(javax.swing.UIManager.getColor("Tree.textForeground"));
+                        }
+                    }
+                }
+                return c;
+            }
+        });
 
         removeAll();
         add(new JScrollPane(tree), BorderLayout.CENTER);
