@@ -4,7 +4,7 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij.platform") version "2.6.0"
+    id("org.jetbrains.intellij.platform") version "2.7.0"
     alias(libs.plugins.changelog)
 }
 
