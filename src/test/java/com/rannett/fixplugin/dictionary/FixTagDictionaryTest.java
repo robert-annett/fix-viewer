@@ -3,6 +3,7 @@ package com.rannett.fixplugin.dictionary;
 import org.junit.Assert;
 import org.junit.Test;
 
+
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Map;
@@ -108,6 +109,14 @@ public class FixTagDictionaryTest {
         assertEquals("MsgType", dictionary.getTagName("35"));
         // verify field type lookup from built-in dictionaries
         assertEquals("STRING", dictionary.getFieldType("35"));
+    }
+
+    @Test
+    public void testFieldSectionsFromBuiltIn() {
+        FixTagDictionary dictionary = FixTagDictionary.fromBuiltInVersion("FIX.4.4");
+        assertEquals(FieldSection.HEADER, dictionary.getFieldSection("8"));
+        assertEquals(FieldSection.TRAILER, dictionary.getFieldSection("10"));
+        assertEquals(FieldSection.BODY, dictionary.getFieldSection("55"));
     }
 
     @Test

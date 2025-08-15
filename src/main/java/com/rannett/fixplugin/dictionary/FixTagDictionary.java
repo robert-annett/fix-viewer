@@ -10,7 +10,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class FixTagDictionary {
 
@@ -18,11 +20,18 @@ public class FixTagDictionary {
 
     private final Map<String, String> tagNameMap = new HashMap<>();
     private final Map<String, Map<String, String>> tagValueMap = new HashMap<>();
-    private final Map<String, String> fieldTypeMap = new HashMap<>(); // New map for field types
+    private final Map<String, String> fieldTypeMap = new HashMap<>();
+    private final Map<String, FieldSection> fieldSectionMap = new HashMap<>();
 
     FixTagDictionary() {
     }
 
+    /**
+     * Creates a {@link FixTagDictionary} from a JSON or XML file.
+     *
+     * @param file the dictionary file
+     * @return populated dictionary instance
+     */
     public static FixTagDictionary fromFile(@NotNull File file) {
         FixTagDictionary dictionary = new FixTagDictionary();
         String fileName = file.getName().toLowerCase();
@@ -42,6 +51,12 @@ public class FixTagDictionary {
         return dictionary;
     }
 
+    /**
+     * Loads a built-in FIX dictionary by version.
+     *
+     * @param version FIX version identifier, e.g. {@code "FIX.4.4"}
+     * @return populated dictionary instance
+     */
     public static FixTagDictionary fromBuiltInVersion(@NotNull String version) {
         FixTagDictionary dictionary = new FixTagDictionary();
 
@@ -63,21 +78,55 @@ public class FixTagDictionary {
         return dictionary;
     }
 
+    /**
+     * Retrieves the field name for a given tag number.
+     *
+     * @param tag numeric tag identifier
+     * @return field name or {@code null} if unknown
+     */
     public String getTagName(String tag) {
         return tagNameMap.get(tag);
     }
 
+    /**
+     * Looks up the description for a specific enumerated value of a tag.
+     *
+     * @param tag   numeric tag identifier
+     * @param value enumerated value
+     * @return description or {@code null} if not defined
+     */
     public String getValueName(String tag, String value) {
         Map<String, String> valueMap = tagValueMap.get(tag);
         return valueMap != null ? valueMap.get(value) : null;
     }
 
+    /**
+     * Returns the FIX field type for the given tag.
+     *
+     * @param tag numeric tag identifier
+     * @return field type or {@code null} if unknown
+     */
     public String getFieldType(String tag) {
-        return fieldTypeMap.get(tag); // New method to get field type
+        return fieldTypeMap.get(tag);
     }
 
+    /**
+     * Provides an unmodifiable view of the tag-to-name map.
+     *
+     * @return mapping of tag numbers to names
+     */
     public Map<String, String> getTagNameMap() {
         return Collections.unmodifiableMap(tagNameMap);
+    }
+
+    /**
+     * Retrieves the section of the FIX message where the tag appears.
+     *
+     * @param tag numeric tag identifier
+     * @return the section classification or {@code null} if unknown
+     */
+    public FieldSection getFieldSection(String tag) {
+        return fieldSectionMap.get(tag);
     }
 
     private static void parseJson(BufferedReader reader, FixTagDictionary dictionary) throws Exception {
@@ -118,19 +167,57 @@ public class FixTagDictionary {
     private static void parseXml(BufferedReader reader, FixTagDictionary dictionary) throws Exception {
         String line;
         String currentTag = null;
+        boolean inHeader = false;
+        boolean inTrailer = false;
+        Set<String> headerNames = new HashSet<>();
+        Set<String> trailerNames = new HashSet<>();
 
         while ((line = reader.readLine()) != null) {
             line = line.trim();
+            if ("<header>".equals(line)) {
+                inHeader = true;
+                continue;
+            }
+            if ("</header>".equals(line)) {
+                inHeader = false;
+                continue;
+            }
+            if ("<trailer>".equals(line)) {
+                inTrailer = true;
+                continue;
+            }
+            if ("</trailer>".equals(line)) {
+                inTrailer = false;
+                continue;
+            }
+            if ((inHeader || inTrailer) && line.startsWith("<field")) {
+                String nameAttr = extractAttribute(line, "name");
+                if (nameAttr != null) {
+                    if (inHeader) {
+                        headerNames.add(nameAttr);
+                    } else {
+                        trailerNames.add(nameAttr);
+                    }
+                }
+                continue;
+            }
             if (line.startsWith("<field")) {
                 String tagNumber = extractAttribute(line, "number");
                 String tagName = extractAttribute(line, "name");
-                String type = extractAttribute(line, "type"); // Extract type attribute
+                String type = extractAttribute(line, "type");
                 if (tagNumber != null && tagName != null) {
                     dictionary.tagNameMap.put(tagNumber, tagName);
                     currentTag = tagNumber;
+                    if (headerNames.contains(tagName)) {
+                        dictionary.fieldSectionMap.put(tagNumber, FieldSection.HEADER);
+                    } else if (trailerNames.contains(tagName)) {
+                        dictionary.fieldSectionMap.put(tagNumber, FieldSection.TRAILER);
+                    } else {
+                        dictionary.fieldSectionMap.put(tagNumber, FieldSection.BODY);
+                    }
                 }
                 if (tagNumber != null && type != null) {
-                    dictionary.fieldTypeMap.put(tagNumber, type); // Store type
+                    dictionary.fieldTypeMap.put(tagNumber, type);
                 }
             } else if (line.startsWith("<value") && currentTag != null) {
                 String enumValue = extractAttribute(line, "enum");
@@ -158,6 +245,12 @@ public class FixTagDictionary {
         return line.substring(start, end);
     }
 
+    /**
+     * Provides all enumerated values for a given tag.
+     *
+     * @param currentTag numeric tag identifier
+     * @return mapping of value to description or {@code null} if none defined
+     */
     public Map<String, String> getValueMap(String currentTag) {
         return tagValueMap.get(currentTag);
     }
