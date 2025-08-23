@@ -45,6 +45,12 @@
         <multiHostInjector
                 implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
 
+        <toolWindow
+                id="Fix Field Lookup"
+                anchor="right"
+                factoryClass="com.rannett.fixplugin.ui.FixFieldLookupToolWindowFactory"
+                icon="/icons/fix-16x16.png"/>
+
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable
@@ -53,4 +59,13 @@
                 instance="com.rannett.fixplugin.settings.FixViewerSettingsConfigurable"
                 parentId="tools"/>
     </extensions>
+
+    <actions>
+        <action id="FixFieldLookupAction"
+                class="com.rannett.fixplugin.ui.FixFieldLookupAction"
+                text="FIX Field Lookup"
+                description="Lookup FIX field information">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
