@@ -106,6 +106,10 @@ public class FixFieldLookupPanel extends JPanel {
         if (section != null) {
             sb.append("Section: ").append(section.name()).append("\n");
         }
+        String description = dictionary.getFieldDescription(tag);
+        if (description != null) {
+            sb.append("Description: ").append(description).append("\n");
+        }
         Map<String, String> values = dictionary.getValueMap(tag);
         if (values != null && !values.isEmpty()) {
             sb.append("Values:\n");
