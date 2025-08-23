@@ -10,6 +10,7 @@
 - Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
 - Added FIX Field Lookup tool window for searching tag information
 - Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
+- Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
 
 ### Fixed
 

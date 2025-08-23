@@ -38,6 +38,8 @@ public class FixFieldLookupPanel extends JPanel {
         this.dictionary = project.getService(FixDictionaryCache.class).getDictionary("FIX.4.4");
         resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         detailsArea.setEditable(false);
+        detailsArea.setLineWrap(true);
+        detailsArea.setWrapStyleWord(true);
         add(searchField, BorderLayout.NORTH);
         add(new JBScrollPane(resultList), BorderLayout.WEST);
         add(new JBScrollPane(detailsArea), BorderLayout.CENTER);
