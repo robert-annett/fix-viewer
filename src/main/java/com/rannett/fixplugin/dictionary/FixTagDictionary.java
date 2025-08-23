@@ -22,6 +22,7 @@ public class FixTagDictionary {
     private final Map<String, Map<String, String>> tagValueMap = new HashMap<>();
     private final Map<String, String> fieldTypeMap = new HashMap<>();
     private final Map<String, FieldSection> fieldSectionMap = new HashMap<>();
+    private final Map<String, String> fieldDescriptionMap = new HashMap<>();
 
     FixTagDictionary() {
     }
@@ -47,6 +48,8 @@ public class FixTagDictionary {
         } catch (Exception e) {
             LOG.warn("Failed to load dictionary file: " + fileName, e);
         }
+
+        loadFieldDescriptions(dictionary);
 
         return dictionary;
     }
@@ -74,6 +77,8 @@ public class FixTagDictionary {
         } catch (Exception e) {
             LOG.warn("Failed to load built-in dictionary: " + version, e);
         }
+
+        loadFieldDescriptions(dictionary);
 
         return dictionary;
     }
@@ -127,6 +132,16 @@ public class FixTagDictionary {
      */
     public FieldSection getFieldSection(String tag) {
         return fieldSectionMap.get(tag);
+    }
+
+    /**
+     * Retrieves the description text for a given tag number.
+     *
+     * @param tag numeric tag identifier
+     * @return description text or {@code null} if unavailable
+     */
+    public String getFieldDescription(String tag) {
+        return fieldDescriptionMap.get(tag);
     }
 
     private static void parseJson(BufferedReader reader, FixTagDictionary dictionary) throws Exception {
@@ -253,5 +268,38 @@ public class FixTagDictionary {
      */
     public Map<String, String> getValueMap(String currentTag) {
         return tagValueMap.get(currentTag);
+    }
+
+    private static void loadFieldDescriptions(FixTagDictionary dictionary) {
+        String path = "/documentation/FIX.5.0SP2_en_phrases.xml";
+        try (InputStream inputStream = FixTagDictionary.class.getResourceAsStream(path)) {
+            if (inputStream == null) {
+                LOG.warn("Phrases file not found: " + path);
+                return;
+            }
+            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+            org.w3c.dom.Document document = builder.parse(inputStream);
+            org.w3c.dom.NodeList phrases = document.getElementsByTagName("phrase");
+            java.util.stream.IntStream.range(0, phrases.getLength())
+                    .mapToObj(phrases::item)
+                    .filter(node -> node instanceof org.w3c.dom.Element)
+                    .map(node -> (org.w3c.dom.Element) node)
+                    .filter(element -> {
+                        String textId = element.getAttribute("textId");
+                        return textId != null && textId.startsWith("FIELD_");
+                    })
+                    .forEach(element -> {
+                        String textId = element.getAttribute("textId");
+                        String tag = textId.substring("FIELD_".length());
+                        org.w3c.dom.NodeList paras = element.getElementsByTagName("para");
+                        String description = java.util.stream.IntStream.range(0, paras.getLength())
+                                .mapToObj(i -> paras.item(i).getTextContent().trim())
+                                .collect(java.util.stream.Collectors.joining(" "));
+                        dictionary.fieldDescriptionMap.put(tag, description);
+                    });
+        } catch (Exception e) {
+            LOG.warn("Failed to load phrases file", e);
+        }
     }
 }

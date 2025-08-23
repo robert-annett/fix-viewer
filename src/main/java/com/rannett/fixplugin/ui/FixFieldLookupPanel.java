@@ -38,6 +38,8 @@ public class FixFieldLookupPanel extends JPanel {
         this.dictionary = project.getService(FixDictionaryCache.class).getDictionary("FIX.4.4");
         resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         detailsArea.setEditable(false);
+        detailsArea.setLineWrap(true);
+        detailsArea.setWrapStyleWord(true);
         add(searchField, BorderLayout.NORTH);
         add(new JBScrollPane(resultList), BorderLayout.WEST);
         add(new JBScrollPane(detailsArea), BorderLayout.CENTER);
@@ -105,6 +107,10 @@ public class FixFieldLookupPanel extends JPanel {
         FieldSection section = dictionary.getFieldSection(tag);
         if (section != null) {
             sb.append("Section: ").append(section.name()).append("\n");
+        }
+        String description = dictionary.getFieldDescription(tag);
+        if (description != null) {
+            sb.append("Description: ").append(description).append("\n");
         }
         Map<String, String> values = dictionary.getValueMap(tag);
         if (values != null && !values.isEmpty()) {

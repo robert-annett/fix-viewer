@@ -120,6 +120,14 @@ public class FixTagDictionaryTest {
     }
 
     @Test
+    public void testFieldDescriptionFromPhrases() {
+        FixTagDictionary dictionary = FixTagDictionary.fromBuiltInVersion("FIX.4.4");
+        assertEquals(
+                "Account mnemonic as agreed between buy and sell sides, e.g. broker and institution or investor/intermediary and fund manager.",
+                dictionary.getFieldDescription("1"));
+    }
+
+    @Test
     public void testFromBuiltInVersion_missingFile() {
         FixTagDictionary dictionary = FixTagDictionary.fromBuiltInVersion("nonexistent-version");
         assertNull(dictionary.getTagName("35"));
