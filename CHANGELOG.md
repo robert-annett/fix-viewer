@@ -12,6 +12,11 @@
 - Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
 - Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
 
+### Added
+
+- Custom colours for field types in the table and tree views
+- Configurable header fields for message labels in table and tree views
+
 ### Fixed
 
 - Multi-line FpML fields no longer split messages when parsing
