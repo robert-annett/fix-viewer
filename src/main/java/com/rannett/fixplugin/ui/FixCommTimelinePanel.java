@@ -13,7 +13,9 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -29,6 +31,7 @@ public class FixCommTimelinePanel extends JPanel {
     private final JCheckBox hideHeartbeat;
     private final List<RowData> allRows = new ArrayList<>();
     private final List<RowData> displayedRows = new ArrayList<>();
+    private final Map<String, String> localPartyBySession = new HashMap<>();
     private Consumer<Integer> onMessageSelected;
 
     public FixCommTimelinePanel(@NotNull List<String> messages) {
@@ -84,6 +87,7 @@ public class FixCommTimelinePanel extends JPanel {
 
     private void loadMessages(List<String> messages) {
         allRows.clear();
+        localPartyBySession.clear();
         IntStream.range(0, messages.size()).forEach(i -> {
             RowData row = parseRow(messages.get(i), i + 1);
             allRows.add(row);
@@ -116,8 +120,11 @@ public class FixCommTimelinePanel extends JPanel {
             Message parsed = FixMessageParser.parse(msg, dd);
             String time = parsed.getHeader().isSetField(52) ? parsed.getHeader().getString(52) : "";
             String type = parsed.getHeader().isSetField(35) ? parsed.getHeader().getString(35) : "";
+            String sender = parsed.getHeader().isSetField(49) ? parsed.getHeader().getString(49) : "";
+            String target = parsed.getHeader().isSetField(56) ? parsed.getHeader().getString(56) : "";
+            String direction = determineDirection(sender, target);
             String summary = FixMessageParser.buildMessageLabel(parsed, dd);
-            return new RowData(index, time, "→", type, summary);
+            return new RowData(index, time, direction, type, summary);
         } catch (Exception e) {
             return new RowData(index, "", "→", "", msg);
         }
@@ -134,6 +141,36 @@ public class FixCommTimelinePanel extends JPanel {
             }
         }
         return "FIX.4.4";
+    }
+
+    private String determineDirection(String sender, String target) {
+        if (sender.isEmpty() || target.isEmpty()) {
+            return "→";
+        }
+        String key = sessionKey(sender, target);
+        String local = localPartyBySession.get(key);
+        if (local == null) {
+            localPartyBySession.put(key, sender);
+            local = sender;
+        }
+        return sender.equals(local) ? "→" : "←";
+    }
+
+    private static String sessionKey(String a, String b) {
+        return a.compareTo(b) < 0 ? a + "|" + b : b + "|" + a;
+    }
+
+    /**
+     * Return the direction arrow for the given visible row.
+     *
+     * @param row zero-based index of the row
+     * @return direction arrow or {@code null} if the row does not exist
+     */
+    String getDirectionAtRow(int row) {
+        if (row < 0 || row >= displayedRows.size()) {
+            return null;
+        }
+        return displayedRows.get(row).direction;
     }
 
     private static final class RowData {

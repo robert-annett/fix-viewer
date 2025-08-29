@@ -11,7 +11,7 @@
 - Added FIX Field Lookup tool window for searching tag information
 - Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
 - Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
-- Added communications timeline view for inspecting message sequences
+- Added Message Flow view for inspecting message sequences with direction indicators
 
 ### Fixed
 

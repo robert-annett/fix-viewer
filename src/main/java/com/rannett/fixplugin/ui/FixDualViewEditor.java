@@ -88,7 +88,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 tablePanel.highlightTagCell("8", "Message " + idx);
             }
         });
-        tabbedPane.addTab("Comm", commPanel);
+        tabbedPane.addTab("Message Flow", commPanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         // Full rebuild and revalidation on document change
