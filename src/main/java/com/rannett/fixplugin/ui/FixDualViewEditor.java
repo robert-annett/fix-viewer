@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
+
 import com.rannett.fixplugin.util.FixMessageParser;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
@@ -37,6 +39,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private final JTabbedPane tabbedPane;
     private final FixTransposedTablePanel tablePanel;
     private final FixMessageTreePanel treePanel;
+    private final FixCommTimelinePanel commPanel;
     private final Document document;
     private final VirtualFile file;
     private Integer pendingCaretOffset = null;
@@ -76,6 +79,16 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
         treePanel = new FixMessageTreePanel(messages, project);
         tabbedPane.addTab("Tree View", treePanel);
+
+        commPanel = new FixCommTimelinePanel(messages);
+        commPanel.setOnMessageSelected(idx -> {
+            int offset = findMessageOffset(idx);
+            if (offset >= 0) {
+                pendingCaretOffset = offset;
+                tablePanel.highlightTagCell("8", "Message " + idx);
+            }
+        });
+        tabbedPane.addTab("Message Flow", commPanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         // Full rebuild and revalidation on document change
@@ -86,6 +99,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                     List<String> updatedMessages = FixMessageParser.splitMessages(document.getText());
                     tablePanel.updateTable(updatedMessages);
                     treePanel.updateTree(updatedMessages);
+                    commPanel.updateMessages(updatedMessages);
                 });
             }
         });
@@ -166,6 +180,16 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         return offset + tagIndex;
     }
 
+    private int findMessageOffset(int messageIndex) {
+        List<String> lines = FixMessageParser.splitMessages(document.getText());
+        if (messageIndex < 1 || messageIndex > lines.size()) {
+            return -1;
+        }
+        return IntStream.range(0, messageIndex - 1)
+                .map(i -> lines.get(i).length() + 1)
+                .sum();
+    }
+
     @Override
     public @NotNull JComponent getComponent() {
         return mainPanel;
@@ -174,9 +198,16 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
         int index = tabbedPane.getSelectedIndex();
-        if (index == 0) return textEditor.getPreferredFocusedComponent();
-        if (index == 1) return tablePanel;
-        return treePanel;
+        if (index == 0) {
+            return textEditor.getPreferredFocusedComponent();
+        }
+        if (index == 1) {
+            return tablePanel;
+        }
+        if (index == 2) {
+            return treePanel;
+        }
+        return commPanel;
     }
 
     @Override
