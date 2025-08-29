@@ -51,4 +51,17 @@ public class FixCommTimelinePanelTest {
             assertEquals("D (NEWORDERSINGLE)", panel.getMsgTypeAtRow(1));
         });
     }
+
+    @Test
+    public void testColumnOrderAndWidth() throws Exception {
+        List<String> messages = List.of("8=FIX.4.4|35=A|10=001|");
+        SwingUtilities.invokeAndWait(() -> {
+            FixCommTimelinePanel panel = new FixCommTimelinePanel(messages);
+            assertEquals("Time", panel.getColumnName(0));
+            assertEquals("Dir", panel.getColumnName(1));
+            assertEquals("MsgType", panel.getColumnName(2));
+            assertEquals("Summary", panel.getColumnName(3));
+            assertEquals(150, panel.getColumnPreferredWidth(0));
+        });
+    }
 }

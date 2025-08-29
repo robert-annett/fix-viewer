@@ -53,7 +53,6 @@ public class FixCommTimelinePanel extends JPanel {
         super(new BorderLayout());
 
         ColumnInfo[] columns = new ColumnInfo[]{
-                new TreeColumnInfo("Summary"),
                 new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
                     @Override
                     public String valueOf(DefaultMutableTreeNode node) {
@@ -80,7 +79,8 @@ public class FixCommTimelinePanel extends JPanel {
                         }
                         return "";
                     }
-                }
+                },
+                new TreeColumnInfo("Summary")
         };
 
         model = new ListTreeTableModelOnColumns(root, columns);
@@ -317,17 +317,25 @@ public class FixCommTimelinePanel extends JPanel {
     }
 
     private void fixColumnWidths() {
-        TableColumn timeColumn = table.getColumnModel().getColumn(1);
-        timeColumn.setMinWidth(120);
-        timeColumn.setMaxWidth(120);
-        timeColumn.setPreferredWidth(120);
+        TableColumn timeColumn = table.getColumnModel().getColumn(0);
+        timeColumn.setMinWidth(150);
+        timeColumn.setMaxWidth(150);
+        timeColumn.setPreferredWidth(150);
         timeColumn.setResizable(false);
 
-        TableColumn dirColumn = table.getColumnModel().getColumn(2);
+        TableColumn dirColumn = table.getColumnModel().getColumn(1);
         dirColumn.setMinWidth(40);
         dirColumn.setMaxWidth(40);
         dirColumn.setPreferredWidth(40);
         dirColumn.setResizable(false);
+    }
+
+    String getColumnName(int index) {
+        return table.getColumnModel().getColumn(index).getHeaderValue().toString();
+    }
+
+    int getColumnPreferredWidth(int index) {
+        return table.getColumnModel().getColumn(index).getPreferredWidth();
     }
 
     private static final class MessageNode extends DefaultMutableTreeNode {
