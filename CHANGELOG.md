@@ -12,6 +12,7 @@
 - Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
 - Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
 - Added Message Flow view for inspecting message sequences with direction indicators
+- Message Flow displays FIX message names alongside type codes
 
 ### Fixed
 

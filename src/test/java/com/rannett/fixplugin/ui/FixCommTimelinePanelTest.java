@@ -38,4 +38,17 @@ public class FixCommTimelinePanelTest {
             assertEquals("←", panel.getDirectionAtRow(3));
         });
     }
+
+    @Test
+    public void testMsgTypeNames() throws Exception {
+        List<String> messages = List.of(
+                "8=FIX.4.4|35=A|10=001|",
+                "8=FIX.4.4|35=D|10=002|"
+        );
+        SwingUtilities.invokeAndWait(() -> {
+            FixCommTimelinePanel panel = new FixCommTimelinePanel(messages);
+            assertEquals("A (LOGON)", panel.getMsgTypeAtRow(0));
+            assertEquals("D (NEWORDERSINGLE)", panel.getMsgTypeAtRow(1));
+        });
+    }
 }

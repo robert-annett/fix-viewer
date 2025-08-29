@@ -99,10 +99,10 @@ public class FixCommTimelinePanel extends JPanel {
         model.setRowCount(0);
         displayedRows.clear();
         allRows.stream()
-                .filter(r -> !hideHeartbeat.isSelected() || !"0".equals(r.msgType))
+                .filter(r -> !hideHeartbeat.isSelected() || !"0".equals(r.msgTypeCode))
                 .forEach(r -> {
                     displayedRows.add(r);
-                    model.addRow(new Object[]{r.time, r.direction, r.msgType, r.summary});
+                    model.addRow(new Object[]{r.time, r.direction, r.msgTypeDisplay, r.summary});
                 });
     }
 
@@ -119,15 +119,27 @@ public class FixCommTimelinePanel extends JPanel {
             DataDictionary dd = FixMessageParser.loadDataDictionary(begin, null);
             Message parsed = FixMessageParser.parse(msg, dd);
             String time = parsed.getHeader().isSetField(52) ? parsed.getHeader().getString(52) : "";
-            String type = parsed.getHeader().isSetField(35) ? parsed.getHeader().getString(35) : "";
+            String typeCode = parsed.getHeader().isSetField(35) ? parsed.getHeader().getString(35) : "";
+            String typeName = buildTypeName(dd, typeCode);
             String sender = parsed.getHeader().isSetField(49) ? parsed.getHeader().getString(49) : "";
             String target = parsed.getHeader().isSetField(56) ? parsed.getHeader().getString(56) : "";
             String direction = determineDirection(sender, target);
             String summary = FixMessageParser.buildMessageLabel(parsed, dd);
-            return new RowData(index, time, direction, type, summary);
+            return new RowData(index, time, direction, typeCode, typeName, summary);
         } catch (Exception e) {
-            return new RowData(index, "", "→", "", msg);
+            return new RowData(index, "", "→", "", "", msg);
         }
+    }
+
+    private static String buildTypeName(DataDictionary dd, String typeCode) {
+        if (typeCode == null || typeCode.isEmpty()) {
+            return "";
+        }
+        String name = dd.getValueName(35, typeCode);
+        if (name != null && !name.isEmpty()) {
+            return typeCode + " (" + name.toUpperCase() + ")";
+        }
+        return typeCode;
     }
 
     private static String extractBeginString(String msg) {
@@ -173,18 +185,27 @@ public class FixCommTimelinePanel extends JPanel {
         return displayedRows.get(row).direction;
     }
 
+    String getMsgTypeAtRow(int row) {
+        if (row < 0 || row >= displayedRows.size()) {
+            return null;
+        }
+        return displayedRows.get(row).msgTypeDisplay;
+    }
+
     private static final class RowData {
         final int index;
         final String time;
         final String direction;
-        final String msgType;
+        final String msgTypeCode;
+        final String msgTypeDisplay;
         final String summary;
 
-        RowData(int index, String time, String direction, String msgType, String summary) {
+        RowData(int index, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
             this.index = index;
             this.time = time;
             this.direction = direction;
-            this.msgType = msgType;
+            this.msgTypeCode = msgTypeCode;
+            this.msgTypeDisplay = msgTypeDisplay;
             this.summary = summary;
         }
     }
