@@ -3,31 +3,6 @@
 # fix-plugin2 Changelog
 
 ## [Unreleased]
-- Added language injection for FIX messages embedded in code strings
-- Added tests for language injection
-- Added tests for dictionary caching and additional lexer scenarios
-- Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
-- Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
-- Added FIX Field Lookup tool window for searching tag information
-- Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
-- Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
-- Added Message Flow view for inspecting message sequences with direction indicators
-- Message Flow displays FIX message names alongside type codes
-- Message Flow columns reordered to Time, Dir, MsgType, Summary with Time column widened
-
-### Fixed
-
-- Multi-line FpML fields no longer split messages when parsing
-- Invalid character warnings are no longer reported for FpML text in XmlData or EncodedSecurityDesc fields.
-- Invalid character warnings are no longer reported for FpML text in XmlData or
-  EncodedSecurityDesc fields.
-- Transposed table no longer shrinks columns when many messages are displayed; a horizontal scrollbar appears instead.
-
-### Added
-
-- Support for extended precision UTCTimestamps with optional trailing `Z`.
-- Detection and parsing of FpML in XMLData and EncodedSecurityDesc fields.
-- Fixed lexer handling of whitespace inside embedded FpML and added lexer tests.
 
 ## [0.0.1]
 
@@ -118,6 +93,10 @@
 - Side-by-side comparison of FIX messages using IntelliJ diff viewer
 - Display enum descriptions alongside field names in the tree view
 - Filtering in the transposed table view and ability to reset filtering and ordering.
+- Multi-line FpML fields no longer split messages when parsing
+- Invalid character warnings are no longer reported for FpML text in XmlData or
+  EncodedSecurityDesc fields.
+- Transposed table no longer shrinks columns when many messages are displayed; a horizontal scrollbar appears instead.
 
 ## [0.0.14]
 
@@ -136,3 +115,13 @@
 - Added tests for dictionary caching and additional lexer scenarios
 - Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
 - Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
+- Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
+- Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
+
+## [0.0.15]
+
+### Added
+
+- Added Message Flow view for inspecting message sequences with direction indicators
+- Message Flow displays FIX message names alongside type codes
+- Message Flow columns reordered to Time, Dir, MsgType, Summary with Time column widened
