@@ -13,6 +13,7 @@
 - Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
 - Added Message Flow view for inspecting message sequences with direction indicators
 - Message Flow displays FIX message names alongside type codes
+- Message Flow summary column expands to show message fields and Time/Dir columns use fixed widths
 
 ### Fixed
 

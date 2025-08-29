@@ -1,7 +1,11 @@
 package com.rannett.fixplugin.ui;
 
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.table.JBTable;
+import com.intellij.ui.treeStructure.Tree;
+import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
+import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
+import com.intellij.ui.treeStructure.treetable.TreeTable;
+import com.intellij.util.ui.ColumnInfo;
 import com.rannett.fixplugin.util.FixMessageParser;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,8 +13,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,42 +25,88 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import quickfix.DataDictionary;
+import quickfix.Field;
+import quickfix.FieldMap;
+import quickfix.Group;
 import quickfix.Message;
 
 /**
- * Panel that renders a simple timeline view of FIX messages.
+ * Panel that renders a timeline view of FIX messages with an expandable
+ * summary column.
  */
 public class FixCommTimelinePanel extends JPanel {
-    private final DefaultTableModel model;
-    private final JTable table;
     private final JCheckBox hideHeartbeat;
-    private final List<RowData> allRows = new ArrayList<>();
-    private final List<RowData> displayedRows = new ArrayList<>();
+    private final List<MessageNode> allNodes = new ArrayList<>();
+    private final List<MessageNode> displayedNodes = new ArrayList<>();
     private final Map<String, String> localPartyBySession = new HashMap<>();
+    private final DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
+    private final ListTreeTableModelOnColumns model;
+    private final TreeTable table;
     private Consumer<Integer> onMessageSelected;
 
+    /**
+     * Create a timeline panel for the provided messages.
+     *
+     * @param messages list of raw FIX messages
+     */
     public FixCommTimelinePanel(@NotNull List<String> messages) {
         super(new BorderLayout());
-        model = new DefaultTableModel(new Object[]{"Time", "Dir", "MsgType", "Summary"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+
+        ColumnInfo[] columns = new ColumnInfo[]{
+                new TreeColumnInfo("Summary"),
+                new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
+                    @Override
+                    public String valueOf(DefaultMutableTreeNode node) {
+                        if (node instanceof MessageNode) {
+                            return ((MessageNode) node).time;
+                        }
+                        return "";
+                    }
+                },
+                new ColumnInfo<DefaultMutableTreeNode, String>("Dir") {
+                    @Override
+                    public String valueOf(DefaultMutableTreeNode node) {
+                        if (node instanceof MessageNode) {
+                            return ((MessageNode) node).direction;
+                        }
+                        return "";
+                    }
+                },
+                new ColumnInfo<DefaultMutableTreeNode, String>("MsgType") {
+                    @Override
+                    public String valueOf(DefaultMutableTreeNode node) {
+                        if (node instanceof MessageNode) {
+                            return ((MessageNode) node).msgTypeDisplay;
+                        }
+                        return "";
+                    }
+                }
         };
-        table = new JBTable(model);
+
+        model = new ListTreeTableModelOnColumns(root, columns);
+        table = new TreeTable(model);
+        table.setRootVisible(false);
+
         hideHeartbeat = new JCheckBox("Hide heartbeats");
         hideHeartbeat.addActionListener(e -> applyFilter());
+
         JScrollPane scroll = new JBScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         add(hideHeartbeat, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
 
-        table.getSelectionModel().addListSelectionListener(e -> notifySelection());
+        Tree tree = table.getTree();
+        tree.addTreeSelectionListener(e -> notifySelection());
+
         loadMessages(messages);
+
+        fixColumnWidths();
     }
 
     /**
      * Update the timeline with new messages.
+     *
+     * @param messages list of raw FIX messages
      */
     public void updateMessages(@NotNull List<String> messages) {
         loadMessages(messages);
@@ -72,6 +123,8 @@ public class FixCommTimelinePanel extends JPanel {
 
     /**
      * Set whether heartbeat messages should be hidden.
+     *
+     * @param hide {@code true} to hide heartbeats
      */
     public void setHideHeartbeats(boolean hide) {
         hideHeartbeat.setSelected(hide);
@@ -79,45 +132,53 @@ public class FixCommTimelinePanel extends JPanel {
     }
 
     /**
-     * Return the number of visible rows.
+     * Return the number of visible message rows.
+     *
+     * @return count of message nodes currently displayed
      */
     public int getVisibleRowCount() {
-        return model.getRowCount();
+        return displayedNodes.size();
     }
 
     private void loadMessages(List<String> messages) {
-        allRows.clear();
+        allNodes.clear();
         localPartyBySession.clear();
         IntStream.range(0, messages.size()).forEach(i -> {
-            RowData row = parseRow(messages.get(i), i + 1);
-            allRows.add(row);
+            MessageNode node = parseNode(messages.get(i), i + 1);
+            allNodes.add(node);
         });
         applyFilter();
     }
 
     private void applyFilter() {
-        model.setRowCount(0);
-        displayedRows.clear();
-        allRows.stream()
-                .filter(r -> !hideHeartbeat.isSelected() || !"0".equals(r.msgTypeCode))
-                .forEach(r -> {
-                    displayedRows.add(r);
-                    model.addRow(new Object[]{r.time, r.direction, r.msgTypeDisplay, r.summary});
+        root.removeAllChildren();
+        displayedNodes.clear();
+        allNodes.stream()
+                .filter(n -> !hideHeartbeat.isSelected() || !"0".equals(n.msgTypeCode))
+                .forEach(n -> {
+                    displayedNodes.add(n);
+                    root.add(n);
                 });
+        model.setRoot(root);
     }
 
     private void notifySelection() {
-        int row = table.getSelectedRow();
-        if (row >= 0 && row < displayedRows.size() && onMessageSelected != null) {
-            onMessageSelected.accept(displayedRows.get(row).index);
+        TreePath path = table.getTree().getSelectionPath();
+        if (path == null) {
+            return;
+        }
+        Object node = path.getLastPathComponent();
+        if (node instanceof MessageNode && onMessageSelected != null) {
+            onMessageSelected.accept(((MessageNode) node).index);
         }
     }
 
-    private RowData parseRow(String msg, int index) {
+    private MessageNode parseNode(String msg, int index) {
         String begin = extractBeginString(msg);
         try {
             DataDictionary dd = FixMessageParser.loadDataDictionary(begin, null);
             Message parsed = FixMessageParser.parse(msg, dd);
+
             String time = parsed.getHeader().isSetField(52) ? parsed.getHeader().getString(52) : "";
             String typeCode = parsed.getHeader().isSetField(35) ? parsed.getHeader().getString(35) : "";
             String typeName = buildTypeName(dd, typeCode);
@@ -125,9 +186,24 @@ public class FixCommTimelinePanel extends JPanel {
             String target = parsed.getHeader().isSetField(56) ? parsed.getHeader().getString(56) : "";
             String direction = determineDirection(sender, target);
             String summary = FixMessageParser.buildMessageLabel(parsed, dd);
-            return new RowData(index, time, direction, typeCode, typeName, summary);
+
+            MessageNode node = new MessageNode(index, time, direction, typeCode, typeName, summary);
+            DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
+            buildNodes(parsed.getHeader(), headerNode, dd);
+            node.add(headerNode);
+
+            DefaultMutableTreeNode bodyNode = new DefaultMutableTreeNode("Body");
+            buildNodes(parsed, bodyNode, dd);
+            node.add(bodyNode);
+
+            DefaultMutableTreeNode trailerNode = new DefaultMutableTreeNode("Trailer");
+            buildNodes(parsed.getTrailer(), trailerNode, dd);
+            node.add(trailerNode);
+            return node;
         } catch (Exception e) {
-            return new RowData(index, "", "→", "", "", msg);
+            MessageNode node = new MessageNode(index, "", "→", "", "", msg);
+            node.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
+            return node;
         }
     }
 
@@ -165,11 +241,17 @@ public class FixCommTimelinePanel extends JPanel {
             localPartyBySession.put(key, sender);
             local = sender;
         }
-        return sender.equals(local) ? "→" : "←";
+        if (sender.equals(local)) {
+            return "→";
+        }
+        return "←";
     }
 
     private static String sessionKey(String a, String b) {
-        return a.compareTo(b) < 0 ? a + "|" + b : b + "|" + a;
+        if (a.compareTo(b) < 0) {
+            return a + "|" + b;
+        }
+        return b + "|" + a;
     }
 
     /**
@@ -179,35 +261,91 @@ public class FixCommTimelinePanel extends JPanel {
      * @return direction arrow or {@code null} if the row does not exist
      */
     String getDirectionAtRow(int row) {
-        if (row < 0 || row >= displayedRows.size()) {
+        if (row < 0 || row >= displayedNodes.size()) {
             return null;
         }
-        return displayedRows.get(row).direction;
+        return displayedNodes.get(row).direction;
     }
 
     String getMsgTypeAtRow(int row) {
-        if (row < 0 || row >= displayedRows.size()) {
+        if (row < 0 || row >= displayedNodes.size()) {
             return null;
         }
-        return displayedRows.get(row).msgTypeDisplay;
+        return displayedNodes.get(row).msgTypeDisplay;
     }
 
-    private static final class RowData {
+    private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
+        java.util.Iterator<Field<?>> fieldIt = map.iterator();
+        while (fieldIt.hasNext()) {
+            Field<?> field = fieldIt.next();
+            int tag = field.getTag();
+            String name = dd.getFieldName(tag);
+            String value = String.valueOf(field.getObject());
+            String enumName = dd.getValueName(tag, value);
+
+            StringBuilder label = new StringBuilder();
+            label.append(tag).append("=").append(value);
+            if (name != null) {
+                label.append(" (").append(name);
+                if (enumName != null) {
+                    label.append("=").append(enumName);
+                }
+                label.append(")");
+            }
+            parent.add(new DefaultMutableTreeNode(label.toString()));
+        }
+
+        java.util.Iterator<Integer> groupKeys = map.groupKeyIterator();
+        while (groupKeys.hasNext()) {
+            int groupTag = groupKeys.next();
+            List<Group> groups = map.getGroups(groupTag);
+            String groupName = dd.getFieldName(groupTag);
+            int idx = 1;
+            for (Group g : groups) {
+                DefaultMutableTreeNode groupNode;
+                String title;
+                if (groupName != null) {
+                    title = groupName;
+                } else {
+                    title = String.valueOf(groupTag);
+                }
+                groupNode = new DefaultMutableTreeNode(title + " [" + idx++ + "]");
+                buildNodes(g, groupNode, dd);
+                parent.add(groupNode);
+            }
+        }
+    }
+
+    private void fixColumnWidths() {
+        TableColumn timeColumn = table.getColumnModel().getColumn(1);
+        timeColumn.setMinWidth(120);
+        timeColumn.setMaxWidth(120);
+        timeColumn.setPreferredWidth(120);
+        timeColumn.setResizable(false);
+
+        TableColumn dirColumn = table.getColumnModel().getColumn(2);
+        dirColumn.setMinWidth(40);
+        dirColumn.setMaxWidth(40);
+        dirColumn.setPreferredWidth(40);
+        dirColumn.setResizable(false);
+    }
+
+    private static final class MessageNode extends DefaultMutableTreeNode {
         final int index;
         final String time;
         final String direction;
         final String msgTypeCode;
         final String msgTypeDisplay;
-        final String summary;
 
-        RowData(int index, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
+        MessageNode(int index, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
+            super(summary);
             this.index = index;
             this.time = time;
             this.direction = direction;
             this.msgTypeCode = msgTypeCode;
             this.msgTypeDisplay = msgTypeDisplay;
-            this.summary = summary;
         }
     }
+
 }
 
