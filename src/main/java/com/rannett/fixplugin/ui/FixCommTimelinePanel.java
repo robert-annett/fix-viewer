@@ -8,6 +8,11 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
 import com.rannett.fixplugin.util.FixMessageParser;
 import org.jetbrains.annotations.NotNull;
+import quickfix.DataDictionary;
+import quickfix.Field;
+import quickfix.FieldMap;
+import quickfix.Group;
+import quickfix.Message;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -23,12 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
-
-import quickfix.DataDictionary;
-import quickfix.Field;
-import quickfix.FieldMap;
-import quickfix.Group;
-import quickfix.Message;
 
 /**
  * Panel that renders a timeline view of FIX messages with an expandable
@@ -318,9 +317,9 @@ public class FixCommTimelinePanel extends JPanel {
 
     private void fixColumnWidths() {
         TableColumn timeColumn = table.getColumnModel().getColumn(0);
-        timeColumn.setMinWidth(150);
-        timeColumn.setMaxWidth(150);
-        timeColumn.setPreferredWidth(150);
+        timeColumn.setMinWidth(160);
+        timeColumn.setMaxWidth(160);
+        timeColumn.setPreferredWidth(160);
         timeColumn.setResizable(false);
 
         TableColumn dirColumn = table.getColumnModel().getColumn(1);

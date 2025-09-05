@@ -115,10 +115,15 @@
 - Added tests for dictionary caching and additional lexer scenarios
 - Added tests for TagFilterDialog, editor provider, element factory, and more lexer cases
 - Fixed TagFilterDialog tests to use built-in dictionaries by clearing custom paths
+
+## [0.0.15]
+
+### Added
+
 - Display field descriptions in Field Lookup using FIX.5.0SP2 phrases
 - Wrapped field descriptions in Field Lookup to avoid horizontal scrolling
 
-## [0.0.15]
+## [0.0.16]
 
 ### Added
 
