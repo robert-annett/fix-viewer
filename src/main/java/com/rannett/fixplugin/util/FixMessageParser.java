@@ -138,7 +138,7 @@ public final class FixMessageParser {
      */
     public static java.util.List<String> splitMessages(@NotNull String text) {
         java.util.List<String> messages = new java.util.ArrayList<>();
-        if (text == null || text.isEmpty()) {
+        if (text.isEmpty()) {
             return messages;
         }
 
@@ -178,7 +178,6 @@ public final class FixMessageParser {
             }
 
             int checksumIndex = -1;
-            int digitsStart = -1;
             int digitsEnd = -1;
             int searchPosition = start;
             while (true) {
@@ -213,7 +212,6 @@ public final class FixMessageParser {
                 }
 
                 checksumIndex = candidate;
-                digitsStart = candidateDigitsStart;
                 digitsEnd = candidateDigitsEnd;
                 break;
             }
