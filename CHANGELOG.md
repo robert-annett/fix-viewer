@@ -126,6 +126,14 @@
 - Message Flow displays FIX message names alongside type codes
 - Message Flow columns reordered to Time, Dir, MsgType, Summary with Time column widened
 
+## [0.0.16]
+
+### Added
+
+- Added Message Flow view for inspecting message sequences with direction indicators
+- Message Flow displays FIX message names alongside type codes
+- Message Flow columns reordered to Time, Dir, MsgType, Summary with Time column widened
+
 ## [0.0.17]
 
 ### Fixed
