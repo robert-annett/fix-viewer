@@ -177,7 +177,47 @@ public final class FixMessageParser {
                 index = start;
             }
 
-            int checksumIndex = text.indexOf("10=", start);
+            int checksumIndex = -1;
+            int digitsStart = -1;
+            int digitsEnd = -1;
+            int searchPosition = start;
+            while (true) {
+                int candidate = text.indexOf("10=", searchPosition);
+                if (candidate == -1) {
+                    break;
+                }
+                if (candidate > start) {
+                    char previous = text.charAt(candidate - 1);
+                    if (!isMessageBoundaryCharacter(previous)) {
+                        searchPosition = candidate + 3;
+                        continue;
+                    }
+                }
+
+                int candidateDigitsStart = candidate + 3;
+                int candidateDigitsEnd = candidateDigitsStart;
+                while (candidateDigitsEnd < text.length() && Character.isDigit(text.charAt(candidateDigitsEnd))) {
+                    candidateDigitsEnd++;
+                }
+                if (candidateDigitsEnd == candidateDigitsStart) {
+                    searchPosition = candidate + 3;
+                    continue;
+                }
+
+                if (candidateDigitsEnd < text.length()) {
+                    char afterDigits = text.charAt(candidateDigitsEnd);
+                    if (!isMessageBoundaryCharacter(afterDigits)) {
+                        searchPosition = candidate + 3;
+                        continue;
+                    }
+                }
+
+                checksumIndex = candidate;
+                digitsStart = candidateDigitsStart;
+                digitsEnd = candidateDigitsEnd;
+                break;
+            }
+
             if (checksumIndex == -1) {
                 int nl = text.indexOf('\n', start);
                 if (nl == -1) {
@@ -190,25 +230,8 @@ public final class FixMessageParser {
                 }
             }
 
-            int digitsStart = checksumIndex + 3;
-            int digitsEnd = digitsStart;
-            while (digitsEnd < text.length() && Character.isDigit(text.charAt(digitsEnd))) {
-                digitsEnd++;
-            }
-            if (digitsEnd == digitsStart) {
-                int nl = text.indexOf('\n', start);
-                if (nl == -1) {
-                    messages.add(text.substring(start).trim());
-                    break;
-                } else {
-                    messages.add(text.substring(start, nl).trim());
-                    index = nl + 1;
-                    continue;
-                }
-            }
-
             int msgEnd = digitsEnd;
-            if (msgEnd < text.length() && (text.charAt(msgEnd) == '\u0001' || text.charAt(msgEnd) == '|')) {
+            if (msgEnd < text.length() && isFieldDelimiter(text.charAt(msgEnd))) {
                 msgEnd++;
             }
             messages.add(text.substring(start, msgEnd));
@@ -219,5 +242,13 @@ public final class FixMessageParser {
         }
 
         return messages;
+    }
+
+    private static boolean isMessageBoundaryCharacter(char character) {
+        return isFieldDelimiter(character) || character == '\n' || character == '\r';
+    }
+
+    private static boolean isFieldDelimiter(char character) {
+        return character == '\u0001' || character == '|';
     }
 }
