@@ -294,6 +294,19 @@ public class FixTransposedTableModel extends AbstractTableModel {
         return fixVersion;
     }
 
+    /**
+     * Triggers a repaint so that cached table rows pick up updated dictionary metadata.
+     */
+    public void refreshDictionaryMetadata() {
+        SwingUtilities.invokeLater(() -> {
+            if (getRowCount() > 0) {
+                fireTableRowsUpdated(0, getRowCount() - 1);
+            } else {
+                fireTableDataChanged();
+            }
+        });
+    }
+
     public interface DocumentUpdater {
         void updateTagValueInMessage(String messageId, String tag, int occurrence, String newValue);
     }

@@ -159,6 +159,14 @@ public class FixTransposedTablePanel extends JPanel {
         configureColumnWidths();
     }
 
+    /**
+     * Refreshes the rendered metadata so that tag names and enum descriptions reflect the active dictionary.
+     */
+    public void refreshDictionaryMetadata() {
+        model.refreshDictionaryMetadata();
+        table.repaint();
+    }
+
     public void applyTagFilter(Set<String> tags) {
         filteredTags = new LinkedHashSet<>(tags);
         if (filteredTags.isEmpty()) {

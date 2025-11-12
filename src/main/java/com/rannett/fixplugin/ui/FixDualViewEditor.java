@@ -13,9 +13,11 @@ import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBTabbedPane;
+import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import com.rannett.fixplugin.util.FixMessageParser;
+import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
     private final FileEditor textEditor;
@@ -42,6 +45,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private final FixCommTimelinePanel commPanel;
     private final Document document;
     private final VirtualFile file;
+    private final MessageBusConnection messageBusConnection;
     private Integer pendingCaretOffset = null;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
@@ -90,6 +94,9 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         });
         tabbedPane.addTab("Message Flow", commPanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
+
+        messageBusConnection = project.getMessageBus().connect(this);
+        messageBusConnection.subscribe(FixDictionaryChangeListener.TOPIC, this::handleDictionaryChange);
 
         // Full rebuild and revalidation on document change
         document.addDocumentListener(new com.intellij.openapi.editor.event.DocumentListener() {
@@ -163,6 +170,16 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                     com.intellij.openapi.wm.IdeFocusManager.getInstance(project).requestFocus(editor.getContentComponent(), true);
                 });
             }
+        });
+    }
+
+    private void handleDictionaryChange() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            List<String> updatedMessages = ApplicationManager.getApplication().runReadAction(
+                    (Computable<List<String>>) () -> FixMessageParser.splitMessages(document.getText())
+            );
+            tablePanel.refreshDictionaryMetadata();
+            treePanel.updateTree(updatedMessages);
         });
     }
 
@@ -252,6 +269,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
     @Override
     public void dispose() {
+        messageBusConnection.disconnect();
         textEditor.dispose();
     }
 

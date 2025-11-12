@@ -7,12 +7,14 @@ import com.intellij.ui.components.JBTextField;
 import com.intellij.openapi.util.text.StringUtil;
 import com.rannett.fixplugin.dictionary.FieldSection;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
+import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
@@ -26,7 +28,8 @@ public class FixFieldLookupPanel extends JPanel {
     private final JBTextField searchField = new JBTextField();
     private final JBList<String> resultList = new JBList<>(new DefaultListModel<>());
     private final JTextArea detailsArea = new JTextArea();
-    private final FixTagDictionary dictionary;
+    private final FixDictionaryCache dictionaryCache;
+    private FixTagDictionary dictionary;
 
     /**
      * Creates a panel for looking up FIX fields.
@@ -35,7 +38,9 @@ public class FixFieldLookupPanel extends JPanel {
      */
     public FixFieldLookupPanel(Project project) {
         super(new BorderLayout());
-        this.dictionary = project.getService(FixDictionaryCache.class).getDictionary("FIX.4.4");
+        this.dictionaryCache = project.getService(FixDictionaryCache.class);
+        this.dictionary = dictionaryCache.getDictionary("FIX.4.4");
+        project.getMessageBus().connect(project).subscribe(FixDictionaryChangeListener.TOPIC, this::reloadDictionary);
         resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         detailsArea.setEditable(false);
         detailsArea.setLineWrap(true);
@@ -62,6 +67,15 @@ public class FixFieldLookupPanel extends JPanel {
         });
 
         resultList.addListSelectionListener(e -> showDetails());
+    }
+
+    private void reloadDictionary() {
+        dictionaryCache.clear();
+        dictionary = dictionaryCache.getDictionary("FIX.4.4");
+        SwingUtilities.invokeLater(() -> {
+            updateResults();
+            showDetails();
+        });
     }
 
     private void updateResults() {

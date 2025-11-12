@@ -1,5 +1,6 @@
 package com.rannett.fixplugin.settings;
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
@@ -8,6 +9,8 @@ import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
+import com.rannett.fixplugin.dictionary.FixDictionaryCache;
+import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,6 +110,11 @@ public class FixViewerSettingsConfigurable implements Configurable {
     @Override
     public void apply() {
         settingsState.setCustomDictionaryPaths(tableToMap());
+        project.getService(FixDictionaryCache.class).clear();
+        project.getMessageBus()
+                .syncPublisher(FixDictionaryChangeListener.TOPIC)
+                .onDictionariesChanged();
+        DaemonCodeAnalyzer.getInstance(project).restart();
     }
 
     @Override
