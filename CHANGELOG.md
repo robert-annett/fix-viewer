@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Refresh open FIX editors immediately after updating custom dictionary mappings so IDE restarts are no longer required.
+
 ## [0.0.1]
 
 ### Added
