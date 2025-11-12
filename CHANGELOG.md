@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
+
 ### Fixed
 
 - Refresh open FIX editors immediately after updating custom dictionary mappings so IDE restarts are no longer required.

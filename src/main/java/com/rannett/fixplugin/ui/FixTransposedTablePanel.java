@@ -198,6 +198,10 @@ public class FixTransposedTablePanel extends JPanel {
         if (onCellSelectedCallback != null) onCellSelectedCallback.run();
     }
 
+    public String getFixVersion() {
+        return model.getFixVersion();
+    }
+
     public String getSelectedTag() {
         int row = table.getSelectedRow();
         return row >= 0 ? model.getTagAtRow(row) : null;
