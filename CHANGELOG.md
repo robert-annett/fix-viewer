@@ -11,6 +11,7 @@
 ### Fixed
 
 - Refresh open FIX editors immediately after updating custom dictionary mappings so IDE restarts are no longer required.
+- Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
 
 ## [0.0.1]
 

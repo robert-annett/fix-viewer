@@ -108,7 +108,12 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         messageBusConnection = project.getMessageBus().connect(this);
-        messageBusConnection.subscribe(FixDictionaryChangeListener.TOPIC, this::handleDictionaryChange);
+        messageBusConnection.subscribe(FixDictionaryChangeListener.TOPIC, new FixDictionaryChangeListener() {
+            @Override
+            public void onDictionariesChanged() {
+                handleDictionaryChange();
+            }
+        });
 
         // Full rebuild and revalidation on document change
         document.addDocumentListener(new com.intellij.openapi.editor.event.DocumentListener() {
