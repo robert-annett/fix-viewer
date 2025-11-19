@@ -5,8 +5,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.TextBrowseFolderListener;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
@@ -17,9 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,27 +66,15 @@ public class FixViewerSettingsConfigurable implements Configurable {
                     if (selectedRow != -1) {
                         String currentVersion = (String) tableModel.getValueAt(selectedRow, 0);
                         String currentPath = (String) tableModel.getValueAt(selectedRow, 1);
-
-                        JPanel panel = new JPanel();
-                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-                        JTextField versionField = new JTextField(currentVersion);
-                        TextFieldWithBrowseButton fileField = new TextFieldWithBrowseButton();
-                        fileField.setText(currentPath);
-                        fileField.addBrowseFolderListener(new TextBrowseFolderListener(fileDescriptor, project));
-
-
-                        panel.add(new JLabel("FIX Version:"));
-                        panel.add(versionField);
-                        panel.add(new JLabel("Custom Dictionary Path:"));
-                        panel.add(fileField);
-
-                        int result = JOptionPane.showConfirmDialog(mainPanel, panel, "Edit Mapping", JOptionPane.OK_CANCEL_OPTION);
-                        if (result == JOptionPane.OK_OPTION) {
-                            String newVersion = versionField.getText().trim();
-                            String newPath = fileField.getText().trim();
-                            tableModel.setValueAt(newVersion, selectedRow, 0);
-                            tableModel.setValueAt(newPath, selectedRow, 1);
+                        DictionaryMappingEditDialog dialog = new DictionaryMappingEditDialog(
+                                project,
+                                currentVersion,
+                                currentPath,
+                                fileDescriptor
+                        );
+                        if (dialog.showAndGet()) {
+                            tableModel.setValueAt(dialog.getVersion(), selectedRow, 0);
+                            tableModel.setValueAt(dialog.getDictionaryPath(), selectedRow, 1);
                         }
                     }
                 });

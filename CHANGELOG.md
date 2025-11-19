@@ -12,6 +12,8 @@
 
 - Refresh open FIX editors immediately after updating custom dictionary mappings so IDE restarts are no longer required.
 - Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
+- Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
+  when updating dictionaries from the settings panel.
 
 ## [0.0.1]
 
