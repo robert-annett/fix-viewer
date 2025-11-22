@@ -23,6 +23,13 @@ public final class FixDictionaryCache {
         return cache.computeIfAbsent(version, v -> loadDictionary(project, v));
     }
 
+    /**
+     * Clears the cached dictionaries so that subsequent lookups reload from disk or bundled resources.
+     */
+    public void clear() {
+        cache.clear();
+    }
+
     private FixTagDictionary loadDictionary(Project project, String fixVersion) {
         FixViewerSettingsState settings = FixViewerSettingsState.getInstance(project);
 

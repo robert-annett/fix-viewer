@@ -13,9 +13,13 @@ import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
+import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +36,8 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import com.rannett.fixplugin.util.FixMessageParser;
+import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
+import com.rannett.fixplugin.settings.FixViewerSettingsState;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
     private final FileEditor textEditor;
@@ -42,15 +48,25 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private final FixCommTimelinePanel commPanel;
     private final Document document;
     private final VirtualFile file;
+    private final MessageBusConnection messageBusConnection;
+    private final Project project;
+    private final JBLabel dictionaryLabel;
     private Integer pendingCaretOffset = null;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.file = file;
+        this.project = project;
         this.textEditor = TextEditorProvider.getInstance().createEditor(project, file);
         this.document = ((TextEditor) textEditor).getEditor().getDocument();
 
         mainPanel = new JPanel(new BorderLayout());
         tabbedPane = new JBTabbedPane();
+
+        dictionaryLabel = new JBLabel();
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBorder(JBUI.Borders.empty(4, 8));
+        headerPanel.add(dictionaryLabel, BorderLayout.WEST);
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
 
         tabbedPane.addTab("Text View", textEditor.getComponent());
 
@@ -91,6 +107,14 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         tabbedPane.addTab("Message Flow", commPanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
+        messageBusConnection = project.getMessageBus().connect(this);
+        messageBusConnection.subscribe(FixDictionaryChangeListener.TOPIC, new FixDictionaryChangeListener() {
+            @Override
+            public void onDictionariesChanged() {
+                handleDictionaryChange();
+            }
+        });
+
         // Full rebuild and revalidation on document change
         document.addDocumentListener(new com.intellij.openapi.editor.event.DocumentListener() {
             @Override
@@ -100,6 +124,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                     tablePanel.updateTable(updatedMessages);
                     treePanel.updateTree(updatedMessages);
                     commPanel.updateMessages(updatedMessages);
+                    updateDictionaryLabel();
                 });
             }
         });
@@ -164,6 +189,35 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 });
             }
         });
+
+        updateDictionaryLabel();
+    }
+
+    private void handleDictionaryChange() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            List<String> updatedMessages = ApplicationManager.getApplication().runReadAction(
+                    (Computable<List<String>>) () -> FixMessageParser.splitMessages(document.getText())
+            );
+            tablePanel.refreshDictionaryMetadata();
+            treePanel.updateTree(updatedMessages);
+            updateDictionaryLabel();
+        });
+    }
+
+    private void updateDictionaryLabel() {
+        String fixVersion = tablePanel.getFixVersion();
+        FixViewerSettingsState settingsState = FixViewerSettingsState.getInstance(project);
+        String customPath = fixVersion != null ? settingsState.getCustomDictionaryPath(fixVersion) : null;
+        String text;
+        if (customPath != null && !customPath.isBlank()) {
+            text = "Dictionary: Modified : " + customPath;
+        } else if (fixVersion != null && !fixVersion.isBlank()) {
+            text = "Dictionary: Default (" + fixVersion + ")";
+        } else {
+            text = "Dictionary: Default";
+        }
+        String labelText = text;
+        SwingUtilities.invokeLater(() -> dictionaryLabel.setText(labelText));
     }
 
     private int findTagOffsetInDocument(String tag, String messageId) {
@@ -252,6 +306,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
     @Override
     public void dispose() {
+        messageBusConnection.disconnect();
         textEditor.dispose();
     }
 
