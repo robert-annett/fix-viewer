@@ -6,7 +6,8 @@
 
 ### Added
 
-- Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
+- Display the active dictionary source on every view, including tooltips in the text viewer for custom dictionaries.
+- Jump directly from FIX fields or table rows to the matching dictionary tag or value definition.
 
 ### Fixed
 

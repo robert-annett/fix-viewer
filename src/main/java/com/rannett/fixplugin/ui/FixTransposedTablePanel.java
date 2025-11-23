@@ -10,6 +10,7 @@ import com.intellij.ui.table.JBTable;
 import com.rannett.fixplugin.FixFileType;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import com.rannett.fixplugin.util.DictionaryNavigationHelper;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
@@ -148,6 +149,7 @@ public class FixTransposedTablePanel extends JPanel {
         table.getColumnModel().getSelectionModel().addListSelectionListener(e -> notifySelection());
 
         setupHeaderContextMenu();
+        setupRowContextMenu();
         customizeTableHeaderWithIcon();
         configureColumnWidths();
     }
@@ -273,6 +275,49 @@ public class FixTransposedTablePanel extends JPanel {
                 mousePressed(e);
             }
         });
+    }
+
+    private void setupRowContextMenu() {
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showRowContextMenuIfNeeded(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showRowContextMenuIfNeeded(e);
+            }
+
+            private void showRowContextMenuIfNeeded(MouseEvent e) {
+                if (e.isPopupTrigger() || SwingUtilities.isRightMouseButton(e)) {
+                    int viewRow = table.rowAtPoint(e.getPoint());
+                    int viewCol = table.columnAtPoint(e.getPoint());
+                    if (viewRow < 0 || viewCol < 0) {
+                        return;
+                    }
+                    int modelRow = table.convertRowIndexToModel(viewRow);
+                    int modelCol = table.convertColumnIndexToModel(viewCol);
+                    table.changeSelection(viewRow, viewCol, false, false);
+                    String tag = model.getTagAtRow(modelRow);
+                    String value = getRawCellValue(modelRow, modelCol);
+                    showRowContextMenu(e, tag, value);
+                }
+            }
+        });
+    }
+
+    private void showRowContextMenu(MouseEvent event, String tag, String value) {
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem jumpToDictionary = new JMenuItem("Jump to Dictionary");
+        jumpToDictionary.addActionListener(ae -> DictionaryNavigationHelper.jumpToDictionary(project, model.getFixVersion(), tag, value));
+        menu.add(jumpToDictionary);
+        menu.show(event.getComponent(), event.getX(), event.getY());
+    }
+
+    private String getRawCellValue(int modelRow, int modelCol) {
+        Object raw = model.getValueAt(modelRow, modelCol);
+        return raw != null ? raw.toString() : "";
     }
 
     private void showHeaderContextMenu(MouseEvent e, int columnIndex) {

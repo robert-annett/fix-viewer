@@ -31,6 +31,10 @@ fields for different messages will be shown in the same row, making comparison e
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers.
+- **Active Dictionary Source labels** at the top of every view (with tooltips in Text View) to show whether a built-in or custom
+  dictionary is active.
+- **Jump to Dictionary** context actions from FIX fields and table rows to open the underlying dictionary definition for tags and
+  enumerated values.
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213

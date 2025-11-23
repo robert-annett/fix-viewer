@@ -29,15 +29,15 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import com.rannett.fixplugin.util.FixMessageParser;
+import com.rannett.fixplugin.util.DictionaryNavigationHelper;
 import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
-import com.rannett.fixplugin.settings.FixViewerSettingsState;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
     private final FileEditor textEditor;
@@ -50,7 +50,8 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private final VirtualFile file;
     private final MessageBusConnection messageBusConnection;
     private final Project project;
-    private final JBLabel dictionaryLabel;
+    private final List<JBLabel> dictionaryLabels = new ArrayList<>();
+    private JBLabel textViewDictionaryLabel;
     private Integer pendingCaretOffset = null;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
@@ -62,13 +63,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         mainPanel = new JPanel(new BorderLayout());
         tabbedPane = new JBTabbedPane();
 
-        dictionaryLabel = new JBLabel();
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBorder(JBUI.Borders.empty(4, 8));
-        headerPanel.add(dictionaryLabel, BorderLayout.WEST);
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-
-        tabbedPane.addTab("Text View", textEditor.getComponent());
+        tabbedPane.addTab("Text View", wrapWithDictionaryHeader(textEditor.getComponent(), true));
 
         List<String> messages = FixMessageParser.splitMessages(document.getText());
         tablePanel = new FixTransposedTablePanel(messages, (msgId, tag, occurrence, newValue) -> WriteCommandAction.runWriteCommandAction(project, () -> {
@@ -91,10 +86,10 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             int lineStartOffset = document.getLineStartOffset(msgIndex);
             document.replaceString(lineStartOffset + valueStart, lineStartOffset + valueEnd, newValue);
         }), project);
-        tabbedPane.addTab("Transposed Table", tablePanel);
+        tabbedPane.addTab("Transposed Table", wrapWithDictionaryHeader(tablePanel, false));
 
         treePanel = new FixMessageTreePanel(messages, project);
-        tabbedPane.addTab("Tree View", treePanel);
+        tabbedPane.addTab("Tree View", wrapWithDictionaryHeader(treePanel, false));
 
         commPanel = new FixCommTimelinePanel(messages);
         commPanel.setOnMessageSelected(idx -> {
@@ -104,7 +99,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 tablePanel.highlightTagCell("8", "Message " + idx);
             }
         });
-        tabbedPane.addTab("Message Flow", commPanel);
+        tabbedPane.addTab("Message Flow", wrapWithDictionaryHeader(commPanel, false));
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         messageBusConnection = project.getMessageBus().connect(this);
@@ -205,19 +200,15 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     }
 
     private void updateDictionaryLabel() {
-        String fixVersion = tablePanel.getFixVersion();
-        FixViewerSettingsState settingsState = FixViewerSettingsState.getInstance(project);
-        String customPath = fixVersion != null ? settingsState.getCustomDictionaryPath(fixVersion) : null;
-        String text;
-        if (customPath != null && !customPath.isBlank()) {
-            text = "Dictionary: Modified : " + customPath;
-        } else if (fixVersion != null && !fixVersion.isBlank()) {
-            text = "Dictionary: Default (" + fixVersion + ")";
-        } else {
-            text = "Dictionary: Default";
-        }
-        String labelText = text;
-        SwingUtilities.invokeLater(() -> dictionaryLabel.setText(labelText));
+        String labelText = DictionaryNavigationHelper.buildDictionaryLabelText(project, tablePanel.getFixVersion());
+        SwingUtilities.invokeLater(() -> {
+            for (JBLabel label : dictionaryLabels) {
+                label.setText(labelText);
+                if (label.equals(textViewDictionaryLabel)) {
+                    label.setToolTipText(labelText);
+                }
+            }
+        });
     }
 
     private int findTagOffsetInDocument(String tag, String messageId) {
@@ -313,5 +304,20 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     @Override
     public @NotNull VirtualFile getFile() {
         return file;
+    }
+
+    private JComponent wrapWithDictionaryHeader(JComponent content, boolean markTooltip) {
+        JPanel wrapper = new JPanel(new BorderLayout());
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBorder(JBUI.Borders.empty(4, 8));
+        JBLabel label = new JBLabel();
+        if (markTooltip) {
+            textViewDictionaryLabel = label;
+        }
+        dictionaryLabels.add(label);
+        headerPanel.add(label, BorderLayout.WEST);
+        wrapper.add(headerPanel, BorderLayout.NORTH);
+        wrapper.add(content, BorderLayout.CENTER);
+        return wrapper;
     }
 }
