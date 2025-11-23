@@ -211,6 +211,11 @@ public class FixMessageTreePanel extends JPanel {
             this.label = label;
             this.messageType = messageType;
         }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
 }

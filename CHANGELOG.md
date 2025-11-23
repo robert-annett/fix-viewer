@@ -17,6 +17,7 @@
   when updating dictionaries from the settings panel.
 - Jump to Dictionary now scopes navigation by message type so fields open at the correct message definition instead of the first
   matching tag in the file.
+- Restore message tree rendering so nodes display their FIX labels instead of internal class names.
 
 ## [0.0.1]
 
