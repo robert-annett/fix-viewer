@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
 import org.jetbrains.annotations.NotNull;
@@ -27,12 +28,17 @@ public final class DictionaryNavigationHelper {
     /**
      * Opens the active FIX dictionary for the provided version and navigates to the requested tag/value definition.
      *
-     * @param project    current project
-     * @param fixVersion FIX version string such as {@code "FIX.4.4"}
-     * @param tag        numeric tag to locate
-     * @param value      optional enumerated value to locate beneath the tag definition
+     * @param project     current project
+     * @param fixVersion  FIX version string such as {@code "FIX.4.4"}
+     * @param tag         numeric tag to locate
+     * @param value       optional enumerated value to locate beneath the tag definition
+     * @param messageType message type (tag 35) to scope the lookup to the correct message definition
      */
-    public static void jumpToDictionary(@NotNull Project project, @Nullable String fixVersion, @NotNull String tag, @Nullable String value) {
+    public static void jumpToDictionary(@NotNull Project project,
+                                        @Nullable String fixVersion,
+                                        @NotNull String tag,
+                                        @Nullable String value,
+                                        @Nullable String messageType) {
         if (fixVersion == null || fixVersion.isBlank()) {
             Messages.showWarningDialog(project, "Unable to determine FIX version for the selected field.", "Jump to Dictionary");
             return;
@@ -46,7 +52,9 @@ public final class DictionaryNavigationHelper {
 
         try {
             String content = VfsUtilCore.loadText(dictionaryFile);
-            int offset = findDictionaryOffset(content, tag, value);
+            FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
+            String fieldName = dictionary.getTagName(tag);
+            int offset = findDictionaryOffset(content, tag, value, messageType, fieldName);
             FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, dictionaryFile, Math.max(offset, 0)), true);
         } catch (Exception e) {
             Messages.showErrorDialog(project, "Failed to open dictionary: " + e.getMessage(), "Jump to Dictionary");
@@ -94,9 +102,22 @@ public final class DictionaryNavigationHelper {
         return null;
     }
 
-    private static int findDictionaryOffset(@NotNull String content, @NotNull String tag, @Nullable String value) {
+    private static int findDictionaryOffset(@NotNull String content,
+                                            @NotNull String tag,
+                                            @Nullable String value,
+                                            @Nullable String messageType,
+                                            @Nullable String fieldName) {
+        int scopedOffset = findMessageScopedOffset(content, tag, value, messageType, fieldName);
+        if (scopedOffset >= 0) {
+            return scopedOffset;
+        }
+
         String fieldAnchor = "<field number=\"" + tag + "\"";
         int fieldIndex = content.indexOf(fieldAnchor);
+        if (fieldIndex < 0 && fieldName != null && !fieldName.isBlank()) {
+            String fieldRefAnchor = "name=\"" + fieldName + "\"";
+            fieldIndex = content.indexOf(fieldRefAnchor);
+        }
         if (fieldIndex < 0) {
             return 0;
         }
@@ -108,6 +129,52 @@ public final class DictionaryNavigationHelper {
         String valueAnchor = "<value enum=\"" + value + "\"";
         int valueIndex = content.indexOf(valueAnchor, fieldIndex);
         return valueIndex >= 0 ? valueIndex : fieldIndex;
+    }
+
+    private static int findMessageScopedOffset(@NotNull String content,
+                                               @NotNull String tag,
+                                               @Nullable String value,
+                                               @Nullable String messageType,
+                                               @Nullable String fieldName) {
+        if (messageType == null || messageType.isBlank()) {
+            return -1;
+        }
+
+        String messageAnchor = "msgtype=\"" + messageType + "\"";
+        int messageStart = content.indexOf(messageAnchor);
+        if (messageStart < 0) {
+            return -1;
+        }
+
+        int messageEnd = content.indexOf("</message>", messageStart);
+        String messageSection = messageEnd > messageStart ? content.substring(messageStart, messageEnd) : content.substring(messageStart);
+
+        int fieldIndex = -1;
+        if (fieldName != null && !fieldName.isBlank()) {
+            String fieldNameAnchor = "<field name=\"" + fieldName + "\"";
+            String fieldRefAnchor = "<fieldRef name=\"" + fieldName + "\"";
+            fieldIndex = messageSection.indexOf(fieldNameAnchor);
+            if (fieldIndex < 0) {
+                fieldIndex = messageSection.indexOf(fieldRefAnchor);
+            }
+        }
+
+        if (fieldIndex < 0) {
+            String fieldNumberAnchor = "<field number=\"" + tag + "\"";
+            fieldIndex = messageSection.indexOf(fieldNumberAnchor);
+        }
+
+        if (fieldIndex < 0) {
+            return -1;
+        }
+
+        if (value == null || value.isBlank()) {
+            return messageStart + fieldIndex;
+        }
+
+        String valueAnchor = "<value enum=\"" + value + "\"";
+        int valueIndex = messageSection.indexOf(valueAnchor, fieldIndex);
+        return valueIndex >= 0 ? messageStart + valueIndex : messageStart + fieldIndex;
     }
 }
 

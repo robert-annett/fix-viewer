@@ -10,6 +10,7 @@ import com.rannett.fixplugin.util.FixUtils;
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
+import quickfix.FieldNotFound;
 import quickfix.Group;
 import quickfix.Message;
 
@@ -50,30 +51,40 @@ public class FixMessageTreePanel extends JPanel {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Messages");
 
         fixVersion = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
-        if (fixVersion == null) fixVersion = "FIXT.1.1";
+        if (fixVersion == null) {
+            fixVersion = "FIXT.1.1";
+        }
         this.fixVersion = fixVersion;
 
         DataDictionary dd = FixMessageParser.loadDataDictionary(this.fixVersion, project);
 
         for (String message : fixMessages) {
             message = message.strip();
-            if (message.isEmpty() || message.startsWith("#")) continue;
+            if (message.isEmpty() || message.startsWith("#")) {
+                continue;
+            }
             DefaultMutableTreeNode msgNode;
             try {
                 Message qfMsg = FixMessageParser.parse(message, dd);
+                String messageType;
+                try {
+                    messageType = qfMsg.getHeader().getString(35);
+                } catch (FieldNotFound ignore) {
+                    messageType = null;
+                }
                 String label = FixMessageParser.buildMessageLabel(qfMsg, dd);
-                msgNode = new DefaultMutableTreeNode(label);
+                msgNode = new DefaultMutableTreeNode(new NodeData(label, messageType));
 
-                DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
-                buildNodes(qfMsg.getHeader(), headerNode, dd);
+                DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode(new NodeData("Header", messageType));
+                buildNodes(qfMsg.getHeader(), headerNode, dd, messageType);
                 msgNode.add(headerNode);
 
-                DefaultMutableTreeNode bodyNode = new DefaultMutableTreeNode("Body");
-                buildNodes(qfMsg, bodyNode, dd);
+                DefaultMutableTreeNode bodyNode = new DefaultMutableTreeNode(new NodeData("Body", messageType));
+                buildNodes(qfMsg, bodyNode, dd, messageType);
                 msgNode.add(bodyNode);
 
-                DefaultMutableTreeNode trailerNode = new DefaultMutableTreeNode("Trailer");
-                buildNodes(qfMsg.getTrailer(), trailerNode, dd);
+                DefaultMutableTreeNode trailerNode = new DefaultMutableTreeNode(new NodeData("Trailer", messageType));
+                buildNodes(qfMsg.getTrailer(), trailerNode, dd, messageType);
                 msgNode.add(trailerNode);
 
             } catch (Exception e) {
@@ -106,7 +117,9 @@ public class FixMessageTreePanel extends JPanel {
                 if (!(nodeObject instanceof DefaultMutableTreeNode node)) {
                     return;
                 }
-                String label = String.valueOf(node.getUserObject());
+                Object userObject = node.getUserObject();
+                String label = userObject instanceof NodeData ? ((NodeData) userObject).label : String.valueOf(userObject);
+                String messageType = userObject instanceof NodeData ? ((NodeData) userObject).messageType : null;
                 String tag = extractTag(label);
                 if (tag == null) {
                     return;
@@ -114,7 +127,7 @@ public class FixMessageTreePanel extends JPanel {
                 String value = extractValue(label);
                 JPopupMenu menu = new JPopupMenu();
                 JMenuItem jumpToDictionary = new JMenuItem("Jump to Dictionary");
-                jumpToDictionary.addActionListener(ae -> DictionaryNavigationHelper.jumpToDictionary(project, fixVersion, tag, value));
+                jumpToDictionary.addActionListener(ae -> DictionaryNavigationHelper.jumpToDictionary(project, fixVersion, tag, value, messageType));
                 menu.add(jumpToDictionary);
                 menu.show(tree, x, y);
             }
@@ -150,7 +163,7 @@ public class FixMessageTreePanel extends JPanel {
         return label.substring(equalsIdx + 1, parenIdx).trim();
     }
 
-    private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
+    private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd, String messageType) {
         Iterator<Field<?>> fieldIt = map.iterator();
         while (fieldIt.hasNext()) {
             Field<?> field = fieldIt.next();
@@ -168,7 +181,7 @@ public class FixMessageTreePanel extends JPanel {
                 }
                 label.append(")");
             }
-            parent.add(new DefaultMutableTreeNode(label.toString()));
+            parent.add(new DefaultMutableTreeNode(new NodeData(label.toString(), messageType)));
         }
 
         Iterator<Integer> groupKeys = map.groupKeyIterator();
@@ -179,8 +192,8 @@ public class FixMessageTreePanel extends JPanel {
             int idx = 1;
             for (Group g : groups) {
                 DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode(
-                        (groupName != null ? groupName : groupTag) + " [" + idx++ + "]");
-                buildNodes(g, groupNode, dd);
+                        new NodeData((groupName != null ? groupName : groupTag) + " [" + idx++ + "]", messageType));
+                buildNodes(g, groupNode, dd, messageType);
                 parent.add(groupNode);
             }
         }
@@ -188,6 +201,16 @@ public class FixMessageTreePanel extends JPanel {
 
     private String detectFixVersion(String message) {
         return FixUtils.extractFixVersion(message).orElse(null);
+    }
+
+    private static class NodeData {
+        private final String label;
+        private final String messageType;
+
+        private NodeData(String label, String messageType) {
+            this.label = label;
+            this.messageType = messageType;
+        }
     }
 
 }

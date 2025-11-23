@@ -34,7 +34,7 @@ fields for different messages will be shown in the same row, making comparison e
 - **Active Dictionary Source labels** at the top of every view (with tooltips in Text View) to show whether a built-in or custom
   dictionary is active.
 - **Jump to Dictionary** context actions from FIX fields and table rows to open the underlying dictionary definition for tags and
-  enumerated values.
+  enumerated values, using the message type to navigate to the correct message-scoped field entry.
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213

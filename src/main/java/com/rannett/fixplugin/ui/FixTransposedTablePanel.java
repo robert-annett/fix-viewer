@@ -11,6 +11,7 @@ import com.rannett.fixplugin.FixFileType;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
 import com.rannett.fixplugin.util.DictionaryNavigationHelper;
+import com.rannett.fixplugin.util.FixUtils;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
@@ -215,7 +216,9 @@ public class FixTransposedTablePanel extends JPanel {
     }
 
     public String getMessageText(String messageId) {
-        if (messageId == null || !messageId.startsWith("Message ")) return "";
+        if (messageId == null || !messageId.startsWith("Message ")) {
+            return "";
+        }
         try {
             int idx = Integer.parseInt(messageId.substring(8)) - 1;
             return (idx >= 0 && idx < messages.size()) ? messages.get(idx) : "";
@@ -301,16 +304,19 @@ public class FixTransposedTablePanel extends JPanel {
                     table.changeSelection(viewRow, viewCol, false, false);
                     String tag = model.getTagAtRow(modelRow);
                     String value = getRawCellValue(modelRow, modelCol);
-                    showRowContextMenu(e, tag, value);
+                    String messageId = model.getMessageIdForColumn(modelCol);
+                    String messageText = getMessageText(messageId);
+                    String messageType = FixUtils.extractMessageType(messageText).orElse(null);
+                    showRowContextMenu(e, tag, value, messageType);
                 }
             }
         });
     }
 
-    private void showRowContextMenu(MouseEvent event, String tag, String value) {
+    private void showRowContextMenu(MouseEvent event, String tag, String value, String messageType) {
         JPopupMenu menu = new JPopupMenu();
         JMenuItem jumpToDictionary = new JMenuItem("Jump to Dictionary");
-        jumpToDictionary.addActionListener(ae -> DictionaryNavigationHelper.jumpToDictionary(project, model.getFixVersion(), tag, value));
+        jumpToDictionary.addActionListener(ae -> DictionaryNavigationHelper.jumpToDictionary(project, model.getFixVersion(), tag, value, messageType));
         menu.add(jumpToDictionary);
         menu.show(event.getComponent(), event.getX(), event.getY());
     }
@@ -408,15 +414,23 @@ public class FixTransposedTablePanel extends JPanel {
 
     private void showCompareDialog(int columnIndex) {
         String firstId = model.getMessageIdForColumn(columnIndex);
-        if (firstId == null) return;
+        if (firstId == null) {
+            return;
+        }
         TableColumnModel columnModel = table.getColumnModel();
         List<String> options = new ArrayList<>();
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
-            if (i == columnIndex) continue;
+            if (i == columnIndex) {
+                continue;
+            }
             String id = model.getMessageIdForColumn(i);
-            if (id != null) options.add(id);
+            if (id != null) {
+                options.add(id);
+            }
         }
-        if (options.isEmpty()) return;
+        if (options.isEmpty()) {
+            return;
+        }
 
         String secondId = Messages.showEditableChooseDialog(
                 "Select message to compare with",
@@ -426,7 +440,9 @@ public class FixTransposedTablePanel extends JPanel {
                 options.get(0),
                 null
         );
-        if (secondId == null) return;
+        if (secondId == null) {
+            return;
+        }
 
         String text1 = getMessageText(firstId);
         String text2 = getMessageText(secondId);

@@ -15,6 +15,8 @@
 - Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
 - Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
   when updating dictionaries from the settings panel.
+- Jump to Dictionary now scopes navigation by message type so fields open at the correct message definition instead of the first
+  matching tag in the file.
 
 ## [0.0.1]
 
