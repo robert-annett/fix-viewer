@@ -41,6 +41,7 @@
                                     implementationClass="com.rannett.fixplugin.FixDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
+        <fileEditorProvider implementation="com.rannett.fixplugin.ui.dictionary.FixDictionaryFileEditorProvider"/>
 
         <multiHostInjector
                 implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
@@ -66,6 +67,12 @@
                 text="FIX Field Lookup"
                 description="Lookup FIX field information">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="OpenAsFixDictionary"
+                class="com.rannett.fixplugin.ui.dictionary.OpenAsFixDictionaryAction"
+                text="Open as FIX Dictionary"
+                description="Open the selected XML as a structured FIX dictionary">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

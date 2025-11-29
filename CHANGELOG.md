@@ -7,6 +7,7 @@
 ### Added
 
 - Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
+- Dictionary Tree Viewer for browsing FIX dictionaries with synchronized detail panes.
 
 ### Fixed
 
