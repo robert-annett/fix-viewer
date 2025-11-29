@@ -6,6 +6,7 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import com.rannett.fixplugin.util.FixMessageParser;
 import org.jetbrains.annotations.NotNull;
 
@@ -176,7 +177,7 @@ public class FixCommTimelinePanel extends JPanel {
     private MessageNode parseNode(String msg, int index) {
         String begin = extractBeginString(msg);
         try {
-            DataDictionary dd = FixMessageParser.loadDataDictionary(begin, null);
+            DataDictionary dd = FixMessageParser.loadDataDictionary(begin, (DictionaryEntry) null);
             Message parsed = FixMessageParser.parse(msg, dd);
 
             String time = parsed.getHeader().isSetField(52) ? parsed.getHeader().getString(52) : "";

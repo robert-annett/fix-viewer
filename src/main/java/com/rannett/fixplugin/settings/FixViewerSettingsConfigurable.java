@@ -9,6 +9,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,15 +17,16 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.table.DefaultTableModel;
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class FixViewerSettingsConfigurable implements Configurable {
 
     private JPanel mainPanel;
     private JBTable versionTable;
-    private DefaultTableModel tableModel;
+    private DictionaryTableModel tableModel;
     private final FixViewerSettingsState settingsState;
     private final Project project;
 
@@ -43,8 +45,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
     @Override
     public JComponent createComponent() {
         mainPanel = new JPanel();
-        String[] columnNames = {"FIX Version", "Custom Dictionary Path"};
-        tableModel = new DefaultTableModel(columnNames, 0);
+        tableModel = new DictionaryTableModel();
         versionTable = new JBTable(tableModel);
 
         // Setup file chooser descriptor
@@ -54,27 +55,49 @@ public class FixViewerSettingsConfigurable implements Configurable {
 
         // Decorate the table with add/remove/edit
         ToolbarDecorator decorator = ToolbarDecorator.createDecorator(versionTable)
-                .setAddAction(button -> tableModel.addRow(new Object[]{"", ""}))
+                .setAddAction(button -> {
+                    DictionaryMappingEditDialog dialog = new DictionaryMappingEditDialog(
+                            project,
+                            "",
+                            "",
+                            fileDescriptor,
+                            true
+                    );
+                    if (dialog.showAndGet()) {
+                        DictionaryEntry entry = new DictionaryEntry(
+                                dialog.getVersion(),
+                                dialog.getDictionaryPath(),
+                                false,
+                                dialog.isDefaultDictionary()
+                        );
+                        tableModel.addEntry(entry);
+                    }
+                })
                 .setRemoveAction(button -> {
                     int selectedRow = versionTable.getSelectedRow();
                     if (selectedRow != -1) {
-                        tableModel.removeRow(selectedRow);
+                        tableModel.removeEntry(selectedRow);
                     }
                 })
                 .setEditAction(button -> {
                     int selectedRow = versionTable.getSelectedRow();
                     if (selectedRow != -1) {
-                        String currentVersion = (String) tableModel.getValueAt(selectedRow, 0);
-                        String currentPath = (String) tableModel.getValueAt(selectedRow, 1);
+                        DictionaryEntry entry = tableModel.getEntry(selectedRow);
+                        if (entry.isBuiltIn()) {
+                            return;
+                        }
                         DictionaryMappingEditDialog dialog = new DictionaryMappingEditDialog(
                                 project,
-                                currentVersion,
-                                currentPath,
-                                fileDescriptor
+                                entry.getVersion(),
+                                entry.getPath(),
+                                fileDescriptor,
+                                entry.isDefaultDictionary()
                         );
                         if (dialog.showAndGet()) {
-                            tableModel.setValueAt(dialog.getVersion(), selectedRow, 0);
-                            tableModel.setValueAt(dialog.getDictionaryPath(), selectedRow, 1);
+                            entry.setVersion(dialog.getVersion());
+                            entry.setPath(dialog.getDictionaryPath());
+                            entry.setDefaultDictionary(dialog.isDefaultDictionary());
+                            tableModel.updateEntry(selectedRow, entry);
                         }
                     }
                 });
@@ -88,12 +111,12 @@ public class FixViewerSettingsConfigurable implements Configurable {
 
     @Override
     public boolean isModified() {
-        return !settingsState.getCustomDictionaryPaths().equals(tableToMap());
+        return !Objects.equals(settingsState.getDictionaryEntries(), tableModel.getEntries());
     }
 
     @Override
     public void apply() {
-        settingsState.setCustomDictionaryPaths(tableToMap());
+        settingsState.setDictionaryEntries(tableModel.getEntries());
         project.getService(FixDictionaryCache.class).clear();
         project.getMessageBus()
                 .syncPublisher(FixDictionaryChangeListener.TOPIC)
@@ -103,10 +126,7 @@ public class FixViewerSettingsConfigurable implements Configurable {
 
     @Override
     public void reset() {
-        tableModel.setRowCount(0);
-        for (Map.Entry<String, String> entry : settingsState.getCustomDictionaryPaths().entrySet()) {
-            tableModel.addRow(new Object[]{entry.getKey(), entry.getValue()});
-        }
+        tableModel.setEntries(settingsState.getDictionaryEntries());
     }
 
     @Override
@@ -114,15 +134,136 @@ public class FixViewerSettingsConfigurable implements Configurable {
         // No resources to dispose
     }
 
-    private Map<String, String> tableToMap() {
-        Map<String, String> map = new HashMap<>();
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String version = (String) tableModel.getValueAt(i, 0);
-            String path = (String) tableModel.getValueAt(i, 1);
-            if (version != null && !version.trim().isEmpty() && path != null && !path.trim().isEmpty()) {
-                map.put(version.trim(), path.trim());
+    private static final class DictionaryTableModel extends AbstractTableModel {
+        private final String[] columnNames = {"FIX Version", "Dictionary Path", "Default"};
+        private final List<DictionaryEntry> entries = new ArrayList<>();
+
+        @Override
+        public int getRowCount() {
+            return entries.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columnNames[column];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 2) {
+                return Boolean.class;
+            }
+            return String.class;
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            DictionaryEntry entry = entries.get(rowIndex);
+            return !entry.isBuiltIn();
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            DictionaryEntry entry = entries.get(rowIndex);
+            return switch (columnIndex) {
+                case 0 -> entry.getVersion();
+                case 1 -> entry.isBuiltIn() ? "Bundled dictionary" : entry.getPath();
+                case 2 -> entry.isDefaultDictionary();
+                default -> "";
+            };
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            DictionaryEntry entry = entries.get(rowIndex);
+            if (entry.isBuiltIn()) {
+                return;
+            }
+            if (columnIndex == 0) {
+                entry.setVersion(aValue != null ? aValue.toString() : "");
+            } else if (columnIndex == 1) {
+                entry.setPath(aValue != null ? aValue.toString() : "");
+            } else if (columnIndex == 2) {
+                boolean selected = aValue instanceof Boolean && (Boolean) aValue;
+                List<Integer> changedRows = new ArrayList<>();
+                if (selected) {
+                    changedRows = clearDefaultsForVersion(entry.getVersion(), rowIndex);
+                }
+                entry.setDefaultDictionary(selected);
+                changedRows.add(rowIndex);
+                notifyChangedDefaults(changedRows);
+                return;
+            }
+            fireTableRowsUpdated(rowIndex, rowIndex);
+        }
+
+        void addEntry(DictionaryEntry entry) {
+            if (entry.isDefaultDictionary()) {
+                clearDefaultsForVersion(entry.getVersion(), -1);
+            }
+            entries.add(entry);
+            fireTableDataChanged();
+        }
+
+        void removeEntry(int index) {
+            if (index < 0 || index >= entries.size()) {
+                return;
+            }
+            if (entries.get(index).isBuiltIn()) {
+                return;
+            }
+            entries.remove(index);
+            fireTableDataChanged();
+        }
+
+        void updateEntry(int index, DictionaryEntry entry) {
+            List<Integer> changedRows = new ArrayList<>();
+            if (entry.isDefaultDictionary()) {
+                changedRows = clearDefaultsForVersion(entry.getVersion(), index);
+            }
+            entries.set(index, entry);
+            changedRows.add(index);
+            notifyChangedDefaults(changedRows);
+        }
+
+        DictionaryEntry getEntry(int index) {
+            return entries.get(index);
+        }
+
+        List<DictionaryEntry> getEntries() {
+            return new ArrayList<>(entries);
+        }
+
+        void setEntries(List<DictionaryEntry> newEntries) {
+            entries.clear();
+            entries.addAll(newEntries);
+            fireTableDataChanged();
+        }
+
+        private List<Integer> clearDefaultsForVersion(String version, int skipIndex) {
+            List<Integer> changedIndices = new ArrayList<>();
+            for (int i = 0; i < entries.size(); i++) {
+                if (i == skipIndex) {
+                    continue;
+                }
+                DictionaryEntry entry = entries.get(i);
+                if (Objects.equals(entry.getVersion(), version) && entry.isDefaultDictionary()) {
+                    entry.setDefaultDictionary(false);
+                    changedIndices.add(i);
+                }
+            }
+            return changedIndices;
+        }
+
+        private void notifyChangedDefaults(List<Integer> changedRows) {
+            for (Integer row : changedRows) {
+                fireTableRowsUpdated(row, row);
             }
         }
-        return map;
     }
 }

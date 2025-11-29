@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -22,6 +23,7 @@ public class DictionaryMappingEditDialog extends DialogWrapper {
 
     private final JTextField versionField;
     private final TextFieldWithBrowseButton pathField;
+    private final JCheckBox defaultCheckBox;
     private final JPanel contentPanel;
 
     /**
@@ -35,7 +37,8 @@ public class DictionaryMappingEditDialog extends DialogWrapper {
     public DictionaryMappingEditDialog(@Nullable Project project,
                                        @Nullable String currentVersion,
                                        @Nullable String currentPath,
-                                       FileChooserDescriptor descriptor) {
+                                       FileChooserDescriptor descriptor,
+                                       boolean defaultDictionary) {
         super(project, true);
         setTitle("Edit Mapping");
         versionField = new JTextField(currentVersion != null ? currentVersion : "");
@@ -44,6 +47,7 @@ public class DictionaryMappingEditDialog extends DialogWrapper {
             pathField.addBrowseFolderListener(new TextBrowseFolderListener(descriptor, project));
         }
         pathField.setText(currentPath != null ? currentPath : "");
+        defaultCheckBox = new JCheckBox("Mark as default for this FIX version", defaultDictionary);
         contentPanel = buildContentPanel();
         init();
     }
@@ -68,6 +72,9 @@ public class DictionaryMappingEditDialog extends DialogWrapper {
         constraints.gridy = 3;
         panel.add(pathField, constraints);
 
+        constraints.gridy = 4;
+        panel.add(defaultCheckBox, constraints);
+
         return panel;
     }
 
@@ -88,5 +95,9 @@ public class DictionaryMappingEditDialog extends DialogWrapper {
      */
     public String getDictionaryPath() {
         return pathField.getText().trim();
+    }
+
+    public boolean isDefaultDictionary() {
+        return defaultCheckBox.isSelected();
     }
 }

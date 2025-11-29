@@ -3,6 +3,7 @@ package com.rannett.fixplugin.ui;
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -25,6 +26,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
     private List<String> tagOrder;
     private Map<String, Map<String, String>> transposed;
     private String fixVersion;
+    private DictionaryEntry dictionaryEntry;
     private final DocumentUpdater documentUpdater;
     private final Project project;
 
@@ -233,7 +235,7 @@ public class FixTransposedTableModel extends AbstractTableModel {
             return tag;
         }
         if (columnIndex == 1) {
-            FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
+            FixTagDictionary dictionary = resolveDictionary();
             String tagName = dictionary.getTagName(tag);
             return tagName != null ? tagName : "";  // Show empty string instead of null
         }
@@ -292,6 +294,21 @@ public class FixTransposedTableModel extends AbstractTableModel {
 
     public String getFixVersion() {
         return fixVersion;
+    }
+
+    public DictionaryEntry getDictionaryEntry() {
+        return dictionaryEntry;
+    }
+
+    public void setDictionaryEntry(DictionaryEntry dictionaryEntry) {
+        this.dictionaryEntry = dictionaryEntry;
+    }
+
+    private FixTagDictionary resolveDictionary() {
+        if (project == null) {
+            return FixTagDictionary.fromBuiltInVersion(fixVersion);
+        }
+        return project.getService(FixDictionaryCache.class).getDictionary(dictionaryEntry, fixVersion);
     }
 
     /**

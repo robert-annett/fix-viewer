@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -22,11 +23,12 @@ public class TagFilterDialog extends DialogWrapper {
     public TagFilterDialog(@Nullable Project project,
                            Collection<String> tags,
                            Collection<String> initiallySelected,
-                           String fixVersion) {
+                           String fixVersion,
+                           DictionaryEntry dictionaryEntry) {
         super(project, true);
         FixTagDictionary dict = null;
         if (project != null) {
-            dict = project.getService(FixDictionaryCache.class).getDictionary(fixVersion);
+            dict = project.getService(FixDictionaryCache.class).getDictionary(dictionaryEntry, fixVersion);
         }
         for (String tag : tags) {
             String name = dict != null ? dict.getTagName(tag) : null;

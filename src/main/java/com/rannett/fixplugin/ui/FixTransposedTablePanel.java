@@ -10,6 +10,8 @@ import com.intellij.ui.table.JBTable;
 import com.rannett.fixplugin.FixFileType;
 import com.rannett.fixplugin.dictionary.FixDictionaryCache;
 import com.rannett.fixplugin.dictionary.FixTagDictionary;
+import com.rannett.fixplugin.settings.FixViewerSettingsState;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class FixTransposedTablePanel extends JPanel {
     private final FixTransposedTableModel model;
@@ -50,12 +53,17 @@ public class FixTransposedTablePanel extends JPanel {
     private List<String> messages;
     private final TableRowSorter<FixTransposedTableModel> sorter;
     private Set<String> filteredTags = new LinkedHashSet<>();
+    private DictionaryEntry dictionaryEntry;
+    private final FixViewerSettingsState settingsState;
 
     public FixTransposedTablePanel(List<String> fixMessages, FixTransposedTableModel.DocumentUpdater updater, Project project) {
         super(new BorderLayout());
         this.project = project;
         this.messages = new ArrayList<>(fixMessages);
+        this.settingsState = project != null ? FixViewerSettingsState.getInstance(project) : null;
         model = new FixTransposedTableModel(fixMessages, updater, project);
+        dictionaryEntry = settingsState != null ? settingsState.getDefaultDictionary(model.getFixVersion()) : null;
+        model.setDictionaryEntry(dictionaryEntry);
         table = new JBTable(model);
         table.setFillsViewportHeight(true);
         sorter = new TableRowSorter<>(model);
@@ -71,7 +79,8 @@ public class FixTransposedTablePanel extends JPanel {
                 if (column >= 2) {
                     String tag = model.getTagAtRow(row);
                     String valStr = String.valueOf(value);
-                    FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(model.getFixVersion());
+                    FixTagDictionary dictionary = project.getService(FixDictionaryCache.class)
+                            .getDictionary(dictionaryEntry, model.getFixVersion());
                     String desc = dictionary.getValueName(tag, valStr);
                     if (desc != null && !desc.isEmpty()) {
                         displayValue = valStr + " (" + desc + ")";
@@ -90,7 +99,8 @@ public class FixTransposedTablePanel extends JPanel {
             @Override
             public Component getTableCellEditorComponent(JTable tbl, Object value, boolean isSelected, int row, int column) {
                 String currentTag = model.getTagAtRow(row);
-                FixTagDictionary dictionary = project.getService(FixDictionaryCache.class).getDictionary(model.getFixVersion());
+                FixTagDictionary dictionary = project.getService(FixDictionaryCache.class)
+                        .getDictionary(dictionaryEntry, model.getFixVersion());
                 Map<String, String> enums = dictionary.getValueMap(currentTag);
 
                 if (column >= 2 && enums != null && !enums.isEmpty()) {
@@ -155,6 +165,10 @@ public class FixTransposedTablePanel extends JPanel {
     public void updateTable(List<String> fixMessages) {
         this.messages = new ArrayList<>(fixMessages);
         model.updateMessages(fixMessages);
+        if (!Objects.equals(model.getFixVersion(), dictionaryEntry != null ? dictionaryEntry.getVersion() : null)) {
+            dictionaryEntry = settingsState != null ? settingsState.getDefaultDictionary(model.getFixVersion()) : null;
+            model.setDictionaryEntry(dictionaryEntry);
+        }
         applyTagFilter(filteredTags);
         configureColumnWidths();
     }
@@ -165,6 +179,16 @@ public class FixTransposedTablePanel extends JPanel {
     public void refreshDictionaryMetadata() {
         model.refreshDictionaryMetadata();
         table.repaint();
+    }
+
+    public void setDictionaryEntry(DictionaryEntry dictionaryEntry) {
+        this.dictionaryEntry = dictionaryEntry;
+        model.setDictionaryEntry(dictionaryEntry);
+        refreshDictionaryMetadata();
+    }
+
+    public DictionaryEntry getDictionaryEntry() {
+        return dictionaryEntry;
     }
 
     public void applyTagFilter(Set<String> tags) {
@@ -395,7 +419,7 @@ public class FixTransposedTablePanel extends JPanel {
 
     private void showTagFilterDialog() {
         Set<String> allTags = getAllTags();
-        TagFilterDialog dialog = new TagFilterDialog(project, allTags, filteredTags, model.getFixVersion());
+        TagFilterDialog dialog = new TagFilterDialog(project, allTags, filteredTags, model.getFixVersion(), dictionaryEntry);
         if (dialog.showAndGet()) {
             applyTagFilter(dialog.getSelectedTags());
         }
