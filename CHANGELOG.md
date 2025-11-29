@@ -6,7 +6,8 @@
 
 ### Added
 
-- Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
+- Display the active dictionary source on every view, including tooltips in the text viewer for custom dictionaries.
+- Jump directly from FIX fields or table rows to the matching dictionary tag or value definition.
 
 ### Fixed
 
@@ -14,6 +15,9 @@
 - Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
 - Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
   when updating dictionaries from the settings panel.
+- Jump to Dictionary now scopes navigation by message type so fields open at the correct message definition instead of the first
+  matching tag in the file.
+- Restore message tree rendering so nodes display their FIX labels instead of internal class names.
 
 ## [0.0.1]
 
