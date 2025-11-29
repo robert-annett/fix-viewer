@@ -16,21 +16,23 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComponent;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -38,6 +40,7 @@ import java.util.stream.IntStream;
 import com.rannett.fixplugin.util.FixMessageParser;
 import com.rannett.fixplugin.dictionary.FixDictionaryChangeListener;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 
 public class FixDualViewEditor extends UserDataHolderBase implements FileEditor {
     private final FileEditor textEditor;
@@ -50,7 +53,8 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
     private final VirtualFile file;
     private final MessageBusConnection messageBusConnection;
     private final Project project;
-    private final JBLabel dictionaryLabel;
+    private final ComboBox<DictionaryEntry> dictionarySelector;
+    private DictionaryEntry selectedDictionaryEntry;
     private Integer pendingCaretOffset = null;
 
     public FixDualViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
@@ -61,11 +65,14 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
 
         mainPanel = new JPanel(new BorderLayout());
         tabbedPane = new JBTabbedPane();
-
-        dictionaryLabel = new JBLabel();
+        dictionarySelector = new ComboBox<>();
+        dictionarySelector.addActionListener(event -> handleDictionarySelectionChange());
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBorder(JBUI.Borders.empty(4, 8));
-        headerPanel.add(dictionaryLabel, BorderLayout.WEST);
+        JPanel dictionaryPanel = new JPanel(new BorderLayout(8, 0));
+        dictionaryPanel.add(new JBLabel("Dictionary:"), BorderLayout.WEST);
+        dictionaryPanel.add(dictionarySelector, BorderLayout.CENTER);
+        headerPanel.add(dictionaryPanel, BorderLayout.WEST);
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
         tabbedPane.addTab("Text View", textEditor.getComponent());
@@ -93,7 +100,8 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         }), project);
         tabbedPane.addTab("Transposed Table", tablePanel);
 
-        treePanel = new FixMessageTreePanel(messages, project);
+        selectedDictionaryEntry = tablePanel.getDictionaryEntry();
+        treePanel = new FixMessageTreePanel(messages, project, selectedDictionaryEntry);
         tabbedPane.addTab("Tree View", treePanel);
 
         commPanel = new FixCommTimelinePanel(messages);
@@ -106,6 +114,8 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         });
         tabbedPane.addTab("Message Flow", commPanel);
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
+
+        refreshDictionarySelector();
 
         messageBusConnection = project.getMessageBus().connect(this);
         messageBusConnection.subscribe(FixDictionaryChangeListener.TOPIC, new FixDictionaryChangeListener() {
@@ -122,9 +132,11 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 SwingUtilities.invokeLater(() -> {
                     List<String> updatedMessages = FixMessageParser.splitMessages(document.getText());
                     tablePanel.updateTable(updatedMessages);
+                    selectedDictionaryEntry = tablePanel.getDictionaryEntry();
+                    treePanel.setDictionaryEntry(selectedDictionaryEntry);
                     treePanel.updateTree(updatedMessages);
                     commPanel.updateMessages(updatedMessages);
-                    updateDictionaryLabel();
+                    refreshDictionarySelector();
                 });
             }
         });
@@ -182,7 +194,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                 int offset = pendingCaretOffset;
                 pendingCaretOffset = null;
                 ApplicationManager.getApplication().invokeLater(() -> {
-                    var editor = ((TextEditor) textEditor).getEditor();
+                    com.intellij.openapi.editor.Editor editor = ((TextEditor) textEditor).getEditor();
                     editor.getCaretModel().moveToOffset(offset);
                     editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
                     com.intellij.openapi.wm.IdeFocusManager.getInstance(project).requestFocus(editor.getContentComponent(), true);
@@ -190,7 +202,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             }
         });
 
-        updateDictionaryLabel();
+        refreshDictionarySelector();
     }
 
     private void handleDictionaryChange() {
@@ -198,26 +210,58 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
             List<String> updatedMessages = ApplicationManager.getApplication().runReadAction(
                     (Computable<List<String>>) () -> FixMessageParser.splitMessages(document.getText())
             );
+            refreshDictionarySelector();
             tablePanel.refreshDictionaryMetadata();
+            treePanel.setDictionaryEntry(selectedDictionaryEntry);
             treePanel.updateTree(updatedMessages);
-            updateDictionaryLabel();
         });
     }
 
-    private void updateDictionaryLabel() {
+    private void refreshDictionarySelector() {
         String fixVersion = tablePanel.getFixVersion();
         FixViewerSettingsState settingsState = FixViewerSettingsState.getInstance(project);
-        String customPath = fixVersion != null ? settingsState.getCustomDictionaryPath(fixVersion) : null;
-        String text;
-        if (customPath != null && !customPath.isBlank()) {
-            text = "Dictionary: Modified : " + customPath;
-        } else if (fixVersion != null && !fixVersion.isBlank()) {
-            text = "Dictionary: Default (" + fixVersion + ")";
-        } else {
-            text = "Dictionary: Default";
+        List<DictionaryEntry> entries = settingsState.getDictionariesForVersion(fixVersion);
+        DictionaryEntry defaultEntry = settingsState.getDefaultDictionary(fixVersion);
+
+        DefaultComboBoxModel<DictionaryEntry> model = new DefaultComboBoxModel<>(entries.toArray(new DictionaryEntry[0]));
+        dictionarySelector.setModel(model);
+
+        DictionaryEntry target = findMatchingEntry(entries, selectedDictionaryEntry);
+        if (target == null) {
+            target = defaultEntry;
         }
-        String labelText = text;
-        SwingUtilities.invokeLater(() -> dictionaryLabel.setText(labelText));
+        selectedDictionaryEntry = target;
+        if (target != null) {
+            dictionarySelector.setSelectedItem(target);
+        }
+        tablePanel.setDictionaryEntry(selectedDictionaryEntry);
+        treePanel.setDictionaryEntry(selectedDictionaryEntry);
+    }
+
+    private DictionaryEntry findMatchingEntry(List<DictionaryEntry> entries, DictionaryEntry desired) {
+        if (desired == null) {
+            return null;
+        }
+        return entries.stream()
+                .filter(entry -> Objects.equals(entry, desired))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void handleDictionarySelectionChange() {
+        DictionaryEntry entry = (DictionaryEntry) dictionarySelector.getSelectedItem();
+        if (Objects.equals(entry, selectedDictionaryEntry)) {
+            return;
+        }
+        selectedDictionaryEntry = entry;
+        tablePanel.setDictionaryEntry(entry);
+        treePanel.setDictionaryEntry(entry);
+        ApplicationManager.getApplication().invokeLater(() -> {
+            List<String> updatedMessages = ApplicationManager.getApplication().runReadAction(
+                    (Computable<List<String>>) () -> FixMessageParser.splitMessages(document.getText())
+            );
+            treePanel.updateTree(updatedMessages);
+        });
     }
 
     private int findTagOffsetInDocument(String tag, String messageId) {

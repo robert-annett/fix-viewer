@@ -30,7 +30,8 @@ fields for different messages will be shown in the same row, making comparison e
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
-- **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers.
+- **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
+- **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213

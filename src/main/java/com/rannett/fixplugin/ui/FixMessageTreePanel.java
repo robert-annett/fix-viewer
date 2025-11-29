@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.treeStructure.Tree;
 import com.rannett.fixplugin.util.FixMessageParser;
 import com.rannett.fixplugin.util.FixUtils;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
@@ -27,15 +28,21 @@ public class FixMessageTreePanel extends JPanel {
 
     private static final Logger LOG = Logger.getInstance(FixMessageTreePanel.class);
     private final Project project;
+    private DictionaryEntry dictionaryEntry;
 
-    public FixMessageTreePanel(List<String> fixMessages, Project project) {
+    public FixMessageTreePanel(List<String> fixMessages, Project project, DictionaryEntry dictionaryEntry) {
         super(new BorderLayout());
         this.project = project;
+        this.dictionaryEntry = dictionaryEntry;
         buildTree(fixMessages);
     }
 
     public void updateTree(List<String> fixMessages) {
         buildTree(fixMessages);
+    }
+
+    public void setDictionaryEntry(DictionaryEntry dictionaryEntry) {
+        this.dictionaryEntry = dictionaryEntry;
     }
 
     private void buildTree(List<String> fixMessages) {
@@ -44,7 +51,7 @@ public class FixMessageTreePanel extends JPanel {
         String fixVersion = detectFixVersion(fixMessages.isEmpty() ? "" : fixMessages.get(0));
         if (fixVersion == null) fixVersion = "FIXT.1.1";
 
-        DataDictionary dd = FixMessageParser.loadDataDictionary(fixVersion, project);
+        DataDictionary dd = FixMessageParser.loadDataDictionary(fixVersion, dictionaryEntry);
 
         for (String message : fixMessages) {
             message = message.strip();

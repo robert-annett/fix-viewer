@@ -2,6 +2,7 @@ package com.rannett.fixplugin.util;
 
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import quickfix.ConfigError;
@@ -27,15 +28,20 @@ public final class FixMessageParser {
      * built-in dictionaries are used.
      */
     public static DataDictionary loadDataDictionary(@NotNull String version, @Nullable Project project) {
-        String customPath = null;
+        DictionaryEntry entry = null;
         if (project != null) {
             FixViewerSettingsState settings = FixViewerSettingsState.getInstance(project);
-            customPath = settings.getCustomDictionaryPath(version);
+            entry = settings.getDefaultDictionary(version);
         }
 
+        return loadDataDictionary(version, entry);
+    }
+
+    public static DataDictionary loadDataDictionary(@NotNull String version,
+                                                    @Nullable DictionaryEntry entry) {
         try {
-            if (customPath != null && !customPath.isEmpty()) {
-                return new DataDictionary(new File(customPath).getAbsolutePath());
+            if (entry != null && !entry.isBuiltIn() && entry.getPath() != null && !entry.getPath().isEmpty()) {
+                return new DataDictionary(new File(entry.getPath()).getAbsolutePath());
             }
             String resourcePath = "/dictionaries/" + version + ".xml";
             InputStream stream = FixMessageParser.class.getResourceAsStream(resourcePath);
@@ -44,15 +50,12 @@ public final class FixMessageParser {
             }
             return new DataDictionary(version);
         } catch (ConfigError e) {
-            // Fallback to FIXT.1.1 if we fail to load the requested dictionary
             if (!"FIXT.1.1".equals(version)) {
                 try {
-                    return loadDataDictionary("FIXT.1.1", project);
+                    return loadDataDictionary("FIXT.1.1", entry);
                 } catch (Exception ignored) {
-                    // ignore and fall through
                 }
             }
-            // Last resort: attempt to load the default dictionary again without throwing
             try {
                 return new DataDictionary("FIXT.1.1");
             } catch (ConfigError ignored2) {

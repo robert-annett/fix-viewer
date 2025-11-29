@@ -3,6 +3,7 @@ package com.rannett.fixplugin.dictionary;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +21,14 @@ public final class FixDictionaryCache {
 
     // Project-level cache access
     public FixTagDictionary getDictionary(String version) {
-        return cache.computeIfAbsent(version, v -> loadDictionary(project, v));
+        FixViewerSettingsState settings = FixViewerSettingsState.getInstance(project);
+        DictionaryEntry entry = settings.getDefaultDictionary(version);
+        return getDictionary(entry, version);
+    }
+
+    public FixTagDictionary getDictionary(DictionaryEntry entry, String version) {
+        String cacheKey = entry != null ? entry.getCacheKey() : "DEFAULT:" + version;
+        return cache.computeIfAbsent(cacheKey, v -> loadDictionary(project, entry, version));
     }
 
     /**
@@ -30,14 +38,10 @@ public final class FixDictionaryCache {
         cache.clear();
     }
 
-    private FixTagDictionary loadDictionary(Project project, String fixVersion) {
-        FixViewerSettingsState settings = FixViewerSettingsState.getInstance(project);
-
-        String customPath = settings.getCustomDictionaryPath(fixVersion);
-        if (customPath != null && !customPath.isEmpty()) {
-            return FixTagDictionary.fromFile(new java.io.File(customPath));
+    private FixTagDictionary loadDictionary(Project project, DictionaryEntry entry, String fixVersion) {
+        if (entry != null && !entry.isBuiltIn() && entry.getPath() != null && !entry.getPath().isEmpty()) {
+            return FixTagDictionary.fromFile(new java.io.File(entry.getPath()));
         }
-
         return FixTagDictionary.fromBuiltInVersion(fixVersion);
     }
 

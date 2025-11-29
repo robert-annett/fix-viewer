@@ -7,6 +7,7 @@
 ### Added
 
 - Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
+- Manage bundled dictionaries directly in settings, add multiple custom dictionaries per FIX version, and choose the active one from a new in-viewer combobox that re-parses messages instantly.
 
 ### Fixed
 
