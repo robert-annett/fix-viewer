@@ -190,10 +190,14 @@ public class FixViewerSettingsConfigurable implements Configurable {
                 entry.setPath(aValue != null ? aValue.toString() : "");
             } else if (columnIndex == 2) {
                 boolean selected = aValue instanceof Boolean && (Boolean) aValue;
-                entry.setDefaultDictionary(selected);
+                List<Integer> changedRows = new ArrayList<>();
                 if (selected) {
-                    clearDefaultsForVersion(entry.getVersion(), rowIndex);
+                    changedRows = clearDefaultsForVersion(entry.getVersion(), rowIndex);
                 }
+                entry.setDefaultDictionary(selected);
+                changedRows.add(rowIndex);
+                notifyChangedDefaults(changedRows);
+                return;
             }
             fireTableRowsUpdated(rowIndex, rowIndex);
         }
@@ -218,11 +222,13 @@ public class FixViewerSettingsConfigurable implements Configurable {
         }
 
         void updateEntry(int index, DictionaryEntry entry) {
+            List<Integer> changedRows = new ArrayList<>();
             if (entry.isDefaultDictionary()) {
-                clearDefaultsForVersion(entry.getVersion(), index);
+                changedRows = clearDefaultsForVersion(entry.getVersion(), index);
             }
             entries.set(index, entry);
-            fireTableRowsUpdated(index, index);
+            changedRows.add(index);
+            notifyChangedDefaults(changedRows);
         }
 
         DictionaryEntry getEntry(int index) {
@@ -239,15 +245,24 @@ public class FixViewerSettingsConfigurable implements Configurable {
             fireTableDataChanged();
         }
 
-        private void clearDefaultsForVersion(String version, int skipIndex) {
+        private List<Integer> clearDefaultsForVersion(String version, int skipIndex) {
+            List<Integer> changedIndices = new ArrayList<>();
             for (int i = 0; i < entries.size(); i++) {
                 if (i == skipIndex) {
                     continue;
                 }
                 DictionaryEntry entry = entries.get(i);
-                if (Objects.equals(entry.getVersion(), version)) {
+                if (Objects.equals(entry.getVersion(), version) && entry.isDefaultDictionary()) {
                     entry.setDefaultDictionary(false);
+                    changedIndices.add(i);
                 }
+            }
+            return changedIndices;
+        }
+
+        private void notifyChangedDefaults(List<Integer> changedRows) {
+            for (Integer row : changedRows) {
+                fireTableRowsUpdated(row, row);
             }
         }
     }

@@ -32,6 +32,7 @@ fields for different messages will be shown in the same row, making comparison e
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
+- **Default handoff in settings** immediately clears the previous default when you mark another dictionary as preferred for a FIX version, so the table always reflects the active default.
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213

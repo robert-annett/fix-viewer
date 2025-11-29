@@ -15,6 +15,7 @@
 - Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
 - Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
   when updating dictionaries from the settings panel.
+- Ensure selecting a new default dictionary in settings clears the previous default indicator for that FIX version.
 
 ## [0.0.1]
 
