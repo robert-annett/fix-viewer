@@ -140,12 +140,13 @@ jobs:
       pull-requests: write
     steps:
 
-      # Free GitHub Actions Environment Disk Space
       - name: Maximize Build Space
         uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: false
-          large-packages: false
+          tool-cache: true         # remove preinstalled JDKs etc.
+          large-packages: true     # remove docker images, Android SDK, etc.
+          docker-images: true
+          swap-storage: true
 
       # Check out the current repository
       - name: Fetch Sources
@@ -178,8 +179,10 @@ jobs:
       - name: Maximize Build Space
         uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: false
-          large-packages: false
+          tool-cache: true         # remove preinstalled JDKs etc.
+          large-packages: true     # remove docker images, Android SDK, etc.
+          docker-images: true
+          swap-storage: true
 
       # Check out the current repository
       - name: Fetch Sources
