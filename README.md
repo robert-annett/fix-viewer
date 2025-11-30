@@ -13,8 +13,9 @@ read and debug. Each field and value is colour-coded for clarity, with support f
 separators, helping users spot issues quickly. Incorrect checksums are highlighted and can be automatically corrected.
 
 Users can also view these messages in a transposed table view, which is much easier than scrolling horizontally. The
-same
-fields for different messages will be shown in the same row, making comparison easier.
+same fields for different messages will be shown in the same row, making comparison easier.
+
+There is also a tree view, to show the message structure, and a communications view to show messages between two sources.
 
 ## Features
 
@@ -32,15 +33,12 @@ fields for different messages will be shown in the same row, making comparison e
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
-- **Default handoff in settings** immediately clears the previous default when you mark another dictionary as preferred for a FIX version, so the table always reflects the active default.
 - **Side-by-side diff viewer** for comparing two messages
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213
 - **Lexer support** for multi-line FpML blocks
 
-## Coming Soon
 
-- **Repeating Groups** highlighting and structure
 
 ---
 
