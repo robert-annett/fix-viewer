@@ -27,7 +27,7 @@ dependencies {
 
         testFramework(TestFrameworkType.Platform)
 
-        implementation("org.json:json:20250517")
+        implementation("org.json:json:20251224")
         implementation("org.quickfixj:quickfixj-core:2.3.2")
     }
 }
