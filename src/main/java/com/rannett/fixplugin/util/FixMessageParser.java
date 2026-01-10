@@ -40,27 +40,53 @@ public final class FixMessageParser {
     public static DataDictionary loadDataDictionary(@NotNull String version,
                                                     @Nullable DictionaryEntry entry) {
         try {
-            if (entry != null && !entry.isBuiltIn() && entry.getPath() != null && !entry.getPath().isEmpty()) {
-                return new DataDictionary(new File(entry.getPath()).getAbsolutePath());
-            }
-            String resourcePath = "/dictionaries/" + version + ".xml";
-            InputStream stream = FixMessageParser.class.getResourceAsStream(resourcePath);
-            if (stream != null) {
-                return new DataDictionary(stream);
-            }
-            return new DataDictionary(version);
+            return loadDictionaryVersion(version, entry);
         } catch (ConfigError e) {
             if (!"FIXT.1.1".equals(version)) {
                 try {
-                    return loadDataDictionary("FIXT.1.1", entry);
-                } catch (Exception ignored) {
+                    return loadDictionaryVersion("FIXT.1.1", entry);
+                } catch (ConfigError ignored) {
+                    return loadFallbackDictionary("FIXT.1.1");
                 }
             }
-            try {
-                return new DataDictionary("FIXT.1.1");
-            } catch (ConfigError ignored2) {
-                return null;
-            }
+            return loadFallbackDictionary("FIXT.1.1");
+        }
+    }
+
+    private static DataDictionary loadDictionaryVersion(@NotNull String version,
+                                                        @Nullable DictionaryEntry entry) throws ConfigError {
+        DataDictionary customDictionary = loadCustomDictionary(entry);
+        if (customDictionary != null) {
+            return customDictionary;
+        }
+        DataDictionary resourceDictionary = loadResourceDictionary(version);
+        if (resourceDictionary != null) {
+            return resourceDictionary;
+        }
+        return new DataDictionary(version);
+    }
+
+    private static DataDictionary loadCustomDictionary(@Nullable DictionaryEntry entry) throws ConfigError {
+        if (entry == null || entry.isBuiltIn() || entry.getPath() == null || entry.getPath().isEmpty()) {
+            return null;
+        }
+        return new DataDictionary(new File(entry.getPath()).getAbsolutePath());
+    }
+
+    private static DataDictionary loadResourceDictionary(@NotNull String version) throws ConfigError {
+        String resourcePath = "/dictionaries/" + version + ".xml";
+        InputStream stream = FixMessageParser.class.getResourceAsStream(resourcePath);
+        if (stream == null) {
+            return null;
+        }
+        return new DataDictionary(stream);
+    }
+
+    private static DataDictionary loadFallbackDictionary(@NotNull String version) {
+        try {
+            return new DataDictionary(version);
+        } catch (ConfigError e) {
+            throw new IllegalStateException("Unable to load fallback FIX dictionary: " + version, e);
         }
     }
 

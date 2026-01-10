@@ -6,8 +6,6 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
-import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
-import com.rannett.fixplugin.util.FixMessageParser;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.BorderFactory;
@@ -19,17 +17,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
-
-import quickfix.DataDictionary;
-import quickfix.Field;
-import quickfix.FieldMap;
-import quickfix.Group;
-import quickfix.Message;
 
 /**
  * Panel that renders a timeline view of FIX messages with an expandable
@@ -37,12 +27,12 @@ import quickfix.Message;
  */
 public class FixCommTimelinePanel extends JPanel {
     private final JCheckBox hideHeartbeat;
-    private final List<MessageNode> allNodes = new ArrayList<>();
-    private final List<MessageNode> displayedNodes = new ArrayList<>();
-    private final Map<String, String> localPartyBySession = new HashMap<>();
+    private final List<FixTimelineMessageNode> allNodes = new ArrayList<>();
+    private final List<FixTimelineMessageNode> displayedNodes = new ArrayList<>();
     private final DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     private final ListTreeTableModelOnColumns model;
     private final TreeTable table;
+    private final FixTimelineNodeBuilder nodeBuilder = new FixTimelineNodeBuilder();
     private Consumer<Integer> onMessageSelected;
 
     /**
@@ -57,8 +47,8 @@ public class FixCommTimelinePanel extends JPanel {
                 new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
                     @Override
                     public String valueOf(DefaultMutableTreeNode node) {
-                        if (node instanceof MessageNode) {
-                            return ((MessageNode) node).time;
+                        if (node instanceof FixTimelineMessageNode) {
+                            return ((FixTimelineMessageNode) node).time;
                         }
                         return "";
                     }
@@ -66,8 +56,8 @@ public class FixCommTimelinePanel extends JPanel {
                 new ColumnInfo<DefaultMutableTreeNode, String>("Dir") {
                     @Override
                     public String valueOf(DefaultMutableTreeNode node) {
-                        if (node instanceof MessageNode) {
-                            return ((MessageNode) node).direction;
+                        if (node instanceof FixTimelineMessageNode) {
+                            return ((FixTimelineMessageNode) node).direction;
                         }
                         return "";
                     }
@@ -75,8 +65,8 @@ public class FixCommTimelinePanel extends JPanel {
                 new ColumnInfo<DefaultMutableTreeNode, String>("MsgType") {
                     @Override
                     public String valueOf(DefaultMutableTreeNode node) {
-                        if (node instanceof MessageNode) {
-                            return ((MessageNode) node).msgTypeDisplay;
+                        if (node instanceof FixTimelineMessageNode) {
+                            return ((FixTimelineMessageNode) node).msgTypeDisplay;
                         }
                         return "";
                     }
@@ -143,9 +133,9 @@ public class FixCommTimelinePanel extends JPanel {
 
     private void loadMessages(List<String> messages) {
         allNodes.clear();
-        localPartyBySession.clear();
+        nodeBuilder.resetSessionParties();
         IntStream.range(0, messages.size()).forEach(i -> {
-            MessageNode node = parseNode(messages.get(i), i + 1);
+            FixTimelineMessageNode node = nodeBuilder.buildNode(messages.get(i), i + 1);
             allNodes.add(node);
         });
         applyFilter();
@@ -169,90 +159,9 @@ public class FixCommTimelinePanel extends JPanel {
             return;
         }
         Object node = path.getLastPathComponent();
-        if (node instanceof MessageNode && onMessageSelected != null) {
-            onMessageSelected.accept(((MessageNode) node).index);
+        if (node instanceof FixTimelineMessageNode && onMessageSelected != null) {
+            onMessageSelected.accept(((FixTimelineMessageNode) node).index);
         }
-    }
-
-    private MessageNode parseNode(String msg, int index) {
-        String begin = extractBeginString(msg);
-        try {
-            DataDictionary dd = FixMessageParser.loadDataDictionary(begin, (DictionaryEntry) null);
-            Message parsed = FixMessageParser.parse(msg, dd);
-
-            String time = parsed.getHeader().isSetField(52) ? parsed.getHeader().getString(52) : "";
-            String typeCode = parsed.getHeader().isSetField(35) ? parsed.getHeader().getString(35) : "";
-            String typeName = buildTypeName(dd, typeCode);
-            String sender = parsed.getHeader().isSetField(49) ? parsed.getHeader().getString(49) : "";
-            String target = parsed.getHeader().isSetField(56) ? parsed.getHeader().getString(56) : "";
-            String direction = determineDirection(sender, target);
-            String summary = FixMessageParser.buildMessageLabel(parsed, dd);
-
-            MessageNode node = new MessageNode(index, time, direction, typeCode, typeName, summary);
-            DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
-            buildNodes(parsed.getHeader(), headerNode, dd);
-            node.add(headerNode);
-
-            DefaultMutableTreeNode bodyNode = new DefaultMutableTreeNode("Body");
-            buildNodes(parsed, bodyNode, dd);
-            node.add(bodyNode);
-
-            DefaultMutableTreeNode trailerNode = new DefaultMutableTreeNode("Trailer");
-            buildNodes(parsed.getTrailer(), trailerNode, dd);
-            node.add(trailerNode);
-            return node;
-        } catch (Exception e) {
-            MessageNode node = new MessageNode(index, "", "→", "", "", msg);
-            node.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
-            return node;
-        }
-    }
-
-    private static String buildTypeName(DataDictionary dd, String typeCode) {
-        if (typeCode == null || typeCode.isEmpty()) {
-            return "";
-        }
-        String name = dd.getValueName(35, typeCode);
-        if (name != null && !name.isEmpty()) {
-            return typeCode + " (" + name.toUpperCase() + ")";
-        }
-        return typeCode;
-    }
-
-    private static String extractBeginString(String msg) {
-        int start = msg.indexOf("8=");
-        if (start >= 0) {
-            int pipe = msg.indexOf('|', start);
-            int soh = msg.indexOf('\u0001', start);
-            int end = pipe >= 0 && (soh < 0 || pipe < soh) ? pipe : soh;
-            if (end > start) {
-                return msg.substring(start + 2, end);
-            }
-        }
-        return "FIX.4.4";
-    }
-
-    private String determineDirection(String sender, String target) {
-        if (sender.isEmpty() || target.isEmpty()) {
-            return "→";
-        }
-        String key = sessionKey(sender, target);
-        String local = localPartyBySession.get(key);
-        if (local == null) {
-            localPartyBySession.put(key, sender);
-            local = sender;
-        }
-        if (sender.equals(local)) {
-            return "→";
-        }
-        return "←";
-    }
-
-    private static String sessionKey(String a, String b) {
-        if (a.compareTo(b) < 0) {
-            return a + "|" + b;
-        }
-        return b + "|" + a;
     }
 
     /**
@@ -273,48 +182,6 @@ public class FixCommTimelinePanel extends JPanel {
             return null;
         }
         return displayedNodes.get(row).msgTypeDisplay;
-    }
-
-    private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
-        java.util.Iterator<Field<?>> fieldIt = map.iterator();
-        while (fieldIt.hasNext()) {
-            Field<?> field = fieldIt.next();
-            int tag = field.getTag();
-            String name = dd.getFieldName(tag);
-            String value = String.valueOf(field.getObject());
-            String enumName = dd.getValueName(tag, value);
-
-            StringBuilder label = new StringBuilder();
-            label.append(tag).append("=").append(value);
-            if (name != null) {
-                label.append(" (").append(name);
-                if (enumName != null) {
-                    label.append("=").append(enumName);
-                }
-                label.append(")");
-            }
-            parent.add(new DefaultMutableTreeNode(label.toString()));
-        }
-
-        java.util.Iterator<Integer> groupKeys = map.groupKeyIterator();
-        while (groupKeys.hasNext()) {
-            int groupTag = groupKeys.next();
-            List<Group> groups = map.getGroups(groupTag);
-            String groupName = dd.getFieldName(groupTag);
-            int idx = 1;
-            for (Group g : groups) {
-                DefaultMutableTreeNode groupNode;
-                String title;
-                if (groupName != null) {
-                    title = groupName;
-                } else {
-                    title = String.valueOf(groupTag);
-                }
-                groupNode = new DefaultMutableTreeNode(title + " [" + idx++ + "]");
-                buildNodes(g, groupNode, dd);
-                parent.add(groupNode);
-            }
-        }
     }
 
     private void fixColumnWidths() {
@@ -339,22 +206,4 @@ public class FixCommTimelinePanel extends JPanel {
         return table.getColumnModel().getColumn(index).getPreferredWidth();
     }
 
-    private static final class MessageNode extends DefaultMutableTreeNode {
-        final int index;
-        final String time;
-        final String direction;
-        final String msgTypeCode;
-        final String msgTypeDisplay;
-
-        MessageNode(int index, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
-            super(summary);
-            this.index = index;
-            this.time = time;
-            this.direction = direction;
-            this.msgTypeCode = msgTypeCode;
-            this.msgTypeDisplay = msgTypeDisplay;
-        }
-    }
-
 }
-

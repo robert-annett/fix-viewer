@@ -16,6 +16,7 @@
 - Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
   when updating dictionaries from the settings panel.
 - Ensure selecting a new default dictionary in settings clears the previous default indicator for that FIX version.
+- Fall back to the built-in FIXT.1.1 dictionary when custom dictionaries fail to load so message views remain available.
 
 ## [0.0.1]
 
