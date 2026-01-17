@@ -40,6 +40,8 @@ There is also a tree view, to show the message structure, and a communications v
 - **Unlimited IDE compatibility** so the plugin can install on newer IntelliJ versions without a capped build range
 - **Configurable verification IDE** so CI can pin plugin verification to a stable IntelliJ build
 - **Verification IDE override property** to control plugin verifier targets independently of compilation
+- **Updated Gradle wrapper** to keep CI builds compatible with newer Java runtimes
+- **Gradle wrapper Java fallback** to keep builds working when newer JDKs are installed
 
 
 
