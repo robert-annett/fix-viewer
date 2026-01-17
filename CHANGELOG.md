@@ -12,6 +12,7 @@
 
 - Remove the maximum IDE compatibility so the plugin can install on newer IntelliJ versions.
 - Use the configured IntelliJ platform version for plugin verification to avoid missing IDE artifacts.
+- Allow a dedicated plugin verification IDE version so CI can pin to a stable release.
 
 ## [0.0.1]
 

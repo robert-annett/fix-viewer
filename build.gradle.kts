@@ -104,7 +104,10 @@ intellijPlatform {
         ides {
             select {
                 type.set(providers.gradleProperty("platformType"))
-                version.set(providers.gradleProperty("platformVersion"))
+                version.set(
+                    providers.gradleProperty("pluginVerifierIdeVersion")
+                        .orElse(providers.gradleProperty("platformVersion")),
+                )
             }
         }
     }
