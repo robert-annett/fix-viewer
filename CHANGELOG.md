@@ -10,7 +10,7 @@
 
 ### Fixed
 
-- Nothing
+- Remove the maximum IDE compatibility so the plugin can install on newer IntelliJ versions.
 
 ## [0.0.1]
 

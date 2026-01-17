@@ -37,6 +37,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213
 - **Lexer support** for multi-line FpML blocks
+- **Unlimited IDE compatibility** so the plugin can install on newer IntelliJ versions without a capped build range
 
 
 
