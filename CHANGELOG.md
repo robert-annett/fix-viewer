@@ -11,6 +11,7 @@
 ### Fixed
 
 - Remove the maximum IDE compatibility so the plugin can install on newer IntelliJ versions.
+- Use the configured IntelliJ platform version for plugin verification to avoid missing IDE artifacts.
 
 ## [0.0.1]
 

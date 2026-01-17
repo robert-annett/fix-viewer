@@ -94,13 +94,18 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            providers.gradleProperty("pluginUntilBuild").orNull?.let { untilBuildValue ->
+                untilBuild = untilBuildValue
+            }
         }
     }
 
     pluginVerification {
         ides {
-            recommended()
+            select {
+                type.set(providers.gradleProperty("platformType"))
+                version.set(providers.gradleProperty("platformVersion"))
+            }
         }
     }
 }
