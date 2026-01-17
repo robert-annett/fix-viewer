@@ -39,6 +39,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Lexer support** for multi-line FpML blocks
 - **Unlimited IDE compatibility** so the plugin can install on newer IntelliJ versions without a capped build range
 - **Configurable verification IDE** so CI can pin plugin verification to a stable IntelliJ build
+- **Verification IDE override property** to control plugin verifier targets independently of compilation
 
 
 
