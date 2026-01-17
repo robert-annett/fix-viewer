@@ -6,16 +6,11 @@
 
 ### Added
 
-- Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
-- Manage bundled dictionaries directly in settings, add multiple custom dictionaries per FIX version, and choose the active one from a new in-viewer combobox that re-parses messages instantly.
+- Nothing
 
 ### Fixed
 
-- Refresh open FIX editors immediately after updating custom dictionary mappings so IDE restarts are no longer required.
-- Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
-- Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
-  when updating dictionaries from the settings panel.
-- Ensure selecting a new default dictionary in settings clears the previous default indicator for that FIX version.
+- Nothing
 
 ## [0.0.1]
 
@@ -153,3 +148,18 @@
 
 - ensure FixMessageParser.splitMessages only treats 10= occurrences as checksums when they are delimited fields,
   preventing premature splits on values like 110=10.5
+
+## [0.0.18]
+
+### Added
+
+- Display the active dictionary for each open FIX viewer, highlighting modified dictionary locations.
+- Manage bundled dictionaries directly in settings, add multiple custom dictionaries per FIX version, and choose the active one from a new in-viewer combobox that re-parses messages instantly.
+
+### Fixed
+
+- Refresh open FIX editors immediately after updating custom dictionary mappings so IDE restarts are no longer required.
+- Fix dictionary change event subscription so builds compile with the IntelliJ message bus APIs.
+- Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
+  when updating dictionaries from the settings panel.
+- Ensure selecting a new default dictionary in settings clears the previous default indicator for that FIX version.
