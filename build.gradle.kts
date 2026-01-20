@@ -102,14 +102,12 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            select {
-                ide(
-                    providers.gradleProperty("platformType").get(),
-                    providers.gradleProperty("pluginVerifierIdeVersion")
-                        .orElse(providers.gradleProperty("platformVersion"))
-                        .get(),
-                )
-            }
+            create(
+                providers.gradleProperty("platformType").get(),
+                providers.gradleProperty("pluginVerifierIdeVersion")
+                    .orElse(providers.gradleProperty("platformVersion"))
+                    .get(),
+            )
         }
     }
 }

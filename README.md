@@ -42,6 +42,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Verification IDE override property** to control plugin verifier targets independently of compilation
 - **Updated Gradle wrapper** to keep CI builds compatible with newer Java runtimes
 - **Gradle wrapper Java fallback** to keep builds working when newer JDKs are installed
+- **Explicit plugin verifier IDE registration** to keep verification aligned with configured IDE builds
 
 
 
