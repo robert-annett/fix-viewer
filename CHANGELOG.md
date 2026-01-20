@@ -6,7 +6,7 @@
 
 ### Added
 
-- Nothing
+- Publish Qodana inspection results to GitHub code scanning with SARIF uploads.
 
 ### Fixed
 

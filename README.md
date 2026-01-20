@@ -43,6 +43,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Updated Gradle wrapper** to keep CI builds compatible with newer Java runtimes
 - **Gradle wrapper Java fallback** to keep builds working when newer JDKs are installed
 - **Explicit plugin verifier IDE registration** to keep verification aligned with configured IDE builds
+- **Qodana SARIF uploads** so code inspection results appear in GitHub code scanning
 
 
 
