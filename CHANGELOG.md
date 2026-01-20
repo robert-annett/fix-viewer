@@ -17,6 +17,7 @@
 - Update the Gradle wrapper so builds run on newer Java runtimes without failing to parse the version.
 - Fallback to Java 17 in the Gradle wrapper when Java 25 is detected to keep builds running.
 - Use the non-deprecated plugin verifier IDE registration to avoid selecting missing IDE artifacts.
+- Fix Qodana CI execution by using full git history and compatible CLI options.
 
 ## [0.0.1]
 
