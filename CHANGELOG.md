@@ -10,7 +10,13 @@
 
 ### Fixed
 
-- Nothing
+- Remove the maximum IDE compatibility so the plugin can install on newer IntelliJ versions.
+- Use the configured IntelliJ platform version for plugin verification to avoid missing IDE artifacts.
+- Allow a dedicated plugin verification IDE version so CI can pin to a stable release.
+- Fix plugin verification IDE selection wiring so Gradle can compile the build script.
+- Update the Gradle wrapper so builds run on newer Java runtimes without failing to parse the version.
+- Fallback to Java 17 in the Gradle wrapper when Java 25 is detected to keep builds running.
+- Use the non-deprecated plugin verifier IDE registration to avoid selecting missing IDE artifacts.
 
 ## [0.0.1]
 
