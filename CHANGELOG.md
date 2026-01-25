@@ -6,18 +6,9 @@
 
 ### Added
 
-- Publish Qodana inspection results to GitHub code scanning with SARIF uploads.
 
 ### Fixed
 
-- Remove the maximum IDE compatibility so the plugin can install on newer IntelliJ versions.
-- Use the configured IntelliJ platform version for plugin verification to avoid missing IDE artifacts.
-- Allow a dedicated plugin verification IDE version so CI can pin to a stable release.
-- Fix plugin verification IDE selection wiring so Gradle can compile the build script.
-- Update the Gradle wrapper so builds run on newer Java runtimes without failing to parse the version.
-- Fallback to Java 17 in the Gradle wrapper when Java 25 is detected to keep builds running.
-- Use the non-deprecated plugin verifier IDE registration to avoid selecting missing IDE artifacts.
-- Fix Qodana CI execution by using full git history and compatible CLI options.
 
 ## [0.0.1]
 
@@ -170,3 +161,28 @@
 - Replace the dictionary mapping edit dialog with an IntelliJ DialogWrapper implementation to avoid thread context errors
   when updating dictionaries from the settings panel.
 - Ensure selecting a new default dictionary in settings clears the previous default indicator for that FIX version.
+
+## [0.0.19]
+
+### Added
+
+- Publish Qodana inspection results to GitHub code scanning with SARIF uploads.
+
+### Fixed
+
+- Remove the maximum IDE compatibility so the plugin can install on newer IntelliJ versions.
+- Use the configured IntelliJ platform version for plugin verification to avoid missing IDE artifacts.
+- Allow a dedicated plugin verification IDE version so CI can pin to a stable release.
+- Fix plugin verification IDE selection wiring so Gradle can compile the build script.
+- Update the Gradle wrapper so builds run on newer Java runtimes without failing to parse the version.
+- Fallback to Java 17 in the Gradle wrapper when Java 25 is detected to keep builds running.
+- Use the non-deprecated plugin verifier IDE registration to avoid selecting missing IDE artifacts.
+- Fix Qodana CI execution by using full git history and compatible CLI options.
+
+## [0.0.20]
+
+### Added
+
+- Strip non-FIX log prefixes and suffixes in the FIX editor to leave clean messages when logs wrap the payload.
+
+### Fixed
