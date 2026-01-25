@@ -93,9 +93,13 @@ public final class FixMessageParser {
         String sendTime = getFieldSafe(msg.getHeader(), 52);
 
         StringBuilder label = new StringBuilder();
-        if (typeName != null) label.append(typeName);
-        else if (typeCode != null) label.append(typeCode);
-        else label.append("Message");
+        if (typeName != null) {
+            label.append(typeName);
+        } else if (typeCode != null) {
+            label.append(typeCode);
+        } else {
+            label.append("Message");
+        }
 
         if (sender != null || target != null) {
             label.append(" ");
@@ -109,7 +113,9 @@ public final class FixMessageParser {
                 label.append("Seq ").append(seqNum);
             }
             if (sendTime != null) {
-                if (seqNum != null) label.append(" ");
+                if (seqNum != null) {
+                    label.append(" ");
+                }
                 label.append(sendTime);
             }
             label.append("]");
@@ -149,102 +155,119 @@ public final class FixMessageParser {
 
         int index = 0;
         while (index < text.length()) {
-            // Skip leading newline characters
-            while (index < text.length() && (text.charAt(index) == '\n' || text.charAt(index) == '\r')) {
-                index++;
-            }
+            index = skipNewlines(text, index);
             if (index >= text.length()) {
                 break;
             }
 
             // Treat comment lines as standalone entries
             if (text.charAt(index) == '#') {
-                int nl = text.indexOf('\n', index);
-                if (nl == -1) {
-                    nl = text.length();
-                }
-                messages.add(text.substring(index, nl));
-                index = nl + 1;
+                index = consumeCommentLine(text, index, messages);
                 continue;
             }
 
             int start = text.indexOf("8=", index);
             if (start == -1) {
-                messages.add(text.substring(index).trim());
+                addIfNotBlank(messages, text.substring(index).trim());
                 break;
             }
 
             if (start > index) {
                 String pre = text.substring(index, start).trim();
-                if (!pre.isEmpty()) {
-                    messages.add(pre);
-                }
+                addIfNotBlank(messages, pre);
                 index = start;
             }
 
-            int checksumIndex = -1;
-            int digitsEnd = -1;
-            int searchPosition = start;
-            while (true) {
-                int candidate = text.indexOf("10=", searchPosition);
-                if (candidate == -1) {
-                    break;
-                }
-                if (candidate > start) {
-                    char previous = text.charAt(candidate - 1);
-                    if (!isMessageBoundaryCharacter(previous)) {
-                        searchPosition = candidate + 3;
-                        continue;
-                    }
-                }
+            ChecksumField checksumField = findChecksumField(text, start);
 
-                int candidateDigitsStart = candidate + 3;
-                int candidateDigitsEnd = candidateDigitsStart;
-                while (candidateDigitsEnd < text.length() && Character.isDigit(text.charAt(candidateDigitsEnd))) {
-                    candidateDigitsEnd++;
-                }
-                if (candidateDigitsEnd == candidateDigitsStart) {
-                    searchPosition = candidate + 3;
-                    continue;
-                }
-
-                if (candidateDigitsEnd < text.length()) {
-                    char afterDigits = text.charAt(candidateDigitsEnd);
-                    if (!isMessageBoundaryCharacter(afterDigits)) {
-                        searchPosition = candidate + 3;
-                        continue;
-                    }
-                }
-
-                checksumIndex = candidate;
-                digitsEnd = candidateDigitsEnd;
-                break;
-            }
-
-            if (checksumIndex == -1) {
+            if (checksumField == null) {
                 int nl = text.indexOf('\n', start);
                 if (nl == -1) {
-                    messages.add(text.substring(start).trim());
+                    addIfNotBlank(messages, text.substring(start).trim());
                     break;
                 } else {
-                    messages.add(text.substring(start, nl).trim());
+                    addIfNotBlank(messages, text.substring(start, nl).trim());
                     index = nl + 1;
                     continue;
                 }
             }
 
-            int msgEnd = digitsEnd;
+            int msgEnd = checksumField.getDigitsEnd();
             if (msgEnd < text.length() && isFieldDelimiter(text.charAt(msgEnd))) {
                 msgEnd++;
             }
             messages.add(text.substring(start, msgEnd));
             index = msgEnd;
-            while (index < text.length() && (text.charAt(index) == '\n' || text.charAt(index) == '\r')) {
-                index++;
-            }
+            index = skipNewlines(text, index);
         }
 
         return messages;
+    }
+
+    private static int skipNewlines(String text, int index) {
+        int nextIndex = index;
+        while (nextIndex < text.length()
+                && (text.charAt(nextIndex) == '\n' || text.charAt(nextIndex) == '\r')) {
+            nextIndex++;
+        }
+        return nextIndex;
+    }
+
+    private static int consumeCommentLine(String text, int index, List<String> messages) {
+        int nl = text.indexOf('\n', index);
+        if (nl == -1) {
+            nl = text.length();
+        }
+        messages.add(text.substring(index, nl));
+        return nl + 1;
+    }
+
+    private static void addIfNotBlank(List<String> messages, String entry) {
+        if (!entry.isEmpty()) {
+            messages.add(entry);
+        }
+    }
+
+    private static ChecksumField findChecksumField(String text, int startIndex) {
+        int searchPosition = startIndex;
+        while (true) {
+            int candidate = text.indexOf("10=", searchPosition);
+            if (candidate == -1) {
+                return null;
+            }
+            if (candidate > startIndex) {
+                char previous = text.charAt(candidate - 1);
+                if (!isMessageBoundaryCharacter(previous)) {
+                    searchPosition = candidate + 3;
+                    continue;
+                }
+            }
+
+            int candidateDigitsStart = candidate + 3;
+            int candidateDigitsEnd = consumeDigits(text, candidateDigitsStart);
+            if (candidateDigitsEnd == candidateDigitsStart) {
+                searchPosition = candidate + 3;
+                continue;
+            }
+
+            if (candidateDigitsEnd < text.length()) {
+                char afterDigits = text.charAt(candidateDigitsEnd);
+                if (!isMessageBoundaryCharacter(afterDigits)) {
+                    searchPosition = candidate + 3;
+                    continue;
+                }
+            }
+
+            return new ChecksumField(candidateDigitsEnd);
+        }
+    }
+
+    private static int consumeDigits(String text, int startIndex) {
+        int index = startIndex;
+        while (index < text.length() && Character.isDigit(text.charAt(index))) {
+            index++;
+        }
+        return index;
     }
 
     private static boolean isMessageBoundaryCharacter(char character) {
@@ -253,6 +276,19 @@ public final class FixMessageParser {
 
     private static boolean isFieldDelimiter(char character) {
         return character == '\u0001' || character == '|';
+    }
+
+    private static final class ChecksumField {
+
+        private final int digitsEnd;
+
+        private ChecksumField(int digitsEnd) {
+            this.digitsEnd = digitsEnd;
+        }
+
+        private int getDigitsEnd() {
+            return digitsEnd;
+        }
     }
 
     /**

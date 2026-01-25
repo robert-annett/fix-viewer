@@ -55,6 +55,31 @@ public class FixMessageSplitTest {
     }
 
     @Test
+    public void testSplitMessagesSkipsBlankLinesOnlyInput() {
+        String text = "\n\r\n  \n";
+        List<String> parsed = FixMessageParser.splitMessages(text);
+        assertEquals(0, parsed.size());
+    }
+
+    @Test
+    public void testSplitMessagesIgnoresUndelimitedChecksumToken() {
+        String message = "8=FIX.4.4|9=44|35=0|58=note10=abc|10=000|";
+        List<String> parsed = FixMessageParser.splitMessages(message);
+        assertEquals(1, parsed.size());
+        assertEquals(message, parsed.get(0));
+    }
+
+    @Test
+    public void testSplitMessagesSkipsWhitespaceBetweenMessages() {
+        String msg = "8=FIX.4.2|9=12|35=0|10=000|";
+        String text = msg + "\n\n   \n" + msg;
+        List<String> parsed = FixMessageParser.splitMessages(text);
+        assertEquals(2, parsed.size());
+        assertEquals(msg, parsed.get(0));
+        assertEquals(msg, parsed.get(1));
+    }
+
+    @Test
     public void testSplitMessagesTradeCaptureReportUnderlyingPx() {
         String tradeCaptureReport = "8=FIX.4.4|9=185|35=AE|34=2|49=SENDER|52=20230801-09:30:00.000|56=TARGET|" +
                 "571=TRD-12345|487=0|17=EXEC-555|150=2|39=2|55=XYZ|31=110.5|32=100|" +

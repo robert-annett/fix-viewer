@@ -46,4 +46,19 @@ public class FixMessageParserTest {
         Message m = FixMessageParser.parse("8=FIX.5.0|9=12|35=0|10=000|", dd);
         assertEquals("0", m.getHeader().getString(35));
     }
+
+    @Test
+    public void testExtractFixMessagesTextFiltersNonFixContent() {
+        String msgOne = "8=FIX.4.2|9=12|35=0|10=000|";
+        String msgTwo = "8=FIX.4.4|9=12|35=0|10=000|";
+        String text = "#comment\n" + msgOne + "\nnoise\n\n" + msgTwo + "\n";
+        String extracted = FixMessageParser.extractFixMessagesText(text);
+        assertEquals(msgOne + "\n" + msgTwo, extracted);
+    }
+
+    @Test
+    public void testExtractFixMessagesTextReturnsEmptyForNonFixText() {
+        String extracted = FixMessageParser.extractFixMessagesText("notes only\n#comment");
+        assertEquals("", extracted);
+    }
 }

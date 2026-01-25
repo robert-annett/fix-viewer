@@ -25,6 +25,8 @@ There is also a tree view, to show the message structure, and a communications v
 - **Annotate invalid characters** when included in a FIX message.
 - **Syntax highlighting** for invalid values for FIX types. e.g. INT cannot contain non-numbers and CHAR must be a
   single character.
+- **Locale-safe FIX type validation** so value highlighting remains correct under non-English locales.
+- **Cleaner log extraction** that skips empty lines when splitting or filtering FIX messages.
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 - **Transposed View** to make reading messages easier including filtering and field selection
 - **Tree View** to navigate message structure including groups
