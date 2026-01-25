@@ -13,6 +13,8 @@ import quickfix.Message;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Utility methods for parsing FIX messages with QuickFIX/J.
@@ -251,5 +253,19 @@ public final class FixMessageParser {
 
     private static boolean isFieldDelimiter(char character) {
         return character == '\u0001' || character == '|';
+    }
+
+    /**
+     * Extract only FIX messages from a larger block of text, stripping away log prefixes,
+     * suffixes, and other non-FIX content that may surround messages.
+     *
+     * @param text raw text containing FIX messages and log content
+     * @return a newline-delimited string containing only FIX messages
+     */
+    public static String extractFixMessagesText(@NotNull String text) {
+        List<String> messages = splitMessages(text);
+        return messages.stream()
+                .filter(message -> FixUtils.extractFixVersion(message).isPresent())
+                .collect(Collectors.joining("\n"));
     }
 }

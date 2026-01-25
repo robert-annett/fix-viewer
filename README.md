@@ -34,6 +34,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **Side-by-side diff viewer** for comparing two messages
+- **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
 - **Language injection** for FIX messages embedded in code strings
 - **FpML Detection** for XML embedded in tags 351 and 213
 - **Lexer support** for multi-line FpML blocks

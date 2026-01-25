@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComponent;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -73,6 +74,10 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         dictionaryPanel.add(new JBLabel("Dictionary:"), BorderLayout.WEST);
         dictionaryPanel.add(dictionarySelector, BorderLayout.CENTER);
         headerPanel.add(dictionaryPanel, BorderLayout.WEST);
+        JButton cleanLogButton = new JButton("Strip Log Text");
+        cleanLogButton.setToolTipText("Remove non-FIX log prefixes/suffixes and keep only FIX messages");
+        cleanLogButton.addActionListener(event -> stripNonFixLogText());
+        headerPanel.add(cleanLogButton, BorderLayout.EAST);
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
         tabbedPane.addTab("Text View", textEditor.getComponent());
@@ -261,6 +266,13 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
                     (Computable<List<String>>) () -> FixMessageParser.splitMessages(document.getText())
             );
             treePanel.updateTree(updatedMessages);
+        });
+    }
+
+    private void stripNonFixLogText() {
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            String cleanedText = FixMessageParser.extractFixMessagesText(document.getText());
+            document.replaceString(0, document.getTextLength(), cleanedText);
         });
     }
 
