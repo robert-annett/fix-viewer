@@ -2,6 +2,8 @@ package com.rannett.fixplugin.util;
 
 import org.junit.Test;
 
+import java.util.Locale;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -11,6 +13,18 @@ public class FieldTypeValidatorTest {
     public void testValidInt() {
         assertTrue(FieldTypeValidator.isValueValidForType("INT", "123"));
         assertTrue(FieldTypeValidator.isValueValidForType("INT", "-42"));
+    }
+
+    @Test
+    public void testTypeMatchingIsLocaleIndependent() {
+        Locale originalLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(new Locale("tr", "TR"));
+            assertTrue(FieldTypeValidator.isValueValidForType("int", "123"));
+            assertFalse(FieldTypeValidator.isValueValidForType("int", "12A"));
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
     }
 
     @Test
