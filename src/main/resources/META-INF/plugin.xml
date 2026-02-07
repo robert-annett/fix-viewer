@@ -27,6 +27,8 @@
                 extensions="fix.cfg,quickfix.cfg"/>
 
         <lang.parserDefinition language="Fix" implementationClass="com.rannett.fixplugin.FixParserDefinition"/>
+        <lang.parserDefinition language="QuickFixConfig"
+                               implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="Fix"
                 implementationClass="com.rannett.fixplugin.FixSyntaxHighlighterFactory"/>
@@ -50,6 +52,8 @@
 
         <lang.documentationProvider language="Fix"
                                     implementationClass="com.rannett.fixplugin.FixDocumentationProvider"/>
+        <lang.documentationProvider language="QuickFixConfig"
+                                    implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
 
