@@ -33,6 +33,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
+- **QuickFIX session config detection** with dedicated highlighting, safe content-based recognition for config files, and manual association via *Associate with File Type → QuickFIX Session Config*.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **Side-by-side diff viewer** for comparing two messages
