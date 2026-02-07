@@ -8,6 +8,7 @@
 
 - QuickFIX session config detection with safe content-based heuristics, plus dedicated syntax highlighting.
 - QuickFIX session config tooltips sourced from the QuickFIX/J configuration reference.
+- QuickFIX session config value inspection driven by the QuickFIX/J valid-values metadata.
 
 ### Fixed
 
@@ -16,6 +17,7 @@
 - Fix QuickFIX config file detection wiring for the IntelliJ 2024.2 file type detector API.
 - Fix QuickFIX config detection imports to compile against the IntelliJ platform ByteSequence API.
 - Enable QuickFIX session config tooltips by providing PSI parsing for config files.
+- Fix QuickFIX session config validation compilation by correcting the DateTimeException import.
 
 ## [0.0.1]
 
