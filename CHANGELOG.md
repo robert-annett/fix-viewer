@@ -12,6 +12,7 @@
 
 - Use locale-insensitive FIX type matching so validation stays accurate under non-English locales.
 - Avoid returning empty entries when splitting or extracting FIX messages from whitespace-only input.
+- Fix QuickFIX config file detection wiring for the IntelliJ 2024.2 file type detector API.
 
 ## [0.0.1]
 

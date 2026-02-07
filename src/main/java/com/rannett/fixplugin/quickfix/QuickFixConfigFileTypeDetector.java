@@ -1,7 +1,8 @@
 package com.rannett.fixplugin.quickfix;
 
 import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.fileTypes.FileTypeDetector;
+import com.intellij.openapi.fileTypes.FileTypeRegistry;
+import com.intellij.openapi.util.text.ByteSequence;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,9 +12,9 @@ import java.util.regex.Pattern;
 /**
  * Detects QuickFIX session configuration files based on file content.
  */
-public class QuickFixConfigFileTypeDetector implements FileTypeDetector {
+public class QuickFixConfigFileTypeDetector implements FileTypeRegistry.FileTypeDetector {
 
-    private static final int MAX_SAMPLE_SIZE = 65536;
+    private static final int MAX_SAMPLE_SIZE = 8192;
     private static final Pattern SECTION_PATTERN = Pattern.compile("(?m)^\\s*\\[(DEFAULT|SESSION)]\\s*$");
     private static final Pattern KEY_PATTERN = Pattern.compile(
             "(?m)^\\s*(BeginString|SenderCompID|TargetCompID|ConnectionType)\\s*="
@@ -23,17 +24,29 @@ public class QuickFixConfigFileTypeDetector implements FileTypeDetector {
      * Attempts to detect a QuickFIX session configuration file.
      *
      * @param file the file to check.
-     * @param content the file content as bytes.
-     * @param fileContent the file content as text.
+     * @param firstBytes the file content as bytes.
+     * @param firstCharsIfText the file content as text if detected as text.
      * @return the QuickFIX config file type if detected; otherwise {@code null}.
      */
     @Nullable
     @Override
-    public FileType detect(@NotNull VirtualFile file, @NotNull byte[] content, @NotNull CharSequence fileContent) {
-        if (!looksLikeQuickFixConfig(fileContent)) {
+    public FileType detect(@NotNull VirtualFile file,
+                           @NotNull ByteSequence firstBytes,
+                           @Nullable CharSequence firstCharsIfText) {
+        if (firstCharsIfText == null || !looksLikeQuickFixConfig(firstCharsIfText)) {
             return null;
         }
         return QuickFixConfigFileType.INSTANCE;
+    }
+
+    /**
+     * Returns the amount of content needed for detection.
+     *
+     * @return the desired prefix length.
+     */
+    @Override
+    public int getDesiredContentPrefixLength() {
+        return MAX_SAMPLE_SIZE;
     }
 
     private boolean looksLikeQuickFixConfig(@NotNull CharSequence fileContent) {
