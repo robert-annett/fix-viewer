@@ -19,13 +19,24 @@
                 fieldName="INSTANCE"
                 language="Fix"
                 extensions="fix"/>
+        <fileType
+                name="QuickFIX Session Config"
+                implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigFileType"
+                fieldName="INSTANCE"
+                language="QuickFixConfig"
+                extensions="fix.cfg,quickfix.cfg"/>
 
         <lang.parserDefinition language="Fix" implementationClass="com.rannett.fixplugin.FixParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="Fix"
                 implementationClass="com.rannett.fixplugin.FixSyntaxHighlighterFactory"/>
+        <lang.syntaxHighlighterFactory
+                language="QuickFixConfig"
+                implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigSyntaxHighlighterFactory"/>
         <colorSettingsPage
                 implementation="com.rannett.fixplugin.FixColorSettingsPage"/>
+
+        <fileTypeDetector implementation="com.rannett.fixplugin.quickfix.QuickFixConfigFileTypeDetector"/>
 
         <localInspection language="Fix"
                          shortName="FixChecksumInspection"

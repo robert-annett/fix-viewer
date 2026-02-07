@@ -6,6 +6,7 @@
 
 ### Added
 
+- QuickFIX session config detection with safe content-based heuristics, plus dedicated syntax highlighting.
 
 ### Fixed
 
