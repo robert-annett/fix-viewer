@@ -7,6 +7,7 @@
 ### Added
 
 - QuickFIX session config detection with safe content-based heuristics, plus dedicated syntax highlighting.
+- QuickFIX session config tooltips sourced from the QuickFIX/J configuration reference.
 
 ### Fixed
 

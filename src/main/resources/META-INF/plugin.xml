@@ -50,6 +50,8 @@
 
         <lang.documentationProvider language="Fix"
                                     implementationClass="com.rannett.fixplugin.FixDocumentationProvider"/>
+        <lang.documentationProvider language="QuickFixConfig"
+                                    implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
 
