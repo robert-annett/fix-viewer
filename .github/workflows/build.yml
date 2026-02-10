@@ -179,7 +179,7 @@ jobs:
           results-dir: qodana/results
 
       - name: Upload Qodana SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: qodana/results/qodana.sarif.json
 
