@@ -5,16 +5,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,9 +15,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class QuickFixConfigDocumentationProvider extends AbstractDocumentationProvider {
 
-    private static final String RESOURCE_PATH = "/documentation/quickfix-session-config.tsv";
     private static final Key<String> CONFIG_KEY = Key.create("QUICKFIX_CONFIG_KEY");
-    private static final Map<String, QuickFixConfigSetting> SETTINGS = loadSettings();
+    private static final Map<String, QuickFixConfigSettings.QuickFixConfigSetting> SETTINGS =
+            QuickFixConfigSettings.getSettings();
 
     /**
      * Returns the element to use for QuickFIX configuration documentation.
@@ -85,7 +77,7 @@ public class QuickFixConfigDocumentationProvider extends AbstractDocumentationPr
             return null;
         }
 
-        QuickFixConfigSetting setting = SETTINGS.get(key);
+        QuickFixConfigSettings.QuickFixConfigSetting setting = SETTINGS.get(key);
         if (setting == null) {
             return null;
         }
@@ -144,53 +136,4 @@ public class QuickFixConfigDocumentationProvider extends AbstractDocumentationPr
         return trimmedLine.startsWith("//");
     }
 
-    private static Map<String, QuickFixConfigSetting> loadSettings() {
-        try (InputStream stream = QuickFixConfigDocumentationProvider.class.getResourceAsStream(RESOURCE_PATH)) {
-            if (stream == null) {
-                return Map.of();
-            }
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-                return reader.lines()
-                        .map(line -> line.split("\t", -1))
-                        .filter(parts -> parts.length >= 2)
-                        .map(QuickFixConfigDocumentationProvider::toSetting)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toMap(
-                                QuickFixConfigSetting::key,
-                                setting -> setting,
-                                (first, second) -> first,
-                                LinkedHashMap::new
-                        ));
-            }
-        } catch (IOException exception) {
-            return Map.of();
-        }
-    }
-
-    private static QuickFixConfigSetting toSetting(String[] parts) {
-        String key = parts[0].trim();
-        if (key.isEmpty()) {
-            return null;
-        }
-        String description = parts[1].trim();
-        String values = parts.length > 2 ? parts[2].trim() : "";
-        String defaultValue = parts.length > 3 ? parts[3].trim() : "";
-        return new QuickFixConfigSetting(key, description, values, defaultValue);
-    }
-
-    /**
-     * Represents a QuickFIX session configuration option.
-     *
-     * @param key the configuration key.
-     * @param description the configuration description.
-     * @param values the accepted values, when provided.
-     * @param defaultValue the default value, when provided.
-     */
-    public record QuickFixConfigSetting(
-            @NotNull String key,
-            @NotNull String description,
-            @NotNull String values,
-            @NotNull String defaultValue
-    ) {
-    }
 }

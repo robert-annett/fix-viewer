@@ -46,6 +46,12 @@
                          groupName="Fix protocol"
                          enabledByDefault="true"
                          implementationClass="com.rannett.fixplugin.inspection.FixChecksumInspection"/>
+        <localInspection language="QuickFixConfig"
+                         shortName="QuickFixConfigValueInspection"
+                         displayName="Validate QuickFIX session values"
+                         groupName="QuickFIX session configuration"
+                         enabledByDefault="true"
+                         implementationClass="com.rannett.fixplugin.inspection.QuickFixConfigValueInspection"/>
 
         <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixInvalidCharAnnotator"/>
         <annotator language="Fix" implementationClass="com.rannett.fixplugin.annotator.FixCheckTypeAnnotator"/>

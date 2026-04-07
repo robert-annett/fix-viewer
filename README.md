@@ -35,6 +35,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
 - **QuickFIX session config detection** with dedicated highlighting, safe content-based recognition for config files, and manual association via *Associate with File Type → QuickFIX Session Config*.
 - **QuickFIX session config tooltips** that describe configuration keys, accepted values, and defaults from the QuickFIX/J reference.
+- **QuickFIX session config value validation** that flags invalid settings based on the QuickFIX/J valid-values list.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **Side-by-side diff viewer** for comparing two messages
