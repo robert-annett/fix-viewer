@@ -10,6 +10,31 @@ public class FixMessageSplitTest {
 
     private static final char SOH = '\u0001';
 
+
+    @Test
+    public void testSplitMessagesWithEmbeddedXmlData212And213() {
+        String xml = "<root>line1\nline2|with|pipes</root>";
+        String msg = "8=FIX.4.4|9=122|35=D|49=BUY|56=SELL|212=" + xml.length() + "|213=" + xml + "|10=000|";
+        String combined = msg + "\n" + msg;
+
+        List<String> parsed = FixMessageParser.splitMessages(combined);
+        assertEquals(2, parsed.size());
+        assertEquals(msg, parsed.get(0));
+        assertEquals(msg, parsed.get(1));
+    }
+
+    @Test
+    public void testSplitMessagesMalformedFixFallsBackToLineSplit() {
+        String malformed = "8=FIX.4.4|9=12|35=0|10=ABC|";
+        String valid = "8=FIX.4.4|9=12|35=0|10=000|";
+        String text = malformed + "\n" + valid;
+
+        List<String> parsed = FixMessageParser.splitMessages(text);
+        assertEquals(2, parsed.size());
+        assertEquals(malformed, parsed.get(0));
+        assertEquals(valid, parsed.get(1));
+    }
+
     @Test
     public void testSplitMessagesWithEmbeddedFpmlPipeDelimiter() {
         String fpml = sampleFpmlSnippet();

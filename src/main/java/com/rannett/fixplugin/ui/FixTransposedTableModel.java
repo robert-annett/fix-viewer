@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import quickfix.field.EncodedSecurityDesc;
-import quickfix.field.EncodedSecurityDescLen;
 import quickfix.field.XmlData;
 import quickfix.field.XmlDataLen;
 
@@ -181,10 +179,10 @@ public class FixTransposedTableModel extends AbstractTableModel {
                     expectedLength = -1;
                     dataTag = null;
                 }
-            } else if (String.valueOf(EncodedSecurityDescLen.FIELD).equals(tag)) { // EncodedSecurityDescLen
+            } else if ("350".equals(tag)) { // EncodedSecurityDescLen
                 try {
                     expectedLength = Integer.parseInt(value);
-                    dataTag = String.valueOf(EncodedSecurityDesc.FIELD); // EncodedSecurityDesc follows
+                    dataTag = "351"; // EncodedSecurityDesc follows
                 } catch (NumberFormatException ignore) {
                     expectedLength = -1;
                     dataTag = null;
