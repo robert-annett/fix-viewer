@@ -20,6 +20,7 @@
 - Fix QuickFIX session config validation compilation by correcting the DateTimeException import.
 - Fix QuickFIX session host/IP validation to accept IPv6 and comma-separated InetAddress-style address lists.
 - Harden QuickFIX host/IP validation by removing runtime DNS lookups from editor-time validation.
+- Fix timezone validation to consume normalized ZoneId values instead of ignoring the resolver result.
 
 ## [0.0.1]
 

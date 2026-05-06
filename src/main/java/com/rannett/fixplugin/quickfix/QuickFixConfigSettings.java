@@ -314,14 +314,9 @@ public final class QuickFixConfigSettings {
     }
 
     private static ValueValidator timeZoneValidator() {
-        return value -> {
-            try {
-                ZoneId.of(value.trim());
-                return Optional.empty();
-            } catch (DateTimeException exception) {
-                return Optional.of("Value must be a valid time zone ID.");
-            }
-        };
+        return value -> isValidZoneId(value.trim())
+                ? Optional.empty()
+                : Optional.of("Value must be a valid time zone ID.");
     }
 
     private static ValueValidator timeWithOptionalZoneValidator() {
@@ -338,14 +333,21 @@ public final class QuickFixConfigSettings {
             }
             String zone = matcher.group(4);
             if (zone != null) {
-                try {
-                    ZoneId.of(zone.trim());
-                } catch (DateTimeException exception) {
+                if (!isValidZoneId(zone.trim())) {
                     return Optional.of("Value must include a valid timezone ID.");
                 }
             }
             return Optional.empty();
         };
+    }
+
+    private static boolean isValidZoneId(String value) {
+        try {
+            String normalized = ZoneId.of(value).getId();
+            return !normalized.isBlank();
+        } catch (DateTimeException exception) {
+            return false;
+        }
     }
 
     private static ValueValidator hostOrIpValidator() {

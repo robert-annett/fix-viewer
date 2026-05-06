@@ -38,6 +38,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **QuickFIX session config value validation** that flags invalid settings based on the QuickFIX/J valid-values list.
 - **QuickFIX session network value validation** now accepts IPv4, IPv6, hostnames, and comma-separated address lists for InetAddress-based settings.
 - **Offline-safe config validation** avoids DNS/network lookups during editor inspections.
+- **Improved timezone validation** normalizes and verifies IANA zone IDs used in session configuration values.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **Side-by-side diff viewer** for comparing two messages
