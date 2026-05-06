@@ -20,5 +20,18 @@ public class FixStringLanguageInjectorTest extends BasePlatformTestCase {
         assertNull(InjectedLanguageManager.getInstance(getProject())
                 .findInjectedElementAt(myFixture.getFile(), offset));
     }
-}
 
+    public void testNoInjectionForMarkdownFixExample() {
+        String markdown = """
+                # Example
+
+                ```text
+                8=FIX.4.4|9=112|35=D|49=CLIENT12|56=BROKER34|10=004|
+                ```
+                """;
+        myFixture.configureByText("README.md", markdown);
+        int offset = myFixture.getFile().getText().indexOf("8=FIX.4.4") + 1;
+        assertNull(InjectedLanguageManager.getInstance(getProject())
+                .findInjectedElementAt(myFixture.getFile(), offset));
+    }
+}

@@ -2,7 +2,9 @@ package com.rannett.fixplugin.injection;
 
 import com.intellij.lang.injection.MultiHostInjector;
 import com.intellij.lang.injection.MultiHostRegistrar;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLanguageInjectionHost;
 import com.rannett.fixplugin.FixLanguage;
@@ -24,6 +26,10 @@ public class FixStringLanguageInjector implements MultiHostInjector {
     @Override
     public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
         if (!(context instanceof PsiLanguageInjectionHost host) || !host.isValidHost()) {
+            return;
+        }
+
+        if (shouldSkipInjection(context)) {
             return;
         }
 
@@ -63,5 +69,17 @@ public class FixStringLanguageInjector implements MultiHostInjector {
     public @NotNull List<Class<? extends PsiElement>> elementsToInjectIn() {
         return List.of(PsiLanguageInjectionHost.class);
     }
-}
 
+    private boolean shouldSkipInjection(@NotNull PsiElement context) {
+        VirtualFile virtualFile = context.getContainingFile() == null ? null : context.getContainingFile().getVirtualFile();
+        if (virtualFile == null) {
+            return false;
+        }
+        String extension = virtualFile.getExtension();
+        if (extension != null && extension.equalsIgnoreCase("md")) {
+            return true;
+        }
+        FileType fileType = virtualFile.getFileType();
+        return fileType.getName().equalsIgnoreCase("Markdown");
+    }
+}
