@@ -45,6 +45,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
 - **Language injection** for FIX messages embedded in code strings
+- **Markdown-safe language injection** keeps FIX examples in `README.md` and other Markdown docs from being inspected as live FIX content.
 - **FpML Detection** for XML embedded in tags 351 and 213
 - **Lexer support** for multi-line FpML blocks
 - **Unlimited IDE compatibility** so the plugin can install on newer IntelliJ versions without a capped build range
