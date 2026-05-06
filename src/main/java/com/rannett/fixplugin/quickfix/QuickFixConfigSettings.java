@@ -179,9 +179,12 @@ public final class QuickFixConfigSettings {
             return Optional.of(integerValidator());
         }
 
-        Optional<Set<String>> quotedValues = parseQuotedValues(trimmed);
-        if (quotedValues.isPresent()) {
-            return Optional.of(enumValidator(quotedValues.get()));
+        Optional<ValueValidator> quotedValueValidator = parseQuotedValues(trimmed)
+                .map(QuickFixConfigSettings::enumValidator);
+        if (quotedValueValidator.isEmpty()) {
+            Optional<ValueValidator> simpleEnumValidator = parseSimpleEnum(trimmed)
+                    .map(QuickFixConfigSettings::enumValidator);
+            return simpleEnumValidator;
         }
 
         if (trimmed.startsWith("One of ")) {
@@ -190,13 +193,7 @@ public final class QuickFixConfigSettings {
                 return Optional.of(enumValidator(tokens));
             }
         }
-
-        Optional<Set<String>> enumValues = parseSimpleEnum(trimmed);
-        if (enumValues.isPresent()) {
-            return Optional.of(enumValidator(enumValues.get()));
-        }
-
-        return Optional.empty();
+        return quotedValueValidator;
     }
 
     private static Optional<Set<String>> parseQuotedValues(String values) {
