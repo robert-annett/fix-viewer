@@ -17,11 +17,6 @@ same fields for different messages will be shown in the same row, making compari
 
 There is also a tree view, to show the message structure, and a communications view to show messages between two sources.
 
-## New in 0.0.21
-
-- Added QuickFIX session config detection with dedicated syntax highlighting and safe content-based file recognition.
-- Added QuickFIX session config key tooltips and valid-value guidance sourced from QuickFIX/J references.
-- Added QuickFIX session config value validation enhancements for host/IP lists, timezone normalization, and offline-safe checks.
 
 ## Features
 
@@ -74,7 +69,9 @@ or reporting a trade execution.
 
 ### Example FIX Message
 
-    8=FIX.4.4|9=112|35=D|49=CLIENT12|56=BROKER34|55=IBM|54=1|38=100|40=2|10=004
+``` 
+8=FIX.4.4|9=112|35=D|49=CLIENT12|56=BROKER34|55=IBM|54=1|38=100|40=2|10=113|
+```
 
 This plugin brings the power of IntelliJ’s developer tooling to this domain, helping users work more confidently and
 efficiently with FIX-formatted data.

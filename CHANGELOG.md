@@ -200,4 +200,11 @@
 
 - Strip non-FIX log prefixes and suffixes in the FIX editor to leave clean messages when logs wrap the payload.
 
-### Fixed
+
+## [0.0.21]
+
+### Added
+
+- Added QuickFIX session config detection with dedicated syntax highlighting and safe content-based file recognition.
+- Added QuickFIX session config key tooltips and valid-value guidance sourced from QuickFIX/J references.
+- Added QuickFIX session config value validation enhancements for host/IP lists, timezone normalization, and offline-safe checks.
