@@ -17,6 +17,12 @@ same fields for different messages will be shown in the same row, making compari
 
 There is also a tree view, to show the message structure, and a communications view to show messages between two sources.
 
+## New in 0.0.21
+
+- Added QuickFIX session config detection with dedicated syntax highlighting and safe content-based file recognition.
+- Added QuickFIX session config key tooltips and valid-value guidance sourced from QuickFIX/J references.
+- Added QuickFIX session config value validation enhancements for host/IP lists, timezone normalization, and offline-safe checks.
+
 ## Features
 
 - **Syntax highlighting** for FIX messages with clear colour-coding of tags, values, and delimiters

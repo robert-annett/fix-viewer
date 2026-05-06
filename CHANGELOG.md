@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-05-06
+
 ### Added
 
 - QuickFIX session config detection with safe content-based heuristics, plus dedicated syntax highlighting.
