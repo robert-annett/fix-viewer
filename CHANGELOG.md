@@ -19,6 +19,7 @@
 - Enable QuickFIX session config tooltips by providing PSI parsing for config files.
 - Fix QuickFIX session config validation compilation by correcting the DateTimeException import.
 - Fix QuickFIX session host/IP validation to accept IPv6 and comma-separated InetAddress-style address lists.
+- Harden QuickFIX host/IP validation by removing runtime DNS lookups from editor-time validation.
 
 ## [0.0.1]
 

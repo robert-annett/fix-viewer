@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.DateTimeException;
@@ -33,6 +31,7 @@ public final class QuickFixConfigSettings {
     private static final Pattern QUOTED_VALUE_PATTERN = Pattern.compile("\"([^\"]+)\"");
     private static final Pattern TIME_PATTERN = Pattern.compile("^(\\d{2}):(\\d{2}):(\\d{2})(?:\\s+(.+))?$");
     private static final Pattern ENUM_TOKEN_PATTERN = Pattern.compile("^[A-Za-z0-9_]+$");
+    private static final Pattern IPV6_PATTERN = Pattern.compile("^[0-9A-Fa-f:.%]+$");
 
     private static final Set<String> ENUM_STOP_WORDS = Set.of(
             "positive",
@@ -373,15 +372,21 @@ public final class QuickFixConfigSettings {
         if (isValidIpv4(value)) {
             return true;
         }
-        if (value.contains(":")) {
-            try {
-                InetAddress.getByName(value);
-                return true;
-            } catch (UnknownHostException exception) {
-                return false;
-            }
+        if (isLikelyIpv6(value)) {
+            return true;
         }
         return value.matches("^[A-Za-z0-9.-]+$") && value.chars().anyMatch(Character::isLetter);
+    }
+
+    private static boolean isLikelyIpv6(String value) {
+        if (!value.contains(":")) {
+            return false;
+        }
+        if (!IPV6_PATTERN.matcher(value).matches()) {
+            return false;
+        }
+        long colonCount = value.chars().filter(character -> character == ':').count();
+        return colonCount >= 2;
     }
 
     private static ValueValidator tagValueValidator() {
