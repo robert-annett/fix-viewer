@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.DateTimeException;
@@ -350,14 +352,36 @@ public final class QuickFixConfigSettings {
     private static ValueValidator hostOrIpValidator() {
         return value -> {
             String trimmed = value.trim();
-            if (isValidIpv4(trimmed)) {
-                return Optional.empty();
+            if (trimmed.isEmpty()) {
+                return Optional.of("Value must be a valid IP address or hostname.");
             }
-            if (trimmed.matches("^[A-Za-z0-9.-]+$") && trimmed.chars().anyMatch(Character::isLetter)) {
+            String[] candidates = trimmed.split(",");
+            boolean allValid = Arrays.stream(candidates)
+                    .map(String::trim)
+                    .allMatch(QuickFixConfigSettings::isValidHostOrIp);
+            if (allValid) {
                 return Optional.empty();
             }
             return Optional.of("Value must be a valid IP address or hostname.");
         };
+    }
+
+    private static boolean isValidHostOrIp(String value) {
+        if (value.isEmpty()) {
+            return false;
+        }
+        if (isValidIpv4(value)) {
+            return true;
+        }
+        if (value.contains(":")) {
+            try {
+                InetAddress.getByName(value);
+                return true;
+            } catch (UnknownHostException exception) {
+                return false;
+            }
+        }
+        return value.matches("^[A-Za-z0-9.-]+$") && value.chars().anyMatch(Character::isLetter);
     }
 
     private static ValueValidator tagValueValidator() {
