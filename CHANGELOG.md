@@ -8,6 +8,7 @@
 
 - QuickFIX session config detection with safe content-based heuristics, plus dedicated syntax highlighting.
 - QuickFIX session config tooltips sourced from the QuickFIX/J configuration reference.
+- QuickFIX session config value inspection driven by the QuickFIX/J valid-values metadata.
 
 ### Fixed
 
@@ -16,6 +17,11 @@
 - Fix QuickFIX config file detection wiring for the IntelliJ 2024.2 file type detector API.
 - Fix QuickFIX config detection imports to compile against the IntelliJ platform ByteSequence API.
 - Enable QuickFIX session config tooltips by providing PSI parsing for config files.
+- Fix QuickFIX session config validation compilation by correcting the DateTimeException import.
+- Fix QuickFIX session host/IP validation to accept IPv6 and comma-separated InetAddress-style address lists.
+- Harden QuickFIX host/IP validation by removing runtime DNS lookups from editor-time validation.
+- Fix timezone validation to consume normalized ZoneId values instead of ignoring the resolver result.
+- Refactor QuickFIX value-validator Optional handling to satisfy functional-style static analysis rules.
 
 ## [0.0.1]
 
