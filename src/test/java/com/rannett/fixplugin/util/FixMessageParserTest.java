@@ -61,4 +61,16 @@ public class FixMessageParserTest {
         String extracted = FixMessageParser.extractFixMessagesText("notes only\n#comment");
         assertEquals("", extracted);
     }
+
+    @Test
+    public void testSplitMessagesPreservesMalformedLineAndParsesFollowingValidMessage() {
+        String malformed = "8=FIX.4.4|9=12|35=0|10=ABC|";
+        String valid = "8=FIX.4.4|9=12|35=0|10=000|";
+
+        java.util.List<String> split = FixMessageParser.splitMessages(malformed + "\n" + valid);
+        assertEquals(2, split.size());
+        assertEquals(malformed, split.get(0));
+        assertEquals(valid, split.get(1));
+    }
+
 }

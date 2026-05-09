@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added split-message coverage for embedded XML data fields (212/213) and multi-message parsing with mixed valid/malformed input.
+
+### Fixed
+
+- Upgraded QuickFIX/J core dependency from 2.3.2 to 3.0.0 and updated parser API usage for the new validation-settings signature.
+- Replaced removed QuickFIX/J generated field constants with stable FIX tag literals for EncodedSecurityDescLen/EncodedSecurityDesc (350/351).
+
 ## [0.0.21] - 2026-05-06
 
 ### Added

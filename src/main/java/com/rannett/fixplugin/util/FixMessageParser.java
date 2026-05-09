@@ -10,6 +10,7 @@ import quickfix.DataDictionary;
 import quickfix.FieldMap;
 import quickfix.FieldNotFound;
 import quickfix.Message;
+import quickfix.ValidationSettings;
 
 import java.io.File;
 import java.io.InputStream;
@@ -77,7 +78,7 @@ public final class FixMessageParser {
             message = message.replace('|', '\u0001');
         }
         Message qfMsg = new Message();
-        qfMsg.fromString(message, dd, false);
+        qfMsg.fromString(message, dd, new ValidationSettings(), false);
         return qfMsg;
     }
 
@@ -179,6 +180,12 @@ public final class FixMessageParser {
             }
 
             ChecksumField checksumField = findChecksumField(text, start);
+            if (checksumField != null) {
+                int nestedStart = text.indexOf("8=FIX", start + 2);
+                if (nestedStart != -1 && nestedStart < checksumField.getFieldStart()) {
+                    checksumField = null;
+                }
+            }
 
             if (checksumField == null) {
                 int nl = text.indexOf('\n', start);
@@ -258,7 +265,7 @@ public final class FixMessageParser {
                 }
             }
 
-            return new ChecksumField(candidateDigitsEnd);
+            return new ChecksumField(candidate, candidateDigitsEnd);
         }
     }
 
@@ -280,10 +287,16 @@ public final class FixMessageParser {
 
     private static final class ChecksumField {
 
+        private final int fieldStart;
         private final int digitsEnd;
 
-        private ChecksumField(int digitsEnd) {
+        private ChecksumField(int fieldStart, int digitsEnd) {
+            this.fieldStart = fieldStart;
             this.digitsEnd = digitsEnd;
+        }
+
+        private int getFieldStart() {
+            return fieldStart;
         }
 
         private int getDigitsEnd() {

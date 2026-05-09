@@ -10,7 +10,6 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.rannett.fixplugin.psi.FixField;
 import com.rannett.fixplugin.psi.FixTypes;
-import quickfix.field.EncodedSecurityDesc;
 import quickfix.field.XmlData;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +37,7 @@ public class FixInvalidCharAnnotator implements Annotator {
         if (type == FixTypes.VALUE && field != null) {
             String tag = field.getTag();
             if (String.valueOf(XmlData.FIELD).equals(tag) ||
-                    String.valueOf(EncodedSecurityDesc.FIELD).equals(tag)) {
+                    "351".equals(tag)) {
                 return;
             }
         }
