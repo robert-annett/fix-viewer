@@ -12,6 +12,7 @@
 
 - Upgraded QuickFIX/J core dependency from 2.3.2 to 3.0.0 and updated parser API usage for the new validation-settings signature.
 - Replaced removed QuickFIX/J generated field constants with stable FIX tag literals for EncodedSecurityDescLen/EncodedSecurityDesc (350/351).
+- QuickFIX session config files with multi-part names such as `*.fix.cfg` and `*.quickfix.cfg` now auto-associate with the QuickFIX Session Config file type.
 
 ## [0.0.21] - 2026-05-06
 

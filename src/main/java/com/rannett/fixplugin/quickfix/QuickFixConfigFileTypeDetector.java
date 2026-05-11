@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 public class QuickFixConfigFileTypeDetector implements FileTypeRegistry.FileTypeDetector {
 
     private static final int MAX_SAMPLE_SIZE = 8192;
+    private static final String FIX_CFG_SUFFIX = ".fix.cfg";
+    private static final String QUICKFIX_CFG_SUFFIX = ".quickfix.cfg";
     private static final Pattern SECTION_PATTERN = Pattern.compile("(?m)^\\s*\\[(DEFAULT|SESSION)]\\s*$");
     private static final Pattern KEY_PATTERN = Pattern.compile(
             "(?m)^\\s*(BeginString|SenderCompID|TargetCompID|ConnectionType)\\s*="
@@ -33,6 +35,10 @@ public class QuickFixConfigFileTypeDetector implements FileTypeRegistry.FileType
     public FileType detect(@NotNull VirtualFile file,
                            @NotNull ByteSequence firstBytes,
                            @Nullable CharSequence firstCharsIfText) {
+        String fileName = file.getName().toLowerCase();
+        if (fileName.endsWith(FIX_CFG_SUFFIX) || fileName.endsWith(QUICKFIX_CFG_SUFFIX)) {
+            return QuickFixConfigFileType.INSTANCE;
+        }
         if (firstCharsIfText == null || !looksLikeQuickFixConfig(firstCharsIfText)) {
             return null;
         }
