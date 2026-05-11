@@ -34,7 +34,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
-- **QuickFIX session config detection** with dedicated highlighting, safe content-based recognition for config files, and manual association via *Associate with File Type → QuickFIX Session Config*.
+- **QuickFIX session config auto-association** now recognizes multi-part filenames like `*.fix.cfg` and `*.quickfix.cfg` automatically, with dedicated highlighting plus content-based fallback detection.
 - **QuickFIX session config tooltips** that describe configuration keys, accepted values, and defaults from the QuickFIX/J reference.
 - **QuickFIX session config value validation** that flags invalid settings based on the QuickFIX/J valid-values list.
 - **QuickFIX session network value validation** now accepts IPv4, IPv6, hostnames, and comma-separated address lists for InetAddress-based settings.
