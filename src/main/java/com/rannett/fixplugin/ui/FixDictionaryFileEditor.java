@@ -9,23 +9,33 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.JPanel;
 import javax.swing.JComponent;
+import java.awt.BorderLayout;
 
 public class FixDictionaryFileEditor extends UserDataHolderBase implements FileEditor {
     private final TextEditor delegate;
     private final VirtualFile file;
+    private final JPanel panel;
 
     public FixDictionaryFileEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.file = file;
         this.delegate = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
+        this.panel = new JPanel(new BorderLayout());
+        JBLabel header = new JBLabel("FIX Dictionary View");
+        header.setBorder(JBUI.Borders.empty(4, 8));
+        this.panel.add(header, BorderLayout.NORTH);
+        this.panel.add(delegate.getComponent(), BorderLayout.CENTER);
     }
 
     @Override
     public @NotNull JComponent getComponent() {
-        return delegate.getComponent();
+        return panel;
     }
 
     @Override

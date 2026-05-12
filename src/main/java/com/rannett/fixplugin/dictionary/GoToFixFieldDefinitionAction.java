@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.navigation.NavigationItem;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlAttribute;
@@ -15,6 +16,8 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 public class GoToFixFieldDefinitionAction extends AnAction {
+    private static final Logger LOG = Logger.getInstance(GoToFixFieldDefinitionAction.class);
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         Project project = event.getProject();
@@ -28,9 +31,14 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             return;
         }
         PsiElement sourceElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
+        LOG.info("GoToFixFieldDefinitionAction invoked at offset " + editor.getCaretModel().getOffset()
+                + " element=" + (sourceElement == null ? "null" : sourceElement.getClass().getSimpleName()));
         PsiElement target = resolveTarget(sourceElement);
         if (target instanceof NavigationItem navigationItem) {
             navigationItem.navigate(true);
+            LOG.info("Navigated to FIX field definition.");
+        } else {
+            LOG.info("No FIX field definition target found.");
         }
     }
 
@@ -60,7 +68,8 @@ public class GoToFixFieldDefinitionAction extends AnAction {
     }
 
     private PsiElement resolveTarget(PsiElement sourceElement) {
-        if (!(sourceElement instanceof XmlAttributeValue attributeValue)) {
+        XmlAttributeValue attributeValue = findAttributeValue(sourceElement);
+        if (attributeValue == null) {
             return null;
         }
         if (!(attributeValue.getParent() instanceof XmlAttribute attribute)) {
@@ -109,6 +118,17 @@ public class GoToFixFieldDefinitionAction extends AnAction {
                 XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
                 return targetNameAttribute != null ? targetNameAttribute.getValueElement() : fieldTag;
             }
+        }
+        return null;
+    }
+
+    private XmlAttributeValue findAttributeValue(PsiElement sourceElement) {
+        PsiElement cursor = sourceElement;
+        while (cursor != null) {
+            if (cursor instanceof XmlAttributeValue value) {
+                return value;
+            }
+            cursor = cursor.getParent();
         }
         return null;
     }

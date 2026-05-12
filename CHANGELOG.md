@@ -19,6 +19,8 @@
 - Fix dictionary field-reference PSI targeting so Ctrl+Click navigation now resolves reliably from message-level field `name` values to the canonical field definition.
 - Add an explicit dictionary XML `GotoDeclarationHandler` fallback so Ctrl+Click / Go To Declaration works even when PSI reference navigation is not invoked by the editor path.
 - Add a right-click editor action (`Go to FIX Field Definition`) for dictionary message/group field references as a manual navigation fallback.
+- Improve dictionary navigation robustness by resolving from the nearest parent `XmlAttributeValue`, so Ctrl+Click/right-click works when caret lands on nested XML tokens.
+- Add diagnostic logging for dictionary editor acceptance/creation and right-click navigation attempts to aid troubleshooting in IDE logs.
 
 ## [0.0.21] - 2026-05-06
 

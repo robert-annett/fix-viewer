@@ -13,7 +13,8 @@ import org.jetbrains.annotations.Nullable;
 public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerBase {
     @Override
     public @Nullable PsiElement getGotoDeclarationTarget(@Nullable PsiElement sourceElement, @NotNull Editor editor) {
-        if (!(sourceElement instanceof XmlAttributeValue attributeValue)) {
+        XmlAttributeValue attributeValue = findAttributeValue(sourceElement);
+        if (attributeValue == null) {
             return null;
         }
         if (!(attributeValue.getParent() instanceof XmlAttribute attribute)) {
@@ -67,6 +68,17 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
 
     @Override
     public @Nullable String getActionText(DataContext context) {
+        return null;
+    }
+
+    private XmlAttributeValue findAttributeValue(PsiElement sourceElement) {
+        PsiElement current = sourceElement;
+        while (current != null) {
+            if (current instanceof XmlAttributeValue value) {
+                return value;
+            }
+            current = current.getParent();
+        }
         return null;
     }
 }
