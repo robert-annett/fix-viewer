@@ -18,6 +18,7 @@
 - Override `FileEditor#getFile()` in the `FIX Dictionary` editor to satisfy IntelliJ's non-deprecated FileEditor contract and prevent runtime PluginException warnings.
 - Fix dictionary field-reference PSI targeting so Ctrl+Click navigation now resolves reliably from message-level field `name` values to the canonical field definition.
 - Add an explicit dictionary XML `GotoDeclarationHandler` fallback so Ctrl+Click / Go To Declaration works even when PSI reference navigation is not invoked by the editor path.
+- Add a right-click editor action (`Go to FIX Field Definition`) for dictionary message/group field references as a manual navigation fallback.
 
 ## [0.0.21] - 2026-05-06
 

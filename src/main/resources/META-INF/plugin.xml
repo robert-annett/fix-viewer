@@ -92,5 +92,11 @@
                 description="Lookup FIX field information">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action id="GoToFixFieldDefinitionAction"
+                class="com.rannett.fixplugin.dictionary.GoToFixFieldDefinitionAction"
+                text="Go to FIX Field Definition"
+                description="Navigate to the FIX dictionary field definition">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
     </actions>
 </idea-plugin>

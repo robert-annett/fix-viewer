@@ -48,6 +48,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Dictionary-aware field navigation** resolves message-level field references (for example `<message><field name=\"SettlInstReqID\"/>`) to canonical definitions under `<fields>`.
 - **Ctrl+Click dictionary navigation** jumps directly from `<message><field name=\"...\"/>` to the matching `<fields><field .../>` definition in QuickFIX dictionary XML.
 - **Goto Declaration support for dictionaries** adds explicit IntelliJ declaration handling for XML field references so Ctrl+Click/Go To Declaration resolves consistently.
+- **Right-click dictionary navigation action** adds `Go to FIX Field Definition` in the editor context menu for message/group field references.
 - **Modern FileEditor API compatibility** ensures the dictionary editor integrates cleanly with current IntelliJ platform expectations.
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
