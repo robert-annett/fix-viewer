@@ -65,6 +65,7 @@
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDictionaryFileEditorProvider"/>
         <psi.referenceContributor language="XML"
                                   implementation="com.rannett.fixplugin.dictionary.FixDictionaryXmlReferenceContributor"/>
+        <gotoDeclarationHandler implementation="com.rannett.fixplugin.dictionary.FixDictionaryGotoDeclarationHandler"/>
 
         <multiHostInjector
                 implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
