@@ -4,7 +4,6 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandlerBase;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -15,17 +14,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerBase {
-    private static final Logger LOG = Logger.getInstance(FixDictionaryGotoDeclarationHandler.class);
-
     @Override
     public @Nullable PsiElement getGotoDeclarationTarget(@Nullable PsiElement sourceElement, @NotNull Editor editor) {
-        LOG.warn("FixDictionaryGotoDeclarationHandler invoked at offset=" + editor.getCaretModel().getOffset()
-                + ", source=" + (sourceElement == null ? "null" : sourceElement.getClass().getSimpleName()));
         XmlTag caretFieldTag = findFieldTagAtCaret(editor);
         if (caretFieldTag != null) {
             PsiElement resolvedFromTag = resolveFromFieldTag(caretFieldTag);
             if (resolvedFromTag != null) {
-                LOG.warn("Resolved goto declaration target from caret field tag fallback.");
                 return resolvedFromTag;
             }
         }
@@ -38,11 +32,9 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
                 XmlAttribute fieldNameAttribute = fieldTag.getAttribute("name");
                 if (fieldNameAttribute != null && fieldNameAttribute.getValueElement() != null) {
                     attributeValue = fieldNameAttribute.getValueElement();
-                    LOG.warn("Recovered XmlAttributeValue via XmlTag fallback.");
                 }
             }
             if (attributeValue == null) {
-                LOG.warn("No XmlAttributeValue parent found for goto declaration.");
                 return null;
             }
         }
@@ -152,11 +144,9 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
             if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
                 XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
-                LOG.warn("Resolved goto declaration target for field '" + fieldName + "'.");
                 return targetNameAttribute != null ? targetNameAttribute : fieldTag;
             }
         }
-        LOG.warn("No declaration target found for field '" + fieldName + "'.");
         return null;
     }
 }

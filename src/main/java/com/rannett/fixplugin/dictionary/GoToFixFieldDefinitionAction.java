@@ -7,17 +7,16 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.navigation.NavigationItem;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class GoToFixFieldDefinitionAction extends AnAction {
-    private static final Logger LOG = Logger.getInstance(GoToFixFieldDefinitionAction.class);
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         Project project = event.getProject();
@@ -31,14 +30,9 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             return;
         }
         PsiElement sourceElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
-        LOG.warn("GoToFixFieldDefinitionAction invoked at offset " + editor.getCaretModel().getOffset()
-                + " element=" + (sourceElement == null ? "null" : sourceElement.getClass().getSimpleName()));
         PsiElement target = resolveTarget(sourceElement);
         if (target instanceof NavigationItem navigationItem) {
             navigationItem.navigate(true);
-            LOG.warn("Navigated to FIX field definition.");
-        } else {
-            LOG.warn("No FIX field definition target found.");
         }
     }
 
@@ -52,14 +46,16 @@ public class GoToFixFieldDefinitionAction extends AnAction {
         }
 
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+        if (psiFile == null && project != null) {
+            psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
+        }
         if (psiFile == null) {
             event.getPresentation().setEnabledAndVisible(false);
             return;
         }
 
-        PsiElement sourceElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
-        PsiElement target = resolveTarget(sourceElement);
-        event.getPresentation().setEnabledAndVisible(target != null);
+        XmlTag fieldTag = findFieldTagAtCaret(psiFile, editor.getCaretModel().getOffset());
+        event.getPresentation().setEnabledAndVisible(fieldTag != null && FixDictionaryXmlUtil.isFixDictionaryText(psiFile.getText()));
     }
 
     @Override
@@ -68,6 +64,13 @@ public class GoToFixFieldDefinitionAction extends AnAction {
     }
 
     private PsiElement resolveTarget(PsiElement sourceElement) {
+        XmlTag tagFallback = PsiTreeUtil.getParentOfType(sourceElement, XmlTag.class);
+        if (tagFallback != null && "field".equals(tagFallback.getName())) {
+            PsiElement resolved = resolveFromFieldTag(tagFallback);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
         XmlAttributeValue attributeValue = findAttributeValue(sourceElement);
         if (attributeValue == null) {
             return null;
@@ -86,17 +89,19 @@ public class GoToFixFieldDefinitionAction extends AnAction {
         if (!"field".equals(fieldRefTag.getName())) {
             return null;
         }
+        return resolveFromFieldTag(fieldRefTag);
+    }
+
+    private PsiElement resolveFromFieldTag(XmlTag fieldRefTag) {
         XmlTag containerTag = fieldRefTag.getParentTag();
         if (containerTag == null || "fields".equals(containerTag.getName())) {
             return null;
         }
-
-        String fieldName = attribute.getValue();
+        String fieldName = fieldRefTag.getAttributeValue("name");
         if (fieldName == null || fieldName.isBlank()) {
             return null;
         }
-
-        if (!FixDictionaryXmlUtil.isFixDictionaryText(attribute.getContainingFile().getText())) {
+        if (!FixDictionaryXmlUtil.isFixDictionaryText(fieldRefTag.getContainingFile().getText())) {
             return null;
         }
 
@@ -120,6 +125,22 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             }
         }
         return null;
+    }
+
+    private XmlTag findFieldTagAtCaret(PsiFile psiFile, int offset) {
+        PsiElement element = psiFile.findElementAt(offset);
+        XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (tag == null && offset > 0) {
+            tag = PsiTreeUtil.getParentOfType(psiFile.findElementAt(offset - 1), XmlTag.class);
+        }
+        if (tag == null || !"field".equals(tag.getName())) {
+            return null;
+        }
+        XmlTag parent = tag.getParentTag();
+        if (parent == null || "fields".equals(parent.getName())) {
+            return null;
+        }
+        return tag;
     }
 
     private XmlAttributeValue findAttributeValue(PsiElement sourceElement) {

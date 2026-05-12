@@ -55,6 +55,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Caret-offset fallback resolution** for Go To Declaration retries adjacent PSI elements when IntelliJ reports a non-value token under caret.
 - **XmlTag fallback navigation recovery** attempts resolution from the enclosing `<field ...>` tag when no direct XML attribute-value PSI is available at caret.
 - **Tag-first declaration resolution** now prioritizes caret-near `<field>` tags (outside `<fields>`) for more reliable Ctrl+Click in message/header/trailer/component contexts.
+- **Context-menu visibility hardening** now shows `Go to FIX Field Definition` reliably in the editor popup by resolving PSI from the active editor document when popup PSI context is missing.
 - **Modern FileEditor API compatibility** ensures the dictionary editor integrates cleanly with current IntelliJ platform expectations.
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
