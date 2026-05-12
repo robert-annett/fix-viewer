@@ -51,6 +51,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Right-click dictionary navigation action** adds `Go to FIX Field Definition` in the editor context menu for message/group field references.
 - **Visible FIX Dictionary view header** clearly indicates when the custom dictionary editor tab is active.
 - **Dictionary navigation debug logging** writes editor acceptance/navigation traces to IntelliJ logs to diagnose configuration or caret-resolution issues.
+- **Actionable dictionary log traces** now emit warning-level entries from editor-selection and navigation handlers so diagnostics are visible in standard IDE logs.
 - **Modern FileEditor API compatibility** ensures the dictionary editor integrates cleanly with current IntelliJ platform expectations.
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor

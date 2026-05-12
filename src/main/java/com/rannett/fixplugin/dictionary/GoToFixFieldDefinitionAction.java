@@ -31,14 +31,14 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             return;
         }
         PsiElement sourceElement = psiFile.findElementAt(editor.getCaretModel().getOffset());
-        LOG.info("GoToFixFieldDefinitionAction invoked at offset " + editor.getCaretModel().getOffset()
+        LOG.warn("GoToFixFieldDefinitionAction invoked at offset " + editor.getCaretModel().getOffset()
                 + " element=" + (sourceElement == null ? "null" : sourceElement.getClass().getSimpleName()));
         PsiElement target = resolveTarget(sourceElement);
         if (target instanceof NavigationItem navigationItem) {
             navigationItem.navigate(true);
-            LOG.info("Navigated to FIX field definition.");
+            LOG.warn("Navigated to FIX field definition.");
         } else {
-            LOG.info("No FIX field definition target found.");
+            LOG.warn("No FIX field definition target found.");
         }
     }
 
@@ -116,7 +116,7 @@ public class GoToFixFieldDefinitionAction extends AnAction {
         for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
             if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
                 XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
-                return targetNameAttribute != null ? targetNameAttribute.getValueElement() : fieldTag;
+                return targetNameAttribute != null ? targetNameAttribute : fieldTag;
             }
         }
         return null;

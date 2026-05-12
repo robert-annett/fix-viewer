@@ -16,13 +16,13 @@ public class FixDictionaryFileEditorProvider implements FileEditorProvider, Dumb
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
         boolean accepted = FixDictionaryXmlUtil.isFixDictionaryFile(file);
-        LOG.info("FIX dictionary editor accept(" + file.getPath() + ") = " + accepted);
+        LOG.warn("FIX dictionary editor accept(" + file.getPath() + ") = " + accepted);
         return accepted;
     }
 
     @Override
     public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
-        LOG.info("Creating FIX dictionary editor for: " + file.getPath());
+        LOG.warn("Creating FIX dictionary editor for: " + file.getPath());
         return new FixDictionaryFileEditor(project, file);
     }
 
