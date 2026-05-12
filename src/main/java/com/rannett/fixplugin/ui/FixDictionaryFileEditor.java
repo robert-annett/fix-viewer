@@ -16,8 +16,10 @@ import javax.swing.JComponent;
 
 public class FixDictionaryFileEditor extends UserDataHolderBase implements FileEditor {
     private final TextEditor delegate;
+    private final VirtualFile file;
 
     public FixDictionaryFileEditor(@NotNull Project project, @NotNull VirtualFile file) {
+        this.file = file;
         this.delegate = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
     }
 
@@ -34,6 +36,11 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
     @Override
     public @NotNull String getName() {
         return "FIX Dictionary";
+    }
+
+    @Override
+    public @NotNull VirtualFile getFile() {
+        return file;
     }
 
     @Override
