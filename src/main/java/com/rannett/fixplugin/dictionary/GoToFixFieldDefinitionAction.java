@@ -54,7 +54,7 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             return;
         }
 
-        XmlTag fieldTag = findFieldTagAtCaret(psiFile, editor.getCaretModel().getOffset());
+        XmlTag fieldTag = findReferenceTagAtCaret(psiFile, editor.getCaretModel().getOffset());
         event.getPresentation().setEnabledAndVisible(fieldTag != null && FixDictionaryXmlUtil.isFixDictionaryText(psiFile.getText()));
     }
 
@@ -65,8 +65,8 @@ public class GoToFixFieldDefinitionAction extends AnAction {
 
     private PsiElement resolveTarget(PsiElement sourceElement) {
         XmlTag tagFallback = PsiTreeUtil.getParentOfType(sourceElement, XmlTag.class);
-        if (tagFallback != null && "field".equals(tagFallback.getName())) {
-            PsiElement resolved = resolveFromFieldTag(tagFallback);
+        if (tagFallback != null && ("field".equals(tagFallback.getName()) || "component".equals(tagFallback.getName()))) {
+            PsiElement resolved = resolveFromReferenceTag(tagFallback);
             if (resolved != null) {
                 return resolved;
             }
@@ -86,13 +86,13 @@ public class GoToFixFieldDefinitionAction extends AnAction {
         }
 
         XmlTag fieldRefTag = attribute.getParent().getParentTag();
-        if (!"field".equals(fieldRefTag.getName())) {
+        if (!"field".equals(fieldRefTag.getName()) && !"component".equals(fieldRefTag.getName())) {
             return null;
         }
-        return resolveFromFieldTag(fieldRefTag);
+        return resolveFromReferenceTag(fieldRefTag);
     }
 
-    private PsiElement resolveFromFieldTag(XmlTag fieldRefTag) {
+    private PsiElement resolveFromReferenceTag(XmlTag fieldRefTag) {
         XmlTag containerTag = fieldRefTag.getParentTag();
         if (containerTag == null || "fields".equals(containerTag.getName())) {
             return null;
@@ -113,27 +113,40 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             return null;
         }
 
-        XmlTag fieldsTag = rootTag.findFirstSubTag("fields");
-        if (fieldsTag == null) {
-            return null;
+        if ("field".equals(fieldRefTag.getName())) {
+            XmlTag fieldsTag = rootTag.findFirstSubTag("fields");
+            if (fieldsTag == null) {
+                return null;
+            }
+            for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
+                if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
+                    XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
+                    return targetNameAttribute != null ? targetNameAttribute : fieldTag;
+                }
+            }
         }
-
-        for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
-            if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
-                XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
-                return targetNameAttribute != null ? targetNameAttribute : fieldTag;
+        if ("component".equals(fieldRefTag.getName())) {
+            XmlTag componentsTag = rootTag.findFirstSubTag("components");
+            if (componentsTag == null) {
+                return null;
+            }
+            for (XmlTag componentTag : componentsTag.findSubTags("component")) {
+                if (fieldName.equals(componentTag.getAttributeValue("name"))) {
+                    XmlAttribute targetNameAttribute = componentTag.getAttribute("name");
+                    return targetNameAttribute != null ? targetNameAttribute : componentTag;
+                }
             }
         }
         return null;
     }
 
-    private XmlTag findFieldTagAtCaret(PsiFile psiFile, int offset) {
+    private XmlTag findReferenceTagAtCaret(PsiFile psiFile, int offset) {
         PsiElement element = psiFile.findElementAt(offset);
         XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (tag == null && offset > 0) {
             tag = PsiTreeUtil.getParentOfType(psiFile.findElementAt(offset - 1), XmlTag.class);
         }
-        if (tag == null || !"field".equals(tag.getName())) {
+        if (tag == null || (!"field".equals(tag.getName()) && !"component".equals(tag.getName()))) {
             return null;
         }
         XmlTag parent = tag.getParentTag();

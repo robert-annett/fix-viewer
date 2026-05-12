@@ -28,6 +28,7 @@
 - Prioritize caret-near `<field>` tag resolution (excluding `<fields>` definitions) before attribute-value PSI paths to improve Ctrl+Click reliability across dictionary sections.
 - Fix right-click `Go to FIX Field Definition` visibility by deriving PSI from the active editor document when popup PSI context is unavailable.
 - Remove temporary verbose warning logs from dictionary navigation/editor paths after stabilizing fallback behavior.
+- Add dictionary navigation support for component references, resolving `<component name=\"...\"/>` to `<components><component .../>` definitions.
 
 ## [0.0.21] - 2026-05-06
 

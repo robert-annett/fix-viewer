@@ -94,8 +94,8 @@
         </action>
         <action id="GoToFixFieldDefinitionAction"
                 class="com.rannett.fixplugin.dictionary.GoToFixFieldDefinitionAction"
-                text="Go to FIX Field Definition"
-                description="Navigate to the FIX dictionary field definition">
+                text="Go to FIX Definition"
+                description="Navigate to the FIX dictionary field or component definition">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
     </actions>

@@ -16,9 +16,9 @@ import org.jetbrains.annotations.Nullable;
 public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerBase {
     @Override
     public @Nullable PsiElement getGotoDeclarationTarget(@Nullable PsiElement sourceElement, @NotNull Editor editor) {
-        XmlTag caretFieldTag = findFieldTagAtCaret(editor);
-        if (caretFieldTag != null) {
-            PsiElement resolvedFromTag = resolveFromFieldTag(caretFieldTag);
+        XmlTag caretRefTag = findReferenceTagAtCaret(editor);
+        if (caretRefTag != null) {
+            PsiElement resolvedFromTag = resolveFromReferenceTag(caretRefTag);
             if (resolvedFromTag != null) {
                 return resolvedFromTag;
             }
@@ -27,7 +27,7 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         PsiElement lookupElement = normalizeSourceElement(sourceElement, editor);
         XmlAttributeValue attributeValue = findAttributeValue(lookupElement);
         if (attributeValue == null) {
-            XmlTag fieldTag = findFieldTagAtCaret(editor);
+            XmlTag fieldTag = findReferenceTagAtCaret(editor);
             if (fieldTag != null) {
                 XmlAttribute fieldNameAttribute = fieldTag.getAttribute("name");
                 if (fieldNameAttribute != null && fieldNameAttribute.getValueElement() != null) {
@@ -49,10 +49,10 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         }
 
         XmlTag fieldRefTag = attribute.getParent().getParentTag();
-        if (!"field".equals(fieldRefTag.getName())) {
+        if (!"field".equals(fieldRefTag.getName()) && !"component".equals(fieldRefTag.getName())) {
             return null;
         }
-        return resolveFromFieldTag(fieldRefTag);
+        return resolveFromReferenceTag(fieldRefTag);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         return psiFile.findElementAt(Math.max(0, Math.min(offset, Math.max(textLength - 1, 0))));
     }
 
-    private XmlTag findFieldTagAtCaret(Editor editor) {
+    private XmlTag findReferenceTagAtCaret(Editor editor) {
         if (editor.getProject() == null) {
             return null;
         }
@@ -112,7 +112,7 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
             PsiElement left = psiFile.findElementAt(offset - 1);
             tag = PsiTreeUtil.getParentOfType(left, XmlTag.class, false);
         }
-        if (tag == null || !"field".equals(tag.getName())) {
+        if (tag == null || (!"field".equals(tag.getName()) && !"component".equals(tag.getName()))) {
             return null;
         }
         XmlTag parent = tag.getParentTag();
@@ -122,7 +122,7 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         return tag;
     }
 
-    private PsiElement resolveFromFieldTag(XmlTag fieldRefTag) {
+    private PsiElement resolveFromReferenceTag(XmlTag fieldRefTag) {
         String fieldName = fieldRefTag.getAttributeValue("name");
         if (fieldName == null || fieldName.isBlank()) {
             return null;
@@ -137,14 +137,28 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         if (rootTag == null) {
             return null;
         }
-        XmlTag fieldsTag = rootTag.findFirstSubTag("fields");
-        if (fieldsTag == null) {
-            return null;
+        if ("field".equals(fieldRefTag.getName())) {
+            XmlTag fieldsTag = rootTag.findFirstSubTag("fields");
+            if (fieldsTag == null) {
+                return null;
+            }
+            for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
+                if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
+                    XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
+                    return targetNameAttribute != null ? targetNameAttribute : fieldTag;
+                }
+            }
         }
-        for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
-            if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
-                XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
-                return targetNameAttribute != null ? targetNameAttribute : fieldTag;
+        if ("component".equals(fieldRefTag.getName())) {
+            XmlTag componentsTag = rootTag.findFirstSubTag("components");
+            if (componentsTag == null) {
+                return null;
+            }
+            for (XmlTag componentTag : componentsTag.findSubTags("component")) {
+                if (fieldName.equals(componentTag.getAttributeValue("name"))) {
+                    XmlAttribute targetNameAttribute = componentTag.getAttribute("name");
+                    return targetNameAttribute != null ? targetNameAttribute : componentTag;
+                }
             }
         }
         return null;
