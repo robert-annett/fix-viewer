@@ -7,6 +7,8 @@
 ### Added
 
 - Added split-message coverage for embedded XML data fields (212/213) and multi-message parsing with mixed valid/malformed input.
+- Detect QuickFIX dictionary XML files and open a dedicated `FIX Dictionary` file-editor tab alongside the default XML editor.
+- Add dictionary-aware navigation for message-level field references to their `<fields>` definitions.
 
 ### Fixed
 

@@ -43,6 +43,9 @@ There is also a tree view, to show the message structure, and a communications v
 - **Validator quality hardening** includes static-analysis-friendly functional Optional handling in QuickFIX config validation logic.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
+- **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).
+- **FIX Dictionary editor tab** adds a dedicated `FIX Dictionary` view while preserving the standard XML editor.
+- **Dictionary-aware field navigation** resolves message-level field references (for example `<message><field name=\"SettlInstReqID\"/>`) to canonical definitions under `<fields>`.
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
 - **Language injection** for FIX messages embedded in code strings

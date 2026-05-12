@@ -62,6 +62,9 @@
                                     implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
+        <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDictionaryFileEditorProvider"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="com.rannett.fixplugin.dictionary.FixDictionaryXmlReferenceContributor"/>
 
         <multiHostInjector
                 implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
