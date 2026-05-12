@@ -23,6 +23,7 @@
 - Add diagnostic logging for dictionary editor acceptance/creation and right-click navigation attempts to aid troubleshooting in IDE logs.
 - Raise dictionary editor/navigation diagnostics to warning-level log entries and include goto-handler traces for easier troubleshooting.
 - Return XML attribute declaration targets (instead of attribute value leaf nodes) to improve reliability of jump navigation.
+- Add caret-offset fallback lookup in goto-declaration handling to recover when IntelliJ reports `XmlTokenImpl` without a direct `XmlAttributeValue` parent.
 
 ## [0.0.21] - 2026-05-06
 

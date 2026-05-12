@@ -2,9 +2,11 @@ package com.rannett.fixplugin.dictionary;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandlerBase;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
@@ -18,7 +20,8 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
     public @Nullable PsiElement getGotoDeclarationTarget(@Nullable PsiElement sourceElement, @NotNull Editor editor) {
         LOG.warn("FixDictionaryGotoDeclarationHandler invoked at offset=" + editor.getCaretModel().getOffset()
                 + ", source=" + (sourceElement == null ? "null" : sourceElement.getClass().getSimpleName()));
-        XmlAttributeValue attributeValue = findAttributeValue(sourceElement);
+        PsiElement lookupElement = normalizeSourceElement(sourceElement, editor);
+        XmlAttributeValue attributeValue = findAttributeValue(lookupElement);
         if (attributeValue == null) {
             LOG.warn("No XmlAttributeValue parent found for goto declaration.");
             return null;
@@ -88,5 +91,31 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
             current = current.getParent();
         }
         return null;
+    }
+
+    private PsiElement normalizeSourceElement(PsiElement sourceElement, Editor editor) {
+        if (sourceElement != null) {
+            return sourceElement;
+        }
+        PsiFile psiFile = editor.getProject() == null ? null : com.intellij.psi.PsiDocumentManager.getInstance(editor.getProject()).getPsiFile(editor.getDocument());
+        if (psiFile == null) {
+            return null;
+        }
+        int offset = editor.getCaretModel().getOffset();
+        Document document = editor.getDocument();
+        int textLength = document.getTextLength();
+        if (offset > 0 && offset <= textLength) {
+            PsiElement left = psiFile.findElementAt(offset - 1);
+            if (left != null) {
+                return left;
+            }
+        }
+        if (offset < textLength) {
+            PsiElement right = psiFile.findElementAt(offset);
+            if (right != null) {
+                return right;
+            }
+        }
+        return psiFile.findElementAt(Math.max(0, Math.min(offset, Math.max(textLength - 1, 0))));
     }
 }
