@@ -21,6 +21,15 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
     public @Nullable PsiElement getGotoDeclarationTarget(@Nullable PsiElement sourceElement, @NotNull Editor editor) {
         LOG.warn("FixDictionaryGotoDeclarationHandler invoked at offset=" + editor.getCaretModel().getOffset()
                 + ", source=" + (sourceElement == null ? "null" : sourceElement.getClass().getSimpleName()));
+        XmlTag caretFieldTag = findFieldTagAtCaret(editor);
+        if (caretFieldTag != null) {
+            PsiElement resolvedFromTag = resolveFromFieldTag(caretFieldTag);
+            if (resolvedFromTag != null) {
+                LOG.warn("Resolved goto declaration target from caret field tag fallback.");
+                return resolvedFromTag;
+            }
+        }
+
         PsiElement lookupElement = normalizeSourceElement(sourceElement, editor);
         XmlAttributeValue attributeValue = findAttributeValue(lookupElement);
         if (attributeValue == null) {
@@ -51,41 +60,7 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
         if (!"field".equals(fieldRefTag.getName())) {
             return null;
         }
-        XmlTag containerTag = fieldRefTag.getParentTag();
-        if (containerTag == null || (!"message".equals(containerTag.getName()) && !"group".equals(containerTag.getName()))) {
-            return null;
-        }
-
-        String fieldName = attribute.getValue();
-        if (fieldName == null || fieldName.isBlank()) {
-            return null;
-        }
-        String fileText = attribute.getContainingFile().getText();
-        if (!FixDictionaryXmlUtil.isFixDictionaryText(fileText)) {
-            return null;
-        }
-
-        XmlTag rootTag = containerTag;
-        while (rootTag != null && !"fix".equalsIgnoreCase(rootTag.getName())) {
-            rootTag = rootTag.getParentTag();
-        }
-        if (rootTag == null) {
-            return null;
-        }
-
-        XmlTag fieldsTag = rootTag.findFirstSubTag("fields");
-        if (fieldsTag == null) {
-            return null;
-        }
-        for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
-            if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
-                XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
-                LOG.warn("Resolved goto declaration target for field '" + fieldName + "'.");
-                return targetNameAttribute != null ? targetNameAttribute : fieldTag;
-            }
-        }
-        LOG.warn("No declaration target found for field '" + fieldName + "'.");
-        return null;
+        return resolveFromFieldTag(fieldRefTag);
     }
 
     @Override
@@ -149,9 +124,39 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
             return null;
         }
         XmlTag parent = tag.getParentTag();
-        if (parent == null || (!"message".equals(parent.getName()) && !"group".equals(parent.getName()))) {
+        if (parent == null || "fields".equals(parent.getName())) {
             return null;
         }
         return tag;
+    }
+
+    private PsiElement resolveFromFieldTag(XmlTag fieldRefTag) {
+        String fieldName = fieldRefTag.getAttributeValue("name");
+        if (fieldName == null || fieldName.isBlank()) {
+            return null;
+        }
+        if (!FixDictionaryXmlUtil.isFixDictionaryText(fieldRefTag.getContainingFile().getText())) {
+            return null;
+        }
+        XmlTag rootTag = fieldRefTag;
+        while (rootTag != null && !"fix".equalsIgnoreCase(rootTag.getName())) {
+            rootTag = rootTag.getParentTag();
+        }
+        if (rootTag == null) {
+            return null;
+        }
+        XmlTag fieldsTag = rootTag.findFirstSubTag("fields");
+        if (fieldsTag == null) {
+            return null;
+        }
+        for (XmlTag fieldTag : fieldsTag.findSubTags("field")) {
+            if (fieldName.equals(fieldTag.getAttributeValue("name"))) {
+                XmlAttribute targetNameAttribute = fieldTag.getAttribute("name");
+                LOG.warn("Resolved goto declaration target for field '" + fieldName + "'.");
+                return targetNameAttribute != null ? targetNameAttribute : fieldTag;
+            }
+        }
+        LOG.warn("No declaration target found for field '" + fieldName + "'.");
+        return null;
     }
 }

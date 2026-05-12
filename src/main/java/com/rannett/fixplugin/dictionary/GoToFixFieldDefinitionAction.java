@@ -87,7 +87,7 @@ public class GoToFixFieldDefinitionAction extends AnAction {
             return null;
         }
         XmlTag containerTag = fieldRefTag.getParentTag();
-        if (containerTag == null || (!"message".equals(containerTag.getName()) && !"group".equals(containerTag.getName()))) {
+        if (containerTag == null || "fields".equals(containerTag.getName())) {
             return null;
         }
 

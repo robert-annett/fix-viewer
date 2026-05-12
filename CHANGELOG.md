@@ -25,6 +25,7 @@
 - Return XML attribute declaration targets (instead of attribute value leaf nodes) to improve reliability of jump navigation.
 - Add caret-offset fallback lookup in goto-declaration handling to recover when IntelliJ reports `XmlTokenImpl` without a direct `XmlAttributeValue` parent.
 - Add XmlTag-based fallback recovery in goto-declaration handling to resolve from enclosing message/group `<field>` tags when attribute-value PSI is missing.
+- Prioritize caret-near `<field>` tag resolution (excluding `<fields>` definitions) before attribute-value PSI paths to improve Ctrl+Click reliability across dictionary sections.
 
 ## [0.0.21] - 2026-05-06
 
