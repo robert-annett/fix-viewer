@@ -16,6 +16,7 @@
 - Replaced removed QuickFIX/J generated field constants with stable FIX tag literals for EncodedSecurityDescLen/EncodedSecurityDesc (350/351).
 - QuickFIX session config files with multi-part names such as `*.fix.cfg` and `*.quickfix.cfg` now auto-associate with the QuickFIX Session Config file type.
 - Override `FileEditor#getFile()` in the `FIX Dictionary` editor to satisfy IntelliJ's non-deprecated FileEditor contract and prevent runtime PluginException warnings.
+- Fix dictionary field-reference PSI targeting so Ctrl+Click navigation now resolves reliably from message-level field `name` values to the canonical field definition.
 
 ## [0.0.21] - 2026-05-06
 

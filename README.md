@@ -46,6 +46,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).
 - **FIX Dictionary editor tab** adds a dedicated `FIX Dictionary` view while preserving the standard XML editor.
 - **Dictionary-aware field navigation** resolves message-level field references (for example `<message><field name=\"SettlInstReqID\"/>`) to canonical definitions under `<fields>`.
+- **Ctrl+Click dictionary navigation** jumps directly from `<message><field name=\"...\"/>` to the matching `<fields><field .../>` definition in QuickFIX dictionary XML.
 - **Modern FileEditor API compatibility** ensures the dictionary editor integrates cleanly with current IntelliJ platform expectations.
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
