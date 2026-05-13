@@ -1,0 +1,32 @@
+package com.rannett.fixplugin.ui;
+
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorPolicy;
+import com.intellij.openapi.fileEditor.FileEditorProvider;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.rannett.fixplugin.dictionary.FixDictionaryXmlUtil;
+import org.jetbrains.annotations.NotNull;
+
+public class FixDictionaryFileEditorProvider implements FileEditorProvider, DumbAware {
+    @Override
+    public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
+        return FixDictionaryXmlUtil.isFixDictionaryFile(file);
+    }
+
+    @Override
+    public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
+        return new FixDictionaryFileEditor(project, file);
+    }
+
+    @Override
+    public @NotNull String getEditorTypeId() {
+        return "fix-dictionary-view";
+    }
+
+    @Override
+    public @NotNull FileEditorPolicy getPolicy() {
+        return FileEditorPolicy.PLACE_AFTER_DEFAULT_EDITOR;
+    }
+}

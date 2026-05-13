@@ -62,6 +62,10 @@
                                     implementationClass="com.rannett.fixplugin.quickfix.QuickFixConfigDocumentationProvider"/>
 
         <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDualViewEditorProvider"/>
+        <fileEditorProvider implementation="com.rannett.fixplugin.ui.FixDictionaryFileEditorProvider"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="com.rannett.fixplugin.dictionary.FixDictionaryXmlReferenceContributor"/>
+        <gotoDeclarationHandler implementation="com.rannett.fixplugin.dictionary.FixDictionaryGotoDeclarationHandler"/>
 
         <multiHostInjector
                 implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
@@ -87,6 +91,12 @@
                 text="FIX Field Lookup"
                 description="Lookup FIX field information">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="GoToFixFieldDefinitionAction"
+                class="com.rannett.fixplugin.dictionary.GoToFixFieldDefinitionAction"
+                text="Go to FIX Definition"
+                description="Navigate to the FIX dictionary field or component definition">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
     </actions>
 </idea-plugin>

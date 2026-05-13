@@ -43,6 +43,23 @@ There is also a tree view, to show the message structure, and a communications v
 - **Validator quality hardening** includes static-analysis-friendly functional Optional handling in QuickFIX config validation logic.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
+- **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).
+- **FIX Dictionary editor tab** adds a dedicated `FIX Dictionary` view while preserving the standard XML editor.
+- **Dictionary-aware field navigation** resolves message-level field references (for example `<message><field name=\"SettlInstReqID\"/>`) to canonical definitions under `<fields>`.
+- **Ctrl+Click dictionary navigation** jumps directly from `<message><field name=\"...\"/>` to the matching `<fields><field .../>` definition in QuickFIX dictionary XML.
+- **Goto Declaration support for dictionaries** adds explicit IntelliJ declaration handling for XML field references so Ctrl+Click/Go To Declaration resolves consistently.
+- **Right-click dictionary navigation action** adds `Go to FIX Field Definition` in the editor context menu for message/group field references.
+- **Visible FIX Dictionary view header** clearly indicates when the custom dictionary editor tab is active.
+- **Dictionary navigation debug logging** writes editor acceptance/navigation traces to IntelliJ logs to diagnose configuration or caret-resolution issues.
+- **Actionable dictionary log traces** now emit warning-level entries from editor-selection and navigation handlers so diagnostics are visible in standard IDE logs.
+- **Caret-offset fallback resolution** for Go To Declaration retries adjacent PSI elements when IntelliJ reports a non-value token under caret.
+- **XmlTag fallback navigation recovery** attempts resolution from the enclosing `<field ...>` tag when no direct XML attribute-value PSI is available at caret.
+- **Tag-first declaration resolution** now prioritizes caret-near `<field>` tags (outside `<fields>`) for more reliable Ctrl+Click in message/header/trailer/component contexts.
+- **Context-menu visibility hardening** now shows `Go to FIX Field Definition` reliably in the editor popup by resolving PSI from the active editor document when popup PSI context is missing.
+- **Component reference navigation** now resolves `<component name="..."/>` usages (for example `Instrument`) to canonical definitions under `<components>`.
+- **Safer dictionary detection** now requires the document root element to be `<fix>` (not just any nested `<fix>` substring).
+- **Reference-provider correctness hardening** now validates the direct parent `<field>` tag before checking its containing `<message>` context.
+- **Modern FileEditor API compatibility** ensures the dictionary editor integrates cleanly with current IntelliJ platform expectations.
 - **Side-by-side diff viewer** for comparing two messages
 - **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
 - **Language injection** for FIX messages embedded in code strings

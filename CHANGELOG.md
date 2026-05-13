@@ -7,12 +7,31 @@
 ### Added
 
 - Added split-message coverage for embedded XML data fields (212/213) and multi-message parsing with mixed valid/malformed input.
+- Detect QuickFIX dictionary XML files and open a dedicated `FIX Dictionary` file-editor tab alongside the default XML editor.
+- Add dictionary-aware navigation for message-level field references to their `<fields>` definitions.
 
 ### Fixed
 
 - Upgraded QuickFIX/J core dependency from 2.3.2 to 3.0.0 and updated parser API usage for the new validation-settings signature.
 - Replaced removed QuickFIX/J generated field constants with stable FIX tag literals for EncodedSecurityDescLen/EncodedSecurityDesc (350/351).
 - QuickFIX session config files with multi-part names such as `*.fix.cfg` and `*.quickfix.cfg` now auto-associate with the QuickFIX Session Config file type.
+- Override `FileEditor#getFile()` in the `FIX Dictionary` editor to satisfy IntelliJ's non-deprecated FileEditor contract and prevent runtime PluginException warnings.
+- Fix dictionary field-reference PSI targeting so Ctrl+Click navigation now resolves reliably from message-level field `name` values to the canonical field definition.
+- Add an explicit dictionary XML `GotoDeclarationHandler` fallback so Ctrl+Click / Go To Declaration works even when PSI reference navigation is not invoked by the editor path.
+- Add a right-click editor action (`Go to FIX Field Definition`) for dictionary message/group field references as a manual navigation fallback.
+- Improve dictionary navigation robustness by resolving from the nearest parent `XmlAttributeValue`, so Ctrl+Click/right-click works when caret lands on nested XML tokens.
+- Add diagnostic logging for dictionary editor acceptance/creation and right-click navigation attempts to aid troubleshooting in IDE logs.
+- Raise dictionary editor/navigation diagnostics to warning-level log entries and include goto-handler traces for easier troubleshooting.
+- Return XML attribute declaration targets (instead of attribute value leaf nodes) to improve reliability of jump navigation.
+- Add caret-offset fallback lookup in goto-declaration handling to recover when IntelliJ reports `XmlTokenImpl` without a direct `XmlAttributeValue` parent.
+- Add XmlTag-based fallback recovery in goto-declaration handling to resolve from enclosing message/group `<field>` tags when attribute-value PSI is missing.
+- Prioritize caret-near `<field>` tag resolution (excluding `<fields>` definitions) before attribute-value PSI paths to improve Ctrl+Click reliability across dictionary sections.
+- Fix right-click `Go to FIX Field Definition` visibility by deriving PSI from the active editor document when popup PSI context is unavailable.
+- Remove temporary verbose warning logs from dictionary navigation/editor paths after stabilizing fallback behavior.
+- Add dictionary navigation support for component references, resolving `<component name=\"...\"/>` to `<components><component .../>` definitions.
+- Fix dictionary XML reference-provider parent-tag checks so message-level `<field name=\"...\"/>` references produce navigation references correctly.
+- Tighten dictionary detection to require `<fix>` as the XML document root, reducing false-positive activation in unrelated XML files.
+- Resolve static-analysis warnings for nullability override annotations, sentence capitalization in dictionary-view header text, and redundant constant-condition checks.
 
 ## [0.0.21] - 2026-05-06
 
