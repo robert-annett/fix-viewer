@@ -29,6 +29,9 @@
 - Fix right-click `Go to FIX Field Definition` visibility by deriving PSI from the active editor document when popup PSI context is unavailable.
 - Remove temporary verbose warning logs from dictionary navigation/editor paths after stabilizing fallback behavior.
 - Add dictionary navigation support for component references, resolving `<component name=\"...\"/>` to `<components><component .../>` definitions.
+- Fix dictionary XML reference-provider parent-tag checks so message-level `<field name=\"...\"/>` references produce navigation references correctly.
+- Tighten dictionary detection to require `<fix>` as the XML document root, reducing false-positive activation in unrelated XML files.
+- Resolve static-analysis warnings for nullability override annotations, sentence capitalization in dictionary-view header text, and redundant constant-condition checks.
 
 ## [0.0.21] - 2026-05-06
 

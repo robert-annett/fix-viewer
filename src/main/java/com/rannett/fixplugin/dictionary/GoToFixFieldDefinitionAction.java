@@ -46,7 +46,7 @@ public class GoToFixFieldDefinitionAction extends AnAction {
         }
 
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-        if (psiFile == null && project != null) {
+        if (psiFile == null) {
             psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
         }
         if (psiFile == null) {

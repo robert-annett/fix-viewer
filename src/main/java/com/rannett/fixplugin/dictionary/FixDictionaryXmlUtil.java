@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Pattern;
 
 public final class FixDictionaryXmlUtil {
-    private static final Pattern ROOT_PATTERN = Pattern.compile("<\\s*fix(?:\\s|>)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ROOT_PATTERN = Pattern.compile("^\\s*(?:<\\?xml[^>]*>\\s*)?<\\s*fix(?:\\s|>)", Pattern.CASE_INSENSITIVE);
 
     private FixDictionaryXmlUtil() {
     }

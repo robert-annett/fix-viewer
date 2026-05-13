@@ -56,7 +56,7 @@ public class FixDictionaryGotoDeclarationHandler extends GotoDeclarationHandlerB
     }
 
     @Override
-    public @Nullable String getActionText(DataContext context) {
+    public @Nullable String getActionText(@NotNull DataContext context) {
         return null;
     }
 

@@ -27,7 +27,7 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
         this.file = file;
         this.delegate = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
         this.panel = new JPanel(new BorderLayout());
-        JBLabel header = new JBLabel("FIX Dictionary View");
+        JBLabel header = new JBLabel("Fix dictionary view");
         header.setBorder(JBUI.Borders.empty(4, 8));
         this.panel.add(header, BorderLayout.NORTH);
         this.panel.add(delegate.getComponent(), BorderLayout.CENTER);

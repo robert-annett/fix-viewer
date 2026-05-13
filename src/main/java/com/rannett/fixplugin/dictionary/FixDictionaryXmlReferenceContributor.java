@@ -26,14 +26,15 @@ public class FixDictionaryXmlReferenceContributor extends PsiReferenceContributo
                         if (!"name".equals(attribute.getName())) {
                             return PsiReference.EMPTY_ARRAY;
                         }
-                        if (attribute.getParent() == null || attribute.getParent().getParentTag() == null) {
+                        if (attribute.getParent() == null) {
                             return PsiReference.EMPTY_ARRAY;
                         }
-                        if (!"field".equals(attribute.getParent().getParentTag().getName())) {
+                        com.intellij.psi.xml.XmlTag referenceTag = attribute.getParent().getParentTag();
+                        if (referenceTag == null || !"field".equals(referenceTag.getName())) {
                             return PsiReference.EMPTY_ARRAY;
                         }
-                        if (attribute.getParent().getParentTag().getParentTag() == null ||
-                                !"message".equals(attribute.getParent().getParentTag().getParentTag().getName())) {
+                        com.intellij.psi.xml.XmlTag containerTag = referenceTag.getParentTag();
+                        if (containerTag == null || !"message".equals(containerTag.getName())) {
                             return PsiReference.EMPTY_ARRAY;
                         }
                         if (!FixDictionaryXmlUtil.isFixDictionaryText(attribute.getContainingFile().getText())) {
