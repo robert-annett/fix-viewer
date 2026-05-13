@@ -67,6 +67,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **FpML Detection** for XML embedded in tags 351 and 213
 - **QuickFIX/J 3.0.0 compatibility** with parser updates for the latest QuickFIX validation API and stable handling of encoded XML data tags 350/351.
 - **Embedded XML split robustness** for both `XmlDataLen/XmlData` (`212/213`) and `EncodedSecurityDescLen/EncodedSecurityDesc` (`350/351`) across multi-line, multi-message payloads.
+- **Mixed-quality log parsing** keeps extracting valid FIX messages even when malformed messages appear in the same input block.
 - **Malformed FIX resilience** in multi-message logs so invalid checksum lines do not block parsing of following valid messages.
 - **Lexer support** for multi-line FpML blocks
 - **Unlimited IDE compatibility** so the plugin can install on newer IntelliJ versions without a capped build range
