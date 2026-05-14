@@ -6,6 +6,16 @@
 
 ### Added
 
+- None yet.
+
+### Fixed
+
+- None yet.
+
+## [0.0.22] - 2026-05-13
+
+### Added
+
 - Added split-message coverage for embedded XML data fields (212/213) and multi-message parsing with mixed valid/malformed input.
 - Detect QuickFIX dictionary XML files and open a dedicated `FIX Dictionary` file-editor tab alongside the default XML editor.
 - Add dictionary-aware navigation for message-level field references to their `<fields>` definitions.
@@ -28,10 +38,11 @@
 - Prioritize caret-near `<field>` tag resolution (excluding `<fields>` definitions) before attribute-value PSI paths to improve Ctrl+Click reliability across dictionary sections.
 - Fix right-click `Go to FIX Field Definition` visibility by deriving PSI from the active editor document when popup PSI context is unavailable.
 - Remove temporary verbose warning logs from dictionary navigation/editor paths after stabilizing fallback behavior.
-- Add dictionary navigation support for component references, resolving `<component name=\"...\"/>` to `<components><component .../>` definitions.
-- Fix dictionary XML reference-provider parent-tag checks so message-level `<field name=\"...\"/>` references produce navigation references correctly.
+- Add dictionary navigation support for component references, resolving `<component name="..."/>` to `<components><component .../>` definitions.
+- Fix dictionary XML reference-provider parent-tag checks so message-level `<field name="..."/>` references produce navigation references correctly.
 - Tighten dictionary detection to require `<fix>` as the XML document root, reducing false-positive activation in unrelated XML files.
 - Resolve static-analysis warnings for nullability override annotations, sentence capitalization in dictionary-view header text, and redundant constant-condition checks.
+- Bump `pluginVersion` to `0.0.22` in `gradle.properties` so IntelliJ release pickup matches the changelog release.
 
 ## [0.0.21] - 2026-05-06
 
