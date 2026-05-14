@@ -42,6 +42,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Improved timezone validation** normalizes and verifies IANA zone IDs used in session configuration values.
 - **Validator quality hardening** includes static-analysis-friendly functional Optional handling in QuickFIX config validation logic.
 - **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
+- **FIX message → dictionary navigation** lets Ctrl+Click / Go To Declaration on FIX tags jump into the active dictionary and focus the matching field within the current message type (for example `35=AE`).
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).
 - **FIX Dictionary editor tab** adds a dedicated `FIX Dictionary` view while preserving the standard XML editor.

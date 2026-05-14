@@ -6,11 +6,11 @@
 
 ### Added
 
-- None yet.
+- Navigate from FIX message tags to dictionary definitions with Ctrl+Click / Go To Declaration, using the active dictionary for the detected FIX version and preferring the current `35=` message type context (for example `AE`).
 
 ### Fixed
 
-- None yet.
+- FIX tag declaration navigation now resolves against project-configured custom dictionaries and targets the message-specific field entry before falling back to the global `<fields>` definition.
 
 ## [0.0.22] - 2026-05-13
 
