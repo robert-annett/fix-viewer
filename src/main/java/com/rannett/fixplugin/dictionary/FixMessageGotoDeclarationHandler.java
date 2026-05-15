@@ -5,7 +5,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -103,14 +102,9 @@ public class FixMessageGotoDeclarationHandler extends GotoDeclarationHandlerBase
     }
 
     private XmlTag findFixRootTag(PsiFile psiFile) {
-        XmlTag[] tags = com.intellij.psi.util.PsiTreeUtil.getChildrenOfType(psiFile, XmlTag.class);
-        if (tags == null) {
-            return null;
-        }
-        for (XmlTag tag : tags) {
-            if ("fix".equalsIgnoreCase(tag.getName())) {
-                return tag;
-            }
+        XmlTag root = com.intellij.psi.util.PsiTreeUtil.findChildOfType(psiFile, XmlTag.class);
+        if (root != null && "fix".equalsIgnoreCase(root.getName())) {
+            return root;
         }
         return null;
     }

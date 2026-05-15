@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- FIX tag declaration navigation now resolves dictionary XML roots reliably by locating the document root `<fix>` tag in PSI before XML field/message lookup.
 - FIX tag declaration navigation now resolves against project-configured custom dictionaries and targets the message-specific field entry before falling back to the global `<fields>` definition.
 
 ## [0.0.22] - 2026-05-13
