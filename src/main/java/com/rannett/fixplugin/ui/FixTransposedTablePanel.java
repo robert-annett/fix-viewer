@@ -158,6 +158,7 @@ public class FixTransposedTablePanel extends JPanel {
         table.getColumnModel().getSelectionModel().addListSelectionListener(e -> notifySelection());
 
         setupHeaderContextMenu();
+        setupBodyNavigation();
         customizeTableHeaderWithIcon();
         configureColumnWidths();
     }
@@ -433,6 +434,79 @@ public class FixTransposedTablePanel extends JPanel {
             }
         }
         return true;
+    }
+
+    private void setupBodyNavigation() {
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int viewRow = table.rowAtPoint(e.getPoint());
+                int viewCol = table.columnAtPoint(e.getPoint());
+                if (viewRow < 0 || viewCol < 0) {
+                    return;
+                }
+                table.changeSelection(viewRow, viewCol, false, false);
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    if (viewCol == 0 || viewCol == 1) {
+                        navigateFromRow(viewRow, viewCol);
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (!e.isPopupTrigger() && !SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                int viewRow = table.rowAtPoint(e.getPoint());
+                int viewCol = table.columnAtPoint(e.getPoint());
+                if (viewRow < 0 || viewCol < 0) {
+                    return;
+                }
+                table.changeSelection(viewRow, viewCol, false, false);
+                JPopupMenu popup = new JPopupMenu();
+                JMenuItem navigate = new JMenuItem("Go to Dictionary Definition");
+                navigate.addActionListener(a -> navigateFromRow(viewRow, viewCol));
+                popup.add(navigate);
+                popup.show(table, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void navigateFromRow(int viewRow, int viewCol) {
+        int modelRow = table.convertRowIndexToModel(viewRow);
+        String tag = model.getTagAtRow(modelRow);
+        String messageId = viewCol >= 2 ? model.getMessageIdForColumn(viewCol) : findFirstMessageIdForRow(modelRow);
+        String messageType = extractMessageTypeForMessageId(messageId);
+        FixDictionaryNavigator.navigateToTag(project, model.getFixVersion(), messageType, tag);
+    }
+
+    private String findFirstMessageIdForRow(int modelRow) {
+        for (int col = 2; col < model.getColumnCount(); col++) {
+            Object value = model.getValueAt(modelRow, col);
+            if (value != null && !String.valueOf(value).isBlank()) {
+                return model.getMessageIdForColumn(col);
+            }
+        }
+        return null;
+    }
+
+    private String extractMessageTypeForMessageId(String messageId) {
+        String messageText = getMessageText(messageId);
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(?:^|[\u0001|])35=([^\u0001|]+)").matcher(messageText);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 
     private void customizeTableHeaderWithIcon() {

@@ -36,6 +36,7 @@ import quickfix.Message;
  * summary column.
  */
 public class FixCommTimelinePanel extends JPanel {
+    private final com.intellij.openapi.project.Project project;
     private final JCheckBox hideHeartbeat;
     private final List<MessageNode> allNodes = new ArrayList<>();
     private final List<MessageNode> displayedNodes = new ArrayList<>();
@@ -50,8 +51,9 @@ public class FixCommTimelinePanel extends JPanel {
      *
      * @param messages list of raw FIX messages
      */
-    public FixCommTimelinePanel(@NotNull List<String> messages) {
+    public FixCommTimelinePanel(@NotNull List<String> messages, com.intellij.openapi.project.Project project) {
         super(new BorderLayout());
+        this.project = project;
 
         ColumnInfo[] columns = new ColumnInfo[]{
                 new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
@@ -98,10 +100,59 @@ public class FixCommTimelinePanel extends JPanel {
 
         Tree tree = table.getTree();
         tree.addTreeSelectionListener(e -> notifySelection());
+        setupNavigationPopup();
 
         loadMessages(messages);
 
         fixColumnWidths();
+    }
+
+    private void setupNavigationPopup() {
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            private void maybeShow(java.awt.event.MouseEvent e) {
+                if (!e.isPopupTrigger() && !javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                javax.swing.tree.TreePath path = table.getTree().getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                table.getTree().setSelectionPath(path);
+                Object node = path.getLastPathComponent();
+                if (!(node instanceof javax.swing.tree.DefaultMutableTreeNode treeNode)) {
+                    return;
+                }
+                String label = String.valueOf(treeNode.getUserObject());
+                java.util.regex.Matcher tagMatcher = java.util.regex.Pattern.compile("^(\\d+)=").matcher(label);
+                if (!tagMatcher.find()) {
+                    return;
+                }
+                String tag = tagMatcher.group(1);
+                String msgType = null;
+                for (Object pathNode : path.getPath()) {
+                    if (pathNode instanceof MessageNode messageNode) {
+                        msgType = messageNode.msgTypeCode;
+                        break;
+                    }
+                }
+                String resolvedMsgType = msgType;
+                javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+                javax.swing.JMenuItem navigate = new javax.swing.JMenuItem("Go to Dictionary Definition");
+                navigate.addActionListener(a -> FixDictionaryNavigator.navigateToTag(project, extractBeginString(getMessageByIndex(path, table)), resolvedMsgType, tag));
+                popup.add(navigate);
+                popup.show(table, e.getX(), e.getY());
+            }
+        });
     }
 
     /**
@@ -172,6 +223,18 @@ public class FixCommTimelinePanel extends JPanel {
         if (node instanceof MessageNode && onMessageSelected != null) {
             onMessageSelected.accept(((MessageNode) node).index);
         }
+    }
+
+    private String getMessageByIndex(javax.swing.tree.TreePath path, TreeTable treeTable) {
+        for (Object pathNode : path.getPath()) {
+            if (pathNode instanceof MessageNode messageNode) {
+                int idx = messageNode.index - 1;
+                if (idx >= 0 && idx < allNodes.size()) {
+                    return String.valueOf(allNodes.get(idx).getUserObject());
+                }
+            }
+        }
+        return "8=FIX.4.4|";
     }
 
     private MessageNode parseNode(String msg, int index) {

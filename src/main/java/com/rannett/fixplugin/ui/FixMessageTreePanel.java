@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class FixMessageTreePanel extends JPanel {
 
+    private JTree tree;
+
     private static final Logger LOG = Logger.getInstance(FixMessageTreePanel.class);
     private final Project project;
     private DictionaryEntry dictionaryEntry;
@@ -82,12 +84,75 @@ public class FixMessageTreePanel extends JPanel {
             root.add(msgNode);
         }
 
-        JTree tree = new Tree(root);
+        tree = new Tree(root);
         tree.setRootVisible(false);
+        setupTreeNavigation();
 
         removeAll();
         add(new JScrollPane(tree), BorderLayout.CENTER);
         revalidate();
+    }
+
+    private void setupTreeNavigation() {
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            private void maybeShow(java.awt.event.MouseEvent e) {
+                if (!e.isPopupTrigger() && !javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                javax.swing.tree.TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                tree.setSelectionPath(path);
+                Object node = path.getLastPathComponent();
+                if (!(node instanceof javax.swing.tree.DefaultMutableTreeNode treeNode)) {
+                    return;
+                }
+                String label = String.valueOf(treeNode.getUserObject());
+                java.util.regex.Matcher tagMatcher = java.util.regex.Pattern.compile("^(\\d+)=").matcher(label);
+                if (!tagMatcher.find()) {
+                    return;
+                }
+                String tag = tagMatcher.group(1);
+                String msgType = findMessageType(path);
+                javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+                javax.swing.JMenuItem navigate = new javax.swing.JMenuItem("Go to Dictionary Definition");
+                navigate.addActionListener(a -> FixDictionaryNavigator.navigateToTag(project, detectFixVersionFromTree(), msgType, tag));
+                popup.add(navigate);
+                popup.show(tree, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private String detectFixVersionFromTree() {
+        return dictionaryEntry != null && dictionaryEntry.getVersion() != null ? dictionaryEntry.getVersion() : "FIXT.1.1";
+    }
+
+    private String findMessageType(javax.swing.tree.TreePath path) {
+        Object[] nodes = path.getPath();
+        for (Object node : nodes) {
+            if (node instanceof javax.swing.tree.DefaultMutableTreeNode treeNode) {
+                String label = String.valueOf(treeNode.getUserObject());
+                if (!"Header".equals(label) && !"Body".equals(label) && !"Trailer".equals(label) && !"Messages".equals(label)) {
+                    int space = label.indexOf(' ');
+                    String token = space > 0 ? label.substring(0, space) : label;
+                    if (!token.isBlank()) {
+                        return token;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
