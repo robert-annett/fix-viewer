@@ -12,6 +12,7 @@
 
 ### Fixed
 
+- Restored backward-compatible `FixCommTimelinePanel(List<String>)` construction so existing tests and callers compile while newer project-aware navigation remains available.
 - Fixed Message Flow Summary right-click navigation targeting by resolving actions from tree-row coordinates in the expanded Summary hierarchy.
 - Fixed dictionary navigation availability so users can reach definitions directly from FIX Viewer tabs rather than only from standalone editor contexts.
 - FIX tag declaration navigation now resolves dictionary XML roots reliably by locating the document root `<fix>` tag in PSI before XML field/message lookup.

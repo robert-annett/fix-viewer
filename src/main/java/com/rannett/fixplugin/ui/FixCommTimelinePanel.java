@@ -47,6 +47,15 @@ public class FixCommTimelinePanel extends JPanel {
     private Consumer<Integer> onMessageSelected;
 
     /**
+     * Backward-compatible constructor for tests and callers that do not need project-bound navigation.
+     *
+     * @param messages list of raw FIX messages
+     */
+    public FixCommTimelinePanel(@NotNull List<String> messages) {
+        this(messages, null);
+    }
+
+    /**
      * Create a timeline panel for the provided messages.
      *
      * @param messages list of raw FIX messages
