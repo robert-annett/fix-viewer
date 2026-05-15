@@ -108,7 +108,15 @@ public class FixCommTimelinePanel extends JPanel {
     }
 
     private void setupNavigationPopup() {
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
+        Tree tree = table.getTree();
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    navigateFromEvent(e);
+                }
+            }
+
             @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
                 maybeShow(e);
@@ -123,36 +131,58 @@ public class FixCommTimelinePanel extends JPanel {
                 if (!e.isPopupTrigger() && !javax.swing.SwingUtilities.isRightMouseButton(e)) {
                     return;
                 }
-                javax.swing.tree.TreePath path = table.getTree().getPathForLocation(e.getX(), e.getY());
+                TreePath path = tree.getPathForLocation(e.getX(), e.getY());
                 if (path == null) {
                     return;
                 }
-                table.getTree().setSelectionPath(path);
-                Object node = path.getLastPathComponent();
-                if (!(node instanceof javax.swing.tree.DefaultMutableTreeNode treeNode)) {
+                tree.setSelectionPath(path);
+                if (extractTag(path) == null) {
                     return;
                 }
-                String label = String.valueOf(treeNode.getUserObject());
-                java.util.regex.Matcher tagMatcher = java.util.regex.Pattern.compile("^(\\d+)=").matcher(label);
-                if (!tagMatcher.find()) {
-                    return;
-                }
-                String tag = tagMatcher.group(1);
-                String msgType = null;
-                for (Object pathNode : path.getPath()) {
-                    if (pathNode instanceof MessageNode messageNode) {
-                        msgType = messageNode.msgTypeCode;
-                        break;
-                    }
-                }
-                String resolvedMsgType = msgType;
                 javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
                 javax.swing.JMenuItem navigate = new javax.swing.JMenuItem("Go to Dictionary Definition");
-                navigate.addActionListener(a -> FixDictionaryNavigator.navigateToTag(project, extractBeginString(getMessageByIndex(path, table)), resolvedMsgType, tag));
+                navigate.addActionListener(a -> navigateToDictionary(path));
                 popup.add(navigate);
-                popup.show(table, e.getX(), e.getY());
+                popup.show(tree, e.getX(), e.getY());
+            }
+
+            private void navigateFromEvent(java.awt.event.MouseEvent e) {
+                TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                tree.setSelectionPath(path);
+                navigateToDictionary(path);
             }
         });
+    }
+
+    private void navigateToDictionary(TreePath path) {
+        String tag = extractTag(path);
+        if (tag == null) {
+            return;
+        }
+        String msgType = null;
+        for (Object pathNode : path.getPath()) {
+            if (pathNode instanceof MessageNode messageNode) {
+                msgType = messageNode.msgTypeCode;
+                break;
+            }
+        }
+        FixDictionaryNavigator.navigateToTag(project, extractBeginString(getMessageByIndex(path)), msgType, tag);
+    }
+
+    private String extractTag(TreePath path) {
+        Object node = path.getLastPathComponent();
+        if (!(node instanceof DefaultMutableTreeNode treeNode)) {
+            return null;
+        }
+        String label = String.valueOf(treeNode.getUserObject());
+        java.util.regex.Matcher tagMatcher = java.util.regex.Pattern.compile("^(\\d+)=").matcher(label);
+        if (!tagMatcher.find()) {
+            return null;
+        }
+        return tagMatcher.group(1);
     }
 
     /**
@@ -225,7 +255,7 @@ public class FixCommTimelinePanel extends JPanel {
         }
     }
 
-    private String getMessageByIndex(javax.swing.tree.TreePath path, TreeTable treeTable) {
+    private String getMessageByIndex(TreePath path) {
         for (Object pathNode : path.getPath()) {
             if (pathNode instanceof MessageNode messageNode) {
                 int idx = messageNode.index - 1;

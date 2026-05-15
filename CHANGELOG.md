@@ -6,11 +6,13 @@
 
 ### Added
 
+- Added double-click navigation for expanded Message Flow Summary tree rows so field selections can jump directly to dictionary definitions.
 - Added viewer-tab dictionary navigation actions: Text View declaration handling, Transposed Table double-click/right-click navigation, and right-click `Go to Dictionary Definition` in Tree View and Message Flow for field nodes.
 - Navigate from FIX message tags to dictionary definitions with Ctrl+Click / Go To Declaration, using the active dictionary for the detected FIX version and preferring the current `35=` message type context (for example `AE`).
 
 ### Fixed
 
+- Fixed Message Flow Summary right-click navigation targeting by resolving actions from tree-row coordinates in the expanded Summary hierarchy.
 - Fixed dictionary navigation availability so users can reach definitions directly from FIX Viewer tabs rather than only from standalone editor contexts.
 - FIX tag declaration navigation now resolves dictionary XML roots reliably by locating the document root `<fix>` tag in PSI before XML field/message lookup.
 - FIX tag declaration navigation now resolves against project-configured custom dictionaries and targets the message-specific field entry before falling back to the global `<fields>` definition.
