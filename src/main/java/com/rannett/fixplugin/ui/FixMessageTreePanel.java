@@ -96,6 +96,13 @@ public class FixMessageTreePanel extends JPanel {
     private void setupTreeNavigation() {
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    navigateFromPath(tree.getPathForLocation(e.getX(), e.getY()));
+                }
+            }
+
+            @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
                 maybeShow(e);
             }
@@ -130,6 +137,23 @@ public class FixMessageTreePanel extends JPanel {
                 navigate.addActionListener(a -> FixDictionaryNavigator.navigateToTag(project, detectFixVersionFromTree(), msgType, tag));
                 popup.add(navigate);
                 popup.show(tree, e.getX(), e.getY());
+            }
+
+            private void navigateFromPath(javax.swing.tree.TreePath path) {
+                if (path == null) {
+                    return;
+                }
+                tree.setSelectionPath(path);
+                Object node = path.getLastPathComponent();
+                if (!(node instanceof javax.swing.tree.DefaultMutableTreeNode treeNode)) {
+                    return;
+                }
+                String label = String.valueOf(treeNode.getUserObject());
+                java.util.regex.Matcher tagMatcher = java.util.regex.Pattern.compile("^(\\d+)=").matcher(label);
+                if (!tagMatcher.find()) {
+                    return;
+                }
+                FixDictionaryNavigator.navigateToTag(project, detectFixVersionFromTree(), findMessageType(path), tagMatcher.group(1));
             }
         });
     }

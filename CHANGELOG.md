@@ -6,12 +6,14 @@
 
 ### Added
 
+- Added explicit double-click dictionary navigation for expanded field rows in Tree View and Message Flow to match right-click actions.
 - Added double-click navigation for expanded Message Flow Summary tree rows so field selections can jump directly to dictionary definitions.
 - Added viewer-tab dictionary navigation actions: Text View declaration handling, Transposed Table double-click/right-click navigation, and right-click `Go to Dictionary Definition` in Tree View and Message Flow for field nodes.
 - Navigate from FIX message tags to dictionary definitions with Ctrl+Click / Go To Declaration, using the active dictionary for the detected FIX version and preferring the current `35=` message type context (for example `AE`).
 
 ### Fixed
 
+- Fixed Message Flow dictionary navigation on expanded summary rows by handling both tree and tree-table mouse coordinate paths and using message-scoped FIX version resolution.
 - Restored backward-compatible `FixCommTimelinePanel(List<String>)` construction so existing tests and callers compile while newer project-aware navigation remains available.
 - Fixed Message Flow Summary right-click navigation targeting by resolving actions from tree-row coordinates in the expanded Summary hierarchy.
 - Fixed dictionary navigation availability so users can reach definitions directly from FIX Viewer tabs rather than only from standalone editor contexts.

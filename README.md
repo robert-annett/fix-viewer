@@ -45,6 +45,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **FIX message → dictionary navigation** lets Ctrl+Click / Go To Declaration on FIX tags jump into the active dictionary and focus the matching field within the current message type (for example `35=AE`).
 - **In-view dictionary navigation from viewer tabs** adds dictionary jumps from Text View, double-click/right-click in Transposed Table Tag/Name rows, and right-click navigation in Tree View and Message Flow field nodes.
 - **Message Flow summary-tree navigation** now supports both double-click and right-click dictionary jumps on expanded field rows in the Summary column.
+- **Tree and Message Flow double-click hardening** now triggers dictionary navigation reliably on expanded field rows, with matching right-click behavior preserved.
 - **Message Flow constructor compatibility** preserves no-project initialization paths used by tests and non-navigation contexts while keeping project-aware dictionary navigation enabled.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).

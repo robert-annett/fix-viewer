@@ -110,6 +110,7 @@ public class FixCommTimelinePanel extends JPanel {
         Tree tree = table.getTree();
         tree.addTreeSelectionListener(e -> notifySelection());
         setupNavigationPopup();
+        setupTableNavigationPopup();
 
         loadMessages(messages);
 
@@ -166,6 +167,44 @@ public class FixCommTimelinePanel extends JPanel {
         });
     }
 
+    private void setupTableNavigationPopup() {
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    TreePath path = table.getTree().getPathForLocation(e.getX() - table.getTree().getX(), e.getY() - table.getTree().getY());
+                    navigateToDictionary(path);
+                }
+            }
+
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            private void maybeShow(java.awt.event.MouseEvent e) {
+                if (!e.isPopupTrigger() && !javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                TreePath path = table.getTree().getPathForLocation(e.getX() - table.getTree().getX(), e.getY() - table.getTree().getY());
+                if (path == null || extractTag(path) == null) {
+                    return;
+                }
+                table.getTree().setSelectionPath(path);
+                javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+                javax.swing.JMenuItem navigate = new javax.swing.JMenuItem("Go to Dictionary Definition");
+                navigate.addActionListener(a -> navigateToDictionary(path));
+                popup.add(navigate);
+                popup.show(table, e.getX(), e.getY());
+            }
+        });
+    }
+
     private void navigateToDictionary(TreePath path) {
         String tag = extractTag(path);
         if (tag == null) {
@@ -178,7 +217,7 @@ public class FixCommTimelinePanel extends JPanel {
                 break;
             }
         }
-        FixDictionaryNavigator.navigateToTag(project, extractBeginString(getMessageByIndex(path)), msgType, tag);
+FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, tag);
     }
 
     private String extractTag(TreePath path) {
@@ -264,16 +303,13 @@ public class FixCommTimelinePanel extends JPanel {
         }
     }
 
-    private String getMessageByIndex(TreePath path) {
+    private String resolveFixVersion(TreePath path) {
         for (Object pathNode : path.getPath()) {
             if (pathNode instanceof MessageNode messageNode) {
-                int idx = messageNode.index - 1;
-                if (idx >= 0 && idx < allNodes.size()) {
-                    return String.valueOf(allNodes.get(idx).getUserObject());
-                }
+                return messageNode.fixVersion;
             }
         }
-        return "8=FIX.4.4|";
+        return "FIX.4.4";
     }
 
     private MessageNode parseNode(String msg, int index) {
@@ -290,7 +326,7 @@ public class FixCommTimelinePanel extends JPanel {
             String direction = determineDirection(sender, target);
             String summary = FixMessageParser.buildMessageLabel(parsed, dd);
 
-            MessageNode node = new MessageNode(index, time, direction, typeCode, typeName, summary);
+            MessageNode node = new MessageNode(index, begin, time, direction, typeCode, typeName, summary);
             DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
             buildNodes(parsed.getHeader(), headerNode, dd);
             node.add(headerNode);
@@ -304,7 +340,7 @@ public class FixCommTimelinePanel extends JPanel {
             node.add(trailerNode);
             return node;
         } catch (Exception e) {
-            MessageNode node = new MessageNode(index, "", "→", "", "", msg);
+            MessageNode node = new MessageNode(index, begin, "", "→", "", "", msg);
             node.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
             return node;
         }
@@ -443,14 +479,16 @@ public class FixCommTimelinePanel extends JPanel {
 
     private static final class MessageNode extends DefaultMutableTreeNode {
         final int index;
+        final String fixVersion;
         final String time;
         final String direction;
         final String msgTypeCode;
         final String msgTypeDisplay;
 
-        MessageNode(int index, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
+        MessageNode(int index, String fixVersion, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
             super(summary);
             this.index = index;
+            this.fixVersion = fixVersion;
             this.time = time;
             this.direction = direction;
             this.msgTypeCode = msgTypeCode;
