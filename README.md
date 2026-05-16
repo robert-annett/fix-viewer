@@ -49,6 +49,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Message Flow navigation safety guard** now ignores double-click/right-click events that do not resolve to a tree row, preventing intermittent null-path navigation errors.
 - **Built-in dictionary declaration support** now enables Ctrl+Click/Go To Declaration even when using bundled FIX dictionaries (no custom path required).
 - **Built-in dictionary test coverage** now documents default-configuration behavior while keeping sandbox-safe expectations in restricted test VFS environments.
+- **Cross-environment goto test stability** now keeps built-in dictionary declaration tests robust across differing IntelliJ sandbox VFS constraints.
 - **Message Flow constructor compatibility** preserves no-project initialization paths used by tests and non-navigation contexts while keeping project-aware dictionary navigation enabled.
 - **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
 - **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).

@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- Stabilized built-in dictionary goto-declaration tests across environments by accepting sandbox-dependent resolution outcomes while still validating non-throwing behavior.
 - Adjusted built-in dictionary declaration test expectation for sandboxed test environments where bundled dictionary VFS roots are restricted.
 - Fixed declaration/navigation dictionary root discovery by reading XML root tags via `XmlFile#getRootTag()` and enabled bundled dictionary resolution for default setups.
 - Fixed intermittent `NullPointerException` in Message Flow dictionary navigation by guarding null `TreePath` inputs during double-click/right-click dispatch.
