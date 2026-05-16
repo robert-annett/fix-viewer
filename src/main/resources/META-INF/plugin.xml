@@ -66,6 +66,7 @@
         <psi.referenceContributor language="XML"
                                   implementation="com.rannett.fixplugin.dictionary.FixDictionaryXmlReferenceContributor"/>
         <gotoDeclarationHandler implementation="com.rannett.fixplugin.dictionary.FixDictionaryGotoDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="com.rannett.fixplugin.dictionary.FixMessageGotoDeclarationHandler"/>
 
         <multiHostInjector
                 implementation="com.rannett.fixplugin.injection.FixStringLanguageInjector"/>
