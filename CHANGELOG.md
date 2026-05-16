@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- Fixed intermittent `NullPointerException` in Message Flow dictionary navigation by guarding null `TreePath` inputs during double-click/right-click dispatch.
 - Fixed Message Flow dictionary navigation on expanded summary rows by handling both tree and tree-table mouse coordinate paths and using message-scoped FIX version resolution.
 - Restored backward-compatible `FixCommTimelinePanel(List<String>)` construction so existing tests and callers compile while newer project-aware navigation remains available.
 - Fixed Message Flow Summary right-click navigation targeting by resolving actions from tree-row coordinates in the expanded Summary hierarchy.

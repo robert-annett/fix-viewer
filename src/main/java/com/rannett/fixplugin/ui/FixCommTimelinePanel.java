@@ -206,6 +206,9 @@ public class FixCommTimelinePanel extends JPanel {
     }
 
     private void navigateToDictionary(TreePath path) {
+        if (path == null) {
+            return;
+        }
         String tag = extractTag(path);
         if (tag == null) {
             return;
@@ -221,6 +224,9 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
     }
 
     private String extractTag(TreePath path) {
+        if (path == null) {
+            return null;
+        }
         Object node = path.getLastPathComponent();
         if (!(node instanceof DefaultMutableTreeNode treeNode)) {
             return null;
