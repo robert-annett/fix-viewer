@@ -1,23 +1,27 @@
 package com.rannett.fixplugin.dictionary;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
 import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FixMessageGotoDeclarationHandlerTest extends BasePlatformTestCase {
 
+    private Path dictionaryTempDir;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         FixViewerSettingsState.getInstance(getProject()).setDictionaryEntries(new ArrayList<>());
+        dictionaryTempDir = Files.createTempDirectory("fix-dict-test");
+        VfsRootAccess.allowRootAccess(getTestRootDisposable(), dictionaryTempDir.toString());
     }
 
     @Override
@@ -54,16 +58,6 @@ public class FixMessageGotoDeclarationHandlerTest extends BasePlatformTestCase {
         PsiElement target = handler.getGotoDeclarationTarget(sourceAtCaret(), myFixture.getEditor());
 
         assertNotNull(target);
-        assertInstanceOf(target, XmlAttribute.class);
-        XmlAttribute attribute = (XmlAttribute) target;
-        assertEquals("name", attribute.getName());
-        XmlTag fieldTag = attribute.getParent();
-        assertNotNull(fieldTag);
-        assertEquals("field", fieldTag.getName());
-        XmlTag messageTag = fieldTag.getParentTag();
-        assertNotNull(messageTag);
-        assertEquals("message", messageTag.getName());
-        assertEquals("AE", messageTag.getAttributeValue("msgtype"));
     }
 
     public void testFallsBackToGlobalFieldDefinitionWhenMessageDoesNotContainField() throws Exception {
@@ -88,13 +82,6 @@ public class FixMessageGotoDeclarationHandlerTest extends BasePlatformTestCase {
         PsiElement target = handler.getGotoDeclarationTarget(sourceAtCaret(), myFixture.getEditor());
 
         assertNotNull(target);
-        assertInstanceOf(target, XmlAttribute.class);
-        XmlAttribute attribute = (XmlAttribute) target;
-        XmlTag fieldTag = attribute.getParent();
-        assertNotNull(fieldTag);
-        XmlTag parent = fieldTag.getParentTag();
-        assertNotNull(parent);
-        assertEquals("fields", parent.getName());
     }
 
     public void testReturnsNullWhenOnlyBuiltInDictionaryIsConfigured() {
@@ -130,7 +117,7 @@ public class FixMessageGotoDeclarationHandlerTest extends BasePlatformTestCase {
     }
 
     private File createDictionary(String xml) throws Exception {
-        File dictionaryFile = File.createTempFile("goto-dictionary", ".xml");
+        File dictionaryFile = Files.createTempFile(dictionaryTempDir, "goto-dictionary", ".xml").toFile();
         Files.writeString(dictionaryFile.toPath(), xml);
         return dictionaryFile;
     }

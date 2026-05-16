@@ -90,12 +90,16 @@ public class FixMessageGotoDeclarationHandler extends GotoDeclarationHandlerBase
         FixViewerSettingsState.DictionaryEntry entry = FixViewerSettingsState.getInstance(project).getDefaultDictionary(fixVersion);
         VirtualFile virtualFile = null;
         if (entry != null && !entry.isBuiltIn() && entry.getPath() != null && !entry.getPath().isBlank()) {
-            virtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(entry.getPath()));
+            virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(entry.getPath()));
         }
         if (virtualFile == null) {
-            java.net.URL dictionaryUrl = FixMessageGotoDeclarationHandler.class.getResource("/dictionaries/" + fixVersion + ".xml");
-            if (dictionaryUrl != null) {
-                virtualFile = com.intellij.openapi.vfs.VfsUtil.findFileByURL(dictionaryUrl);
+            try {
+                java.net.URL dictionaryUrl = FixMessageGotoDeclarationHandler.class.getResource("/dictionaries/" + fixVersion + ".xml");
+                if (dictionaryUrl != null) {
+                    virtualFile = com.intellij.openapi.vfs.VfsUtil.findFileByURL(dictionaryUrl);
+                }
+            } catch (Throwable ignored) {
+                return null;
             }
         }
         if (virtualFile == null) {

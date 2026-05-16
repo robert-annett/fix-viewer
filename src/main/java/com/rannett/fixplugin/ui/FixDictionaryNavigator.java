@@ -48,12 +48,16 @@ public final class FixDictionaryNavigator {
         DictionaryEntry entry = FixViewerSettingsState.getInstance(project).getDefaultDictionary(fixVersion);
         VirtualFile vf = null;
         if (entry != null && !entry.isBuiltIn() && entry.getPath() != null && !entry.getPath().isBlank()) {
-            vf = LocalFileSystem.getInstance().findFileByIoFile(new File(entry.getPath()));
+            vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(entry.getPath()));
         }
         if (vf == null) {
-            java.net.URL dictionaryUrl = FixDictionaryNavigator.class.getResource("/dictionaries/" + fixVersion + ".xml");
-            if (dictionaryUrl != null) {
-                vf = com.intellij.openapi.vfs.VfsUtil.findFileByURL(dictionaryUrl);
+            try {
+                java.net.URL dictionaryUrl = FixDictionaryNavigator.class.getResource("/dictionaries/" + fixVersion + ".xml");
+                if (dictionaryUrl != null) {
+                    vf = com.intellij.openapi.vfs.VfsUtil.findFileByURL(dictionaryUrl);
+                }
+            } catch (Throwable ignored) {
+                return null;
             }
         }
         if (vf == null) {
