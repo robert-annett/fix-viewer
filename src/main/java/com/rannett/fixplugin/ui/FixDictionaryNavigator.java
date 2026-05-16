@@ -5,10 +5,10 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
 import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
@@ -51,10 +51,9 @@ public final class FixDictionaryNavigator {
             vf = LocalFileSystem.getInstance().findFileByIoFile(new File(entry.getPath()));
         }
         if (vf == null) {
-            String resourcePath = FixDictionaryNavigator.class.getResource("/dictionaries/" + fixVersion + ".xml") != null
-                    ? FixDictionaryNavigator.class.getResource("/dictionaries/" + fixVersion + ".xml").toString() : null;
-            if (resourcePath != null) {
-                vf = VirtualFileManager.getInstance().findFileByUrl(resourcePath);
+            java.net.URL dictionaryUrl = FixDictionaryNavigator.class.getResource("/dictionaries/" + fixVersion + ".xml");
+            if (dictionaryUrl != null) {
+                vf = com.intellij.openapi.vfs.VfsUtil.findFileByURL(dictionaryUrl);
             }
         }
         if (vf == null) {
@@ -64,7 +63,10 @@ public final class FixDictionaryNavigator {
         if (psi == null) {
             return null;
         }
-        XmlTag root = com.intellij.psi.util.PsiTreeUtil.findChildOfType(psi, XmlTag.class);
+        if (!(psi instanceof XmlFile xmlFile)) {
+            return null;
+        }
+        XmlTag root = xmlFile.getRootTag();
         if (root != null && "fix".equalsIgnoreCase(root.getName())) {
             return root;
         }

@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- Fixed declaration/navigation dictionary root discovery by reading XML root tags via `XmlFile#getRootTag()` and enabled bundled dictionary resolution for default setups.
 - Fixed intermittent `NullPointerException` in Message Flow dictionary navigation by guarding null `TreePath` inputs during double-click/right-click dispatch.
 - Fixed Message Flow dictionary navigation on expanded summary rows by handling both tree and tree-table mouse coordinate paths and using message-scoped FIX version resolution.
 - Restored backward-compatible `FixCommTimelinePanel(List<String>)` construction so existing tests and callers compile while newer project-aware navigation remains available.

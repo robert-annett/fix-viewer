@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.rannett.fixplugin.psi.FixTypes;
 import com.rannett.fixplugin.settings.FixViewerSettingsState;
@@ -87,10 +88,16 @@ public class FixMessageGotoDeclarationHandler extends GotoDeclarationHandlerBase
 
     private XmlTag resolveDictionaryRoot(Project project, String fixVersion) {
         FixViewerSettingsState.DictionaryEntry entry = FixViewerSettingsState.getInstance(project).getDefaultDictionary(fixVersion);
-        if (entry == null || entry.isBuiltIn() || entry.getPath() == null || entry.getPath().isBlank()) {
-            return null;
+        VirtualFile virtualFile = null;
+        if (entry != null && !entry.isBuiltIn() && entry.getPath() != null && !entry.getPath().isBlank()) {
+            virtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(entry.getPath()));
         }
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(entry.getPath()));
+        if (virtualFile == null) {
+            java.net.URL dictionaryUrl = FixMessageGotoDeclarationHandler.class.getResource("/dictionaries/" + fixVersion + ".xml");
+            if (dictionaryUrl != null) {
+                virtualFile = com.intellij.openapi.vfs.VfsUtil.findFileByURL(dictionaryUrl);
+            }
+        }
         if (virtualFile == null) {
             return null;
         }
@@ -102,7 +109,10 @@ public class FixMessageGotoDeclarationHandler extends GotoDeclarationHandlerBase
     }
 
     private XmlTag findFixRootTag(PsiFile psiFile) {
-        XmlTag root = com.intellij.psi.util.PsiTreeUtil.findChildOfType(psiFile, XmlTag.class);
+        if (!(psiFile instanceof XmlFile xmlFile)) {
+            return null;
+        }
+        XmlTag root = xmlFile.getRootTag();
         if (root != null && "fix".equalsIgnoreCase(root.getName())) {
             return root;
         }
