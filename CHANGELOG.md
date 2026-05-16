@@ -6,11 +6,11 @@
 
 ### Added
 
-- None yet.
+- Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
 
 ### Fixed
 
-- None yet.
+- Fixed Message Flow CompID perspective filtering to avoid IntelliJ application-context NPEs in headless/unit-test execution while still updating UI normally in the IDE.
 
 ## [0.0.22] - 2026-05-13
 
