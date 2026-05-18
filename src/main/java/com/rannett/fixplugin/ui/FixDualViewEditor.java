@@ -109,7 +109,7 @@ public class FixDualViewEditor extends UserDataHolderBase implements FileEditor 
         treePanel = new FixMessageTreePanel(messages, project, selectedDictionaryEntry);
         tabbedPane.addTab("Tree View", treePanel);
 
-        commPanel = new FixCommTimelinePanel(messages);
+        commPanel = new FixCommTimelinePanel(messages, project);
         commPanel.setOnMessageSelected(idx -> {
             int offset = findMessageOffset(idx);
             if (offset >= 0) {

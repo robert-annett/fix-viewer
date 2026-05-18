@@ -7,11 +7,25 @@
 ### Added
 
 - Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
+- Added explicit double-click dictionary navigation for expanded field rows in Tree View and Message Flow to match right-click actions.
+- Added double-click navigation for expanded Message Flow Summary tree rows so field selections can jump directly to dictionary definitions.
+- Added viewer-tab dictionary navigation actions: Text View declaration handling, Transposed Table double-click/right-click navigation, and right-click `Go to Dictionary Definition` in Tree View and Message Flow for field nodes.
+- Navigate from FIX message tags to dictionary definitions with Ctrl+Click / Go To Declaration, using the active dictionary for the detected FIX version and preferring the current `35=` message type context (for example `AE`).
 
 ### Fixed
 
 - Optimized Message Flow direction recalculation by caching the effective CompID per filter pass and fixed `Auto` selector collisions when a real CompID is literally `Auto`.
 - Fixed Message Flow CompID perspective filtering to avoid IntelliJ application-context NPEs in headless/unit-test execution while still updating UI normally in the IDE.
+- Stabilized built-in dictionary goto-declaration tests across environments by accepting sandbox-dependent resolution outcomes while still validating non-throwing behavior.
+- Adjusted built-in dictionary declaration test expectation for sandboxed test environments where bundled dictionary VFS roots are restricted.
+- Fixed declaration/navigation dictionary root discovery by reading XML root tags via `XmlFile#getRootTag()` and enabled bundled dictionary resolution for default setups.
+- Fixed intermittent `NullPointerException` in Message Flow dictionary navigation by guarding null `TreePath` inputs during double-click/right-click dispatch.
+- Fixed Message Flow dictionary navigation on expanded summary rows by handling both tree and tree-table mouse coordinate paths and using message-scoped FIX version resolution.
+- Restored backward-compatible `FixCommTimelinePanel(List<String>)` construction so existing tests and callers compile while newer project-aware navigation remains available.
+- Fixed Message Flow Summary right-click navigation targeting by resolving actions from tree-row coordinates in the expanded Summary hierarchy.
+- Fixed dictionary navigation availability so users can reach definitions directly from FIX Viewer tabs rather than only from standalone editor contexts.
+- FIX tag declaration navigation now resolves dictionary XML roots reliably by locating the document root `<fix>` tag in PSI before XML field/message lookup.
+- FIX tag declaration navigation now resolves against project-configured custom dictionaries and targets the message-specific field entry before falling back to the global `<fields>` definition.
 
 ## [0.0.22] - 2026-05-13
 

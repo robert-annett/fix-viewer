@@ -43,6 +43,7 @@ import quickfix.Message;
 public class FixCommTimelinePanel extends JPanel {
     private static final CompIdOption AUTO_COMP_ID_OPTION = new CompIdOption("", true);
 
+    private final com.intellij.openapi.project.Project project;
     private final JCheckBox hideHeartbeat;
     private final JComboBox<CompIdOption> compIdSelector;
     private final List<MessageNode> allNodes = new ArrayList<>();
@@ -54,12 +55,22 @@ public class FixCommTimelinePanel extends JPanel {
     private boolean suppressCompIdChangeEvent;
 
     /**
-     * Create a timeline panel for the provided messages.
+     * Backward-compatible constructor for tests and callers that do not need project-bound navigation.
      *
      * @param messages list of raw FIX messages
      */
     public FixCommTimelinePanel(@NotNull List<String> messages) {
+        this(messages, null);
+    }
+
+    /**
+     * Create a timeline panel for the provided messages.
+     *
+     * @param messages list of raw FIX messages
+     */
+    public FixCommTimelinePanel(@NotNull List<String> messages, com.intellij.openapi.project.Project project) {
         super(new BorderLayout());
+        this.project = project;
 
         ColumnInfo[] columns = new ColumnInfo[]{
                 new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
@@ -132,6 +143,8 @@ public class FixCommTimelinePanel extends JPanel {
 
         Tree tree = table.getTree();
         tree.addTreeSelectionListener(e -> notifySelection());
+        setupNavigationPopup();
+        setupTableNavigationPopup();
 
         loadMessages(messages);
         compIdSelector.addActionListener(e -> {
@@ -141,6 +154,128 @@ public class FixCommTimelinePanel extends JPanel {
         });
 
         fixColumnWidths();
+    }
+
+    private void setupNavigationPopup() {
+        Tree tree = table.getTree();
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    navigateFromEvent(e);
+                }
+            }
+
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            private void maybeShow(java.awt.event.MouseEvent e) {
+                if (!e.isPopupTrigger() && !javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                tree.setSelectionPath(path);
+                if (extractTag(path) == null) {
+                    return;
+                }
+                javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+                javax.swing.JMenuItem navigate = new javax.swing.JMenuItem("Go to Dictionary Definition");
+                navigate.addActionListener(a -> navigateToDictionary(path));
+                popup.add(navigate);
+                popup.show(tree, e.getX(), e.getY());
+            }
+
+            private void navigateFromEvent(java.awt.event.MouseEvent e) {
+                TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                tree.setSelectionPath(path);
+                navigateToDictionary(path);
+            }
+        });
+    }
+
+    private void setupTableNavigationPopup() {
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    TreePath path = table.getTree().getPathForLocation(e.getX() - table.getTree().getX(), e.getY() - table.getTree().getY());
+                    navigateToDictionary(path);
+                }
+            }
+
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                maybeShow(e);
+            }
+
+            private void maybeShow(java.awt.event.MouseEvent e) {
+                if (!e.isPopupTrigger() && !javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                TreePath path = table.getTree().getPathForLocation(e.getX() - table.getTree().getX(), e.getY() - table.getTree().getY());
+                if (path == null || extractTag(path) == null) {
+                    return;
+                }
+                table.getTree().setSelectionPath(path);
+                javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+                javax.swing.JMenuItem navigate = new javax.swing.JMenuItem("Go to Dictionary Definition");
+                navigate.addActionListener(a -> navigateToDictionary(path));
+                popup.add(navigate);
+                popup.show(table, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void navigateToDictionary(TreePath path) {
+        if (path == null) {
+            return;
+        }
+        String tag = extractTag(path);
+        if (tag == null) {
+            return;
+        }
+        String msgType = null;
+        for (Object pathNode : path.getPath()) {
+            if (pathNode instanceof MessageNode messageNode) {
+                msgType = messageNode.msgTypeCode;
+                break;
+            }
+        }
+        FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, tag);
+    }
+
+    private String extractTag(TreePath path) {
+        if (path == null) {
+            return null;
+        }
+        Object node = path.getLastPathComponent();
+        if (!(node instanceof DefaultMutableTreeNode treeNode)) {
+            return null;
+        }
+        String label = String.valueOf(treeNode.getUserObject());
+        java.util.regex.Matcher tagMatcher = java.util.regex.Pattern.compile("^(\\d+)=").matcher(label);
+        if (!tagMatcher.find()) {
+            return null;
+        }
+        return tagMatcher.group(1);
     }
 
     /**
@@ -222,6 +357,15 @@ public class FixCommTimelinePanel extends JPanel {
         }
     }
 
+    private String resolveFixVersion(TreePath path) {
+        for (Object pathNode : path.getPath()) {
+            if (pathNode instanceof MessageNode messageNode) {
+                return messageNode.fixVersion;
+            }
+        }
+        return "FIX.4.4";
+    }
+
     private MessageNode parseNode(String msg, int index) {
         String begin = extractBeginString(msg);
         try {
@@ -236,7 +380,7 @@ public class FixCommTimelinePanel extends JPanel {
             String direction = determineDirection(sender, target, guessAutoCompId());
             String summary = FixMessageParser.buildMessageLabel(parsed, dd);
 
-            MessageNode node = new MessageNode(index, time, direction, typeCode, typeName, summary, sender, target);
+            MessageNode node = new MessageNode(index, begin, time, direction, typeCode, typeName, summary, sender, target);
             DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
             buildNodes(parsed.getHeader(), headerNode, dd);
             node.add(headerNode);
@@ -250,7 +394,7 @@ public class FixCommTimelinePanel extends JPanel {
             node.add(trailerNode);
             return node;
         } catch (Exception e) {
-            MessageNode node = new MessageNode(index, "", "?", "", "", msg, "", "");
+            MessageNode node = new MessageNode(index, begin, "", "?", "", "", msg, "", "");
             node.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
             return node;
         }
@@ -466,6 +610,7 @@ public class FixCommTimelinePanel extends JPanel {
 
     private static final class MessageNode extends DefaultMutableTreeNode {
         final int index;
+        final String fixVersion;
         final String time;
         String direction;
         final String msgTypeCode;
@@ -473,9 +618,10 @@ public class FixCommTimelinePanel extends JPanel {
         final String senderCompId;
         final String targetCompId;
 
-        MessageNode(int index, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary, String senderCompId, String targetCompId) {
+        MessageNode(int index, String fixVersion, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary, String senderCompId, String targetCompId) {
             super(summary);
             this.index = index;
+            this.fixVersion = fixVersion;
             this.time = time;
             this.direction = direction;
             this.msgTypeCode = msgTypeCode;
