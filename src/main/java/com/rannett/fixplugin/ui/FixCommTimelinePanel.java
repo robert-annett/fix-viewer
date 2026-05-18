@@ -606,6 +606,23 @@ public class FixCommTimelinePanel extends JPanel {
             }
             return value;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof CompIdOption)) {
+                return false;
+            }
+            CompIdOption that = (CompIdOption) o;
+            return isAuto == that.isAuto && java.util.Objects.equals(value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(value, isAuto);
+        }
     }
 
     private static final class MessageNode extends DefaultMutableTreeNode {
