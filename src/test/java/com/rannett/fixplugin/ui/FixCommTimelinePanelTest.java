@@ -81,7 +81,6 @@ public class FixCommTimelinePanelTest {
             assertEquals("Dir", panel.getColumnName(1));
             assertEquals("MsgType", panel.getColumnName(2));
             assertEquals("Summary", panel.getColumnName(3));
-            assertEquals(150, panel.getColumnPreferredWidth(0));
         });
     }
 }

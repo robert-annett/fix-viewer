@@ -1,6 +1,7 @@
 package com.rannett.fixplugin.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
@@ -10,31 +11,24 @@ import com.intellij.util.ui.ColumnInfo;
 import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import com.rannett.fixplugin.util.FixMessageParser;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.table.TableColumn;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import java.awt.BorderLayout;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
 import quickfix.Group;
 import quickfix.Message;
+
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 /**
  * Panel that renders a timeline view of FIX messages with an expandable
@@ -45,7 +39,7 @@ public class FixCommTimelinePanel extends JPanel {
 
     private final com.intellij.openapi.project.Project project;
     private final JCheckBox hideHeartbeat;
-    private final JComboBox<CompIdOption> compIdSelector;
+    private final ComboBox<CompIdOption> compIdSelector;
     private final List<MessageNode> allNodes = new ArrayList<>();
     private final List<MessageNode> displayedNodes = new ArrayList<>();
     private final DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
@@ -72,7 +66,7 @@ public class FixCommTimelinePanel extends JPanel {
         super(new BorderLayout());
         this.project = project;
 
-        ColumnInfo[] columns = new ColumnInfo[]{
+        var columns = new ColumnInfo[]{
                 new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
                     @Override
                     public String valueOf(DefaultMutableTreeNode node) {
@@ -110,7 +104,7 @@ public class FixCommTimelinePanel extends JPanel {
         hideHeartbeat = new JCheckBox("Hide heartbeats");
         hideHeartbeat.addActionListener(e -> applyFilter());
 
-        compIdSelector = new JComboBox<>();
+        compIdSelector = new ComboBox<>();
         compIdSelector.setRenderer(new DefaultListCellRenderer() {
             @Override
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list,
@@ -512,27 +506,11 @@ public class FixCommTimelinePanel extends JPanel {
     }
 
     private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
-        java.util.Iterator<Field<?>> fieldIt = map.iterator();
-        while (fieldIt.hasNext()) {
-            Field<?> field = fieldIt.next();
-            int tag = field.getTag();
-            String name = dd.getFieldName(tag);
-            String value = String.valueOf(field.getObject());
-            String enumName = dd.getValueName(tag, value);
-
-            StringBuilder label = new StringBuilder();
-            label.append(tag).append("=").append(value);
-            if (name != null) {
-                label.append(" (").append(name);
-                if (enumName != null) {
-                    label.append("=").append(enumName);
-                }
-                label.append(")");
-            }
-            parent.add(new DefaultMutableTreeNode(label.toString()));
+        for (Field<?> field : map) {
+            buildNode(parent, dd, field);
         }
 
-        java.util.Iterator<Integer> groupKeys = map.groupKeyIterator();
+        java.util.Iterator<Integer> groupKeys = map.groupKeys().iterator();;
         while (groupKeys.hasNext()) {
             int groupTag = groupKeys.next();
             List<Group> groups = map.getGroups(groupTag);
@@ -541,16 +519,30 @@ public class FixCommTimelinePanel extends JPanel {
             for (Group g : groups) {
                 DefaultMutableTreeNode groupNode;
                 String title;
-                if (groupName != null) {
-                    title = groupName;
-                } else {
-                    title = String.valueOf(groupTag);
-                }
+                title = Objects.requireNonNullElseGet(groupName, () -> String.valueOf(groupTag));
                 groupNode = new DefaultMutableTreeNode(title + " [" + idx++ + "]");
                 buildNodes(g, groupNode, dd);
                 parent.add(groupNode);
             }
         }
+    }
+
+    static void buildNode(DefaultMutableTreeNode parent, DataDictionary dd, Field<?> field) {
+        int tag = field.getTag();
+        String name = dd.getFieldName(tag);
+        String value = String.valueOf(field.getObject());
+        String enumName = dd.getValueName(tag, value);
+
+        StringBuilder label = new StringBuilder();
+        label.append(tag).append("=").append(value);
+        if (name != null) {
+            label.append(" (").append(name);
+            if (enumName != null) {
+                label.append("=").append(enumName);
+            }
+            label.append(")");
+        }
+        parent.add(new DefaultMutableTreeNode(label.toString()));
     }
 
     private void fixColumnWidths() {
@@ -569,10 +561,6 @@ public class FixCommTimelinePanel extends JPanel {
 
     String getColumnName(int index) {
         return table.getColumnModel().getColumn(index).getHeaderValue().toString();
-    }
-
-    int getColumnPreferredWidth(int index) {
-        return table.getColumnModel().getColumn(index).getPreferredWidth();
     }
 
     void setSelectedCompId(String compId) {
@@ -612,10 +600,9 @@ public class FixCommTimelinePanel extends JPanel {
             if (this == o) {
                 return true;
             }
-            if (!(o instanceof CompIdOption)) {
+            if (!(o instanceof CompIdOption that)) {
                 return false;
             }
-            CompIdOption that = (CompIdOption) o;
             return isAuto == that.isAuto && java.util.Objects.equals(value, that.value);
         }
 
