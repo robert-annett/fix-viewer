@@ -31,6 +31,7 @@ There is also a tree view, to show the message structure, and a communications v
 - **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
 - **Transposed View** to make reading messages easier including filtering and field selection
 - **Tree View** to navigate message structure including groups
+- **Message Flow CompID perspective selector** to compute incoming/outgoing arrows relative to a chosen `SenderCompID(49)` / `TargetCompID(56)`, including an `Auto` option for mixed logs.
 - **Message Hiding** in the transposed view for large message files
 - **Enumerated Values** suggested as items in the table view
 - **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.

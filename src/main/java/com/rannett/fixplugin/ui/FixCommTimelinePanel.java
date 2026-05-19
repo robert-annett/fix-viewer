@@ -1,5 +1,7 @@
 package com.rannett.fixplugin.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
@@ -9,42 +11,42 @@ import com.intellij.util.ui.ColumnInfo;
 import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import com.rannett.fixplugin.util.FixMessageParser;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.table.TableColumn;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import java.awt.BorderLayout;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
 import quickfix.Group;
 import quickfix.Message;
 
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+
 /**
  * Panel that renders a timeline view of FIX messages with an expandable
  * summary column.
  */
 public class FixCommTimelinePanel extends JPanel {
+    private static final CompIdOption AUTO_COMP_ID_OPTION = new CompIdOption("", true);
+
     private final com.intellij.openapi.project.Project project;
     private final JCheckBox hideHeartbeat;
+    private final ComboBox<CompIdOption> compIdSelector;
     private final List<MessageNode> allNodes = new ArrayList<>();
     private final List<MessageNode> displayedNodes = new ArrayList<>();
-    private final Map<String, String> localPartyBySession = new HashMap<>();
     private final DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     private final ListTreeTableModelOnColumns model;
     private final TreeTable table;
     private Consumer<Integer> onMessageSelected;
+    private boolean suppressCompIdChangeEvent;
 
     /**
      * Backward-compatible constructor for tests and callers that do not need project-bound navigation.
@@ -64,7 +66,7 @@ public class FixCommTimelinePanel extends JPanel {
         super(new BorderLayout());
         this.project = project;
 
-        ColumnInfo[] columns = new ColumnInfo[]{
+        var columns = new ColumnInfo[]{
                 new ColumnInfo<DefaultMutableTreeNode, String>("Time") {
                     @Override
                     public String valueOf(DefaultMutableTreeNode node) {
@@ -102,9 +104,35 @@ public class FixCommTimelinePanel extends JPanel {
         hideHeartbeat = new JCheckBox("Hide heartbeats");
         hideHeartbeat.addActionListener(e -> applyFilter());
 
+        compIdSelector = new ComboBox<>();
+        compIdSelector.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list,
+                                                                   Object value,
+                                                                   int index,
+                                                                   boolean isSelected,
+                                                                   boolean cellHasFocus) {
+                Object displayValue = value;
+                if (value instanceof CompIdOption) {
+                    displayValue = ((CompIdOption) value).toDisplayLabel();
+                }
+                return super.getListCellRendererComponent(list, displayValue, index, isSelected, cellHasFocus);
+            }
+        });
+        compIdSelector.setToolTipText("Direction is shown relative to selected CompID.");
+
+        JPanel controls = new JPanel();
+        controls.setLayout(new BoxLayout(controls, BoxLayout.X_AXIS));
+        JLabel compIdLabel = new JLabel("Perspective CompID:");
+        compIdLabel.setToolTipText("Direction is shown relative to selected CompID.");
+        controls.add(compIdLabel);
+        controls.add(compIdSelector);
+        controls.add(new JLabel("   "));
+        controls.add(hideHeartbeat);
+
         JScrollPane scroll = new JBScrollPane(table);
         scroll.setBorder(BorderFactory.createEmptyBorder());
-        add(hideHeartbeat, BorderLayout.NORTH);
+        add(controls, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
 
         Tree tree = table.getTree();
@@ -113,6 +141,11 @@ public class FixCommTimelinePanel extends JPanel {
         setupTableNavigationPopup();
 
         loadMessages(messages);
+        compIdSelector.addActionListener(e -> {
+            if (!suppressCompIdChangeEvent && ApplicationManager.getApplication() != null) {
+                applyFilter();
+            }
+        });
 
         fixColumnWidths();
     }
@@ -220,7 +253,7 @@ public class FixCommTimelinePanel extends JPanel {
                 break;
             }
         }
-FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, tag);
+        FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, tag);
     }
 
     private String extractTag(TreePath path) {
@@ -278,24 +311,33 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
 
     private void loadMessages(List<String> messages) {
         allNodes.clear();
-        localPartyBySession.clear();
         IntStream.range(0, messages.size()).forEach(i -> {
             MessageNode node = parseNode(messages.get(i), i + 1);
             allNodes.add(node);
         });
+        refreshCompIdSelector();
         applyFilter();
     }
 
     private void applyFilter() {
-        root.removeAllChildren();
+        boolean ideApplicationReady = ApplicationManager.getApplication() != null;
+        String effectiveCompId = getEffectiveCompIdForDirection();
+        if (ideApplicationReady) {
+            root.removeAllChildren();
+        }
         displayedNodes.clear();
         allNodes.stream()
                 .filter(n -> !hideHeartbeat.isSelected() || !"0".equals(n.msgTypeCode))
                 .forEach(n -> {
+                    n.direction = determineDirection(n.senderCompId, n.targetCompId, effectiveCompId);
                     displayedNodes.add(n);
-                    root.add(n);
+                    if (ideApplicationReady) {
+                        root.add(n);
+                    }
                 });
-        model.setRoot(root);
+        if (ideApplicationReady) {
+            model.reload();
+        }
     }
 
     private void notifySelection() {
@@ -329,10 +371,10 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
             String typeName = buildTypeName(dd, typeCode);
             String sender = parsed.getHeader().isSetField(49) ? parsed.getHeader().getString(49) : "";
             String target = parsed.getHeader().isSetField(56) ? parsed.getHeader().getString(56) : "";
-            String direction = determineDirection(sender, target);
+            String direction = determineDirection(sender, target, guessAutoCompId());
             String summary = FixMessageParser.buildMessageLabel(parsed, dd);
 
-            MessageNode node = new MessageNode(index, begin, time, direction, typeCode, typeName, summary);
+            MessageNode node = new MessageNode(index, begin, time, direction, typeCode, typeName, summary, sender, target);
             DefaultMutableTreeNode headerNode = new DefaultMutableTreeNode("Header");
             buildNodes(parsed.getHeader(), headerNode, dd);
             node.add(headerNode);
@@ -346,7 +388,7 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
             node.add(trailerNode);
             return node;
         } catch (Exception e) {
-            MessageNode node = new MessageNode(index, begin, "", "→", "", "", msg);
+            MessageNode node = new MessageNode(index, begin, "", "?", "", "", msg, "", "");
             node.add(new DefaultMutableTreeNode("Parse error: " + e.getMessage()));
             return node;
         }
@@ -376,27 +418,71 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
         return "FIX.4.4";
     }
 
-    private String determineDirection(String sender, String target) {
+    private String determineDirection(String sender, String target, String selectedCompId) {
         if (sender.isEmpty() || target.isEmpty()) {
+            return "?";
+        }
+        if (selectedCompId.isEmpty()) {
+            return "?";
+        }
+        if (selectedCompId.equals(sender)) {
             return "→";
         }
-        String key = sessionKey(sender, target);
-        String local = localPartyBySession.get(key);
-        if (local == null) {
-            localPartyBySession.put(key, sender);
-            local = sender;
+        if (selectedCompId.equals(target)) {
+            return "←";
         }
-        if (sender.equals(local)) {
-            return "→";
-        }
-        return "←";
+        return "?";
     }
 
-    private static String sessionKey(String a, String b) {
-        if (a.compareTo(b) < 0) {
-            return a + "|" + b;
+    private void refreshCompIdSelector() {
+        Set<String> compIds = new HashSet<>();
+        allNodes.forEach(node -> {
+            if (!node.senderCompId.isEmpty()) {
+                compIds.add(node.senderCompId);
+            }
+            if (!node.targetCompId.isEmpty()) {
+                compIds.add(node.targetCompId);
+            }
+        });
+
+        CompIdOption previous = (CompIdOption) compIdSelector.getSelectedItem();
+        suppressCompIdChangeEvent = true;
+        compIdSelector.removeAllItems();
+        compIdSelector.addItem(AUTO_COMP_ID_OPTION);
+        compIds.stream().sorted().map(compId -> new CompIdOption(compId, false)).forEach(compIdSelector::addItem);
+        if (previous != null && !previous.isAuto && compIds.contains(previous.value)) {
+            compIdSelector.setSelectedItem(previous);
+        } else {
+            compIdSelector.setSelectedItem(AUTO_COMP_ID_OPTION);
         }
-        return b + "|" + a;
+        suppressCompIdChangeEvent = false;
+    }
+
+    private String getEffectiveCompIdForDirection() {
+        CompIdOption selectedCompIdOption = (CompIdOption) compIdSelector.getSelectedItem();
+        if (selectedCompIdOption == null || selectedCompIdOption.isAuto) {
+            return guessAutoCompId();
+        }
+        return selectedCompIdOption.value;
+    }
+
+    private String guessAutoCompId() {
+        return allNodes.stream()
+                .flatMap(node -> java.util.stream.Stream.of(node.senderCompId, node.targetCompId))
+                .filter(compId -> !compId.isEmpty())
+                .collect(java.util.stream.Collectors.groupingBy(compId -> compId, java.util.stream.Collectors.counting()))
+                .entrySet()
+                .stream()
+                .sorted((a, b) -> {
+                    int countCompare = Long.compare(b.getValue(), a.getValue());
+                    if (countCompare != 0) {
+                        return countCompare;
+                    }
+                    return a.getKey().compareTo(b.getKey());
+                })
+                .map(java.util.Map.Entry::getKey)
+                .findFirst()
+                .orElse("");
     }
 
     /**
@@ -420,27 +506,11 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
     }
 
     private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
-        java.util.Iterator<Field<?>> fieldIt = map.iterator();
-        while (fieldIt.hasNext()) {
-            Field<?> field = fieldIt.next();
-            int tag = field.getTag();
-            String name = dd.getFieldName(tag);
-            String value = String.valueOf(field.getObject());
-            String enumName = dd.getValueName(tag, value);
-
-            StringBuilder label = new StringBuilder();
-            label.append(tag).append("=").append(value);
-            if (name != null) {
-                label.append(" (").append(name);
-                if (enumName != null) {
-                    label.append("=").append(enumName);
-                }
-                label.append(")");
-            }
-            parent.add(new DefaultMutableTreeNode(label.toString()));
+        for (Field<?> field : map) {
+            buildNode(parent, dd, field);
         }
 
-        java.util.Iterator<Integer> groupKeys = map.groupKeyIterator();
+        java.util.Iterator<Integer> groupKeys = map.groupKeys().iterator();;
         while (groupKeys.hasNext()) {
             int groupTag = groupKeys.next();
             List<Group> groups = map.getGroups(groupTag);
@@ -449,16 +519,30 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
             for (Group g : groups) {
                 DefaultMutableTreeNode groupNode;
                 String title;
-                if (groupName != null) {
-                    title = groupName;
-                } else {
-                    title = String.valueOf(groupTag);
-                }
+                title = Objects.requireNonNullElseGet(groupName, () -> String.valueOf(groupTag));
                 groupNode = new DefaultMutableTreeNode(title + " [" + idx++ + "]");
                 buildNodes(g, groupNode, dd);
                 parent.add(groupNode);
             }
         }
+    }
+
+    static void buildNode(DefaultMutableTreeNode parent, DataDictionary dd, Field<?> field) {
+        int tag = field.getTag();
+        String name = dd.getFieldName(tag);
+        String value = String.valueOf(field.getObject());
+        String enumName = dd.getValueName(tag, value);
+
+        StringBuilder label = new StringBuilder();
+        label.append(tag).append("=").append(value);
+        if (name != null) {
+            label.append(" (").append(name);
+            if (enumName != null) {
+                label.append("=").append(enumName);
+            }
+            label.append(")");
+        }
+        parent.add(new DefaultMutableTreeNode(label.toString()));
     }
 
     private void fixColumnWidths() {
@@ -479,19 +563,66 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
         return table.getColumnModel().getColumn(index).getHeaderValue().toString();
     }
 
-    int getColumnPreferredWidth(int index) {
-        return table.getColumnModel().getColumn(index).getPreferredWidth();
+    void setSelectedCompId(String compId) {
+        suppressCompIdChangeEvent = true;
+        for (int i = 0; i < compIdSelector.getItemCount(); i++) {
+            CompIdOption item = compIdSelector.getItemAt(i);
+            if (!item.isAuto && item.value.equals(compId)) {
+                compIdSelector.setSelectedIndex(i);
+                suppressCompIdChangeEvent = false;
+                applyFilter();
+                return;
+            }
+        }
+        compIdSelector.setSelectedItem(AUTO_COMP_ID_OPTION);
+        suppressCompIdChangeEvent = false;
+        applyFilter();
+    }
+
+    private static final class CompIdOption {
+        final String value;
+        final boolean isAuto;
+
+        CompIdOption(String value, boolean isAuto) {
+            this.value = value;
+            this.isAuto = isAuto;
+        }
+
+        String toDisplayLabel() {
+            if (isAuto) {
+                return "Auto";
+            }
+            return value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof CompIdOption that)) {
+                return false;
+            }
+            return isAuto == that.isAuto && java.util.Objects.equals(value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(value, isAuto);
+        }
     }
 
     private static final class MessageNode extends DefaultMutableTreeNode {
         final int index;
         final String fixVersion;
         final String time;
-        final String direction;
+        String direction;
         final String msgTypeCode;
         final String msgTypeDisplay;
+        final String senderCompId;
+        final String targetCompId;
 
-        MessageNode(int index, String fixVersion, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary) {
+        MessageNode(int index, String fixVersion, String time, String direction, String msgTypeCode, String msgTypeDisplay, String summary, String senderCompId, String targetCompId) {
             super(summary);
             this.index = index;
             this.fixVersion = fixVersion;
@@ -499,8 +630,9 @@ FixDictionaryNavigator.navigateToTag(project, resolveFixVersion(path), msgType, 
             this.direction = direction;
             this.msgTypeCode = msgTypeCode;
             this.msgTypeDisplay = msgTypeDisplay;
+            this.senderCompId = senderCompId;
+            this.targetCompId = targetCompId;
         }
     }
 
 }
-

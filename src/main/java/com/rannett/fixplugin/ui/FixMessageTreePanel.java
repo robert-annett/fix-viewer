@@ -3,9 +3,9 @@ package com.rannett.fixplugin.ui;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.treeStructure.Tree;
+import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import com.rannett.fixplugin.util.FixMessageParser;
 import com.rannett.fixplugin.util.FixUtils;
-import com.rannett.fixplugin.settings.FixViewerSettingsState.DictionaryEntry;
 import quickfix.DataDictionary;
 import quickfix.Field;
 import quickfix.FieldMap;
@@ -17,7 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.BorderLayout;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -180,29 +179,11 @@ public class FixMessageTreePanel extends JPanel {
     }
 
     private void buildNodes(FieldMap map, DefaultMutableTreeNode parent, DataDictionary dd) {
-        Iterator<Field<?>> fieldIt = map.iterator();
-        while (fieldIt.hasNext()) {
-            Field<?> field = fieldIt.next();
-            int tag = field.getTag();
-            String name = dd.getFieldName(tag);
-            String value = String.valueOf(field.getObject());
-            String enumName = dd.getValueName(tag, value);
-
-            StringBuilder label = new StringBuilder();
-            label.append(tag).append("=").append(value);
-            if (name != null) {
-                label.append(" (").append(name);
-                if (enumName != null) {
-                    label.append("=").append(enumName);
-                }
-                label.append(")");
-            }
-            parent.add(new DefaultMutableTreeNode(label.toString()));
+        for (Field<?> field : map) {
+            FixCommTimelinePanel.buildNode(parent, dd, field);
         }
 
-        Iterator<Integer> groupKeys = map.groupKeyIterator();
-        while (groupKeys.hasNext()) {
-            int groupTag = groupKeys.next();
+        for (int groupTag : map.groupKeys()) {
             List<Group> groups = map.getGroups(groupTag);
             String groupName = dd.getFieldName(groupTag);
             int idx = 1;
