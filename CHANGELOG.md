@@ -6,6 +6,7 @@
 
 ### Added
 
+- Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
 
 ### Fixed
 
@@ -40,7 +41,6 @@
 - Fixed dictionary navigation availability so users can reach definitions directly from FIX Viewer tabs rather than only from standalone editor contexts.
 - FIX tag declaration navigation now resolves dictionary XML roots reliably by locating the document root `<fix>` tag in PSI before XML field/message lookup.
 - FIX tag declaration navigation now resolves against project-configured custom dictionaries and targets the message-specific field entry before falling back to the global `<fields>` definition.
-
 
 ## [0.0.22] - 2026-05-13
 
