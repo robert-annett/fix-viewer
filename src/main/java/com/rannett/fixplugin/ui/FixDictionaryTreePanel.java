@@ -280,7 +280,7 @@ final class FixDictionaryTreePanel extends JPanel {
         String messageType = message.getAttribute("msgtype");
         String category = message.getAttribute("msgcat");
         String suffix = joinDetails(messageType, category);
-        return suffix.isBlank() ? name : name + " " + suffix;
+        return suffix.isBlank() ? name : name + suffix;
     }
 
     private static String fieldLabel(Element fieldReference, Element fieldDefinition) {
