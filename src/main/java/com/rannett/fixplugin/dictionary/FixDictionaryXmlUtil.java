@@ -11,6 +11,10 @@ import java.util.regex.Pattern;
 
 public final class FixDictionaryXmlUtil {
     private static final Pattern ROOT_PATTERN = Pattern.compile("^\\s*(?:<\\?xml[^>]*>\\s*)?<\\s*fix(?:\\s|>)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SECTION_PATTERN = Pattern.compile(
+            "<\\s*(messages|fields|components|header|trailer)(?:\\s|/|>)",
+            Pattern.CASE_INSENSITIVE
+    );
 
     private FixDictionaryXmlUtil() {
     }
@@ -47,7 +51,7 @@ public final class FixDictionaryXmlUtil {
             return false;
         }
 
-        long sectionsFound = Pattern.compile("<\\s*(messages|fields|components|header|trailer)(?:\\s|>)", Pattern.CASE_INSENSITIVE)
+        long sectionsFound = SECTION_PATTERN
                 .matcher(text)
                 .results()
                 .map(matchResult -> matchResult.group(1).toLowerCase())

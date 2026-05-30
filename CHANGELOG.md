@@ -10,6 +10,7 @@
 
 ### Fixed
 
+- Detect self-closing FIX dictionary section tags when deciding whether to open the dedicated dictionary editor.
 
 ## [0.0.23] - 2026-05-30
 
