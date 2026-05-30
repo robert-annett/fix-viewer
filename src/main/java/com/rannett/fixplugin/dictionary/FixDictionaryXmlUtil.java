@@ -2,9 +2,11 @@ package com.rannett.fixplugin.dictionary;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 public final class FixDictionaryXmlUtil {
@@ -13,17 +15,33 @@ public final class FixDictionaryXmlUtil {
     private FixDictionaryXmlUtil() {
     }
 
+    /**
+     * Checks whether the supplied XML file has the shape of a FIX dictionary.
+     *
+     * @param file candidate XML file
+     * @return {@code true} when the file appears to be a FIX dictionary
+     */
     public static boolean isFixDictionaryFile(@NotNull VirtualFile file) {
         if (!"xml".equalsIgnoreCase(file.getExtension())) {
             return false;
         }
         Document document = FileDocumentManager.getInstance().getDocument(file);
-        if (document == null) {
+        if (document != null) {
+            return isFixDictionaryText(document.getText());
+        }
+        try {
+            return isFixDictionaryText(VfsUtilCore.loadText(file));
+        } catch (IOException exception) {
             return false;
         }
-        return isFixDictionaryText(document.getText());
     }
 
+    /**
+     * Checks whether the supplied XML text has the shape of a FIX dictionary.
+     *
+     * @param text candidate XML text
+     * @return {@code true} when the text appears to be a FIX dictionary
+     */
     public static boolean isFixDictionaryText(@NotNull String text) {
         if (!ROOT_PATTERN.matcher(text).find()) {
             return false;

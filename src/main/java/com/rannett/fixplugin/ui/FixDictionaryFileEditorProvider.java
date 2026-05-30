@@ -27,6 +27,6 @@ public class FixDictionaryFileEditorProvider implements FileEditorProvider, Dumb
 
     @Override
     public @NotNull FileEditorPolicy getPolicy() {
-        return FileEditorPolicy.PLACE_AFTER_DEFAULT_EDITOR;
+        return FileEditorPolicy.HIDE_DEFAULT_EDITOR;
     }
 }
