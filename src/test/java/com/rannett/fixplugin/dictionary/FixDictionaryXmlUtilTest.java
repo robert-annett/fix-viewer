@@ -14,6 +14,12 @@ public class FixDictionaryXmlUtilTest {
     }
 
     @Test
+    public void detectsSelfClosingDictionarySections() {
+        String xml = "<fix><fields/><messages/></fix>";
+        assertTrue(FixDictionaryXmlUtil.isFixDictionaryText(xml));
+    }
+
+    @Test
     public void rejectsNonDictionaryXml() {
         String xml = "<fix><fields></fields></fix>";
         assertFalse(FixDictionaryXmlUtil.isFixDictionaryText(xml));

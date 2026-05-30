@@ -6,31 +6,58 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.ScrollType;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.components.JBLabel;
-import com.intellij.util.ui.JBUI;
+import com.intellij.ui.components.JBTabbedPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JPanel;
 import javax.swing.JComponent;
 import java.awt.BorderLayout;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FixDictionaryFileEditor extends UserDataHolderBase implements FileEditor {
+    private static final int SOURCE_TAB_INDEX = 0;
+
     private final TextEditor delegate;
     private final VirtualFile file;
     private final JPanel panel;
+    private final FixDictionaryTreePanel treePanel;
+    private final Document document;
+    private final DocumentListener documentListener;
+    private final JBTabbedPane tabbedPane;
 
     public FixDictionaryFileEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.file = file;
         this.delegate = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
+        this.document = delegate.getEditor().getDocument();
+        this.treePanel = new FixDictionaryTreePanel(document.getText(), this::navigateToFieldDefinition);
+        this.documentListener = new DocumentListener() {
+            @Override
+            public void documentChanged(@NotNull DocumentEvent event) {
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    if (!project.isDisposed()) {
+                        treePanel.updateDictionaryText(document.getText());
+                    }
+                });
+            }
+        };
+        document.addDocumentListener(documentListener);
+
+        tabbedPane = new JBTabbedPane();
+        tabbedPane.addTab("Source", delegate.getComponent());
+        tabbedPane.addTab("Message Tree", treePanel);
+
         this.panel = new JPanel(new BorderLayout());
-        JBLabel header = new JBLabel("Fix dictionary view");
-        header.setBorder(JBUI.Borders.empty(4, 8));
-        this.panel.add(header, BorderLayout.NORTH);
-        this.panel.add(delegate.getComponent(), BorderLayout.CENTER);
+        this.panel.add(tabbedPane, BorderLayout.CENTER);
     }
 
     @Override
@@ -46,6 +73,41 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
     @Override
     public @NotNull String getName() {
         return "FIX Dictionary";
+    }
+
+    private void navigateToFieldDefinition(String fieldName) {
+        int offset = findFieldDefinitionOffset(fieldName);
+        if (offset < 0) {
+            return;
+        }
+        tabbedPane.setSelectedIndex(SOURCE_TAB_INDEX);
+        delegate.getEditor().getCaretModel().moveToOffset(offset);
+        delegate.getEditor().getScrollingModel().scrollToCaret(ScrollType.CENTER);
+        delegate.getEditor().getSelectionModel().removeSelection();
+    }
+
+    private int findFieldDefinitionOffset(String fieldName) {
+        String text = document.getText();
+        Pattern fieldsSectionPattern = Pattern.compile("(?is)<\\s*fields\\b.*?</\\s*fields\\s*>");
+        Matcher fieldsSectionMatcher = fieldsSectionPattern.matcher(text);
+        if (fieldsSectionMatcher.find()) {
+            int offset = findFieldNameOffset(fieldsSectionMatcher.group(), fieldName);
+            if (offset >= 0) {
+                return fieldsSectionMatcher.start() + offset;
+            }
+        }
+        return findFieldNameOffset(text, fieldName);
+    }
+
+    private static int findFieldNameOffset(String text, String fieldName) {
+        Pattern fieldPattern = Pattern.compile("(?is)<\\s*field\\b[^>]*\\bname\\s*=\\s*([\"'])"
+                + Pattern.quote(fieldName)
+                + "\\1");
+        Matcher fieldMatcher = fieldPattern.matcher(text);
+        if (!fieldMatcher.find()) {
+            return -1;
+        }
+        return fieldMatcher.start(1) + 1;
     }
 
     @Override
@@ -100,6 +162,7 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
 
     @Override
     public void dispose() {
+        document.removeDocumentListener(documentListener);
         delegate.dispose();
     }
 }

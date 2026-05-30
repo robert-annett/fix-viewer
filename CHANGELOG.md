@@ -7,6 +7,20 @@
 ### Added
 
 - Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
+
+### Fixed
+
+- Detect self-closing FIX dictionary section tags when deciding whether to open the dedicated dictionary editor.
+
+## [0.0.23] - 2026-05-30
+
+### Added
+
+- Added enum-value tooltips to FIX Dictionary Message Tree field nodes.
+- Added double-click navigation from FIX Dictionary Message Tree field nodes to their source dictionary field definitions.
+- Added FIX Dictionary Message Tree ordering controls for dictionary order, message name, and message type while preserving child field/component order.
+- Added a Message Tree tab to the FIX Dictionary editor, expanding top-level dictionary messages through groups, components, and terminal fields.
+- Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
 - Added explicit double-click dictionary navigation for expanded field rows in Tree View and Message Flow to match right-click actions.
 - Added double-click navigation for expanded Message Flow Summary tree rows so field selections can jump directly to dictionary definitions.
 - Added viewer-tab dictionary navigation actions: Text View declaration handling, Transposed Table double-click/right-click navigation, and right-click `Go to Dictionary Definition` in Tree View and Message Flow for field nodes.
@@ -14,6 +28,8 @@
 
 ### Fixed
 
+- Hide the default XML/Text editor tab for FIX dictionary files now that the dedicated FIX Dictionary editor contains Source and Message Tree tabs.
+- Detect FIX dictionary files for custom editor selection even before IntelliJ has created an editor document, preventing fallback to the default Text editor tab.
 - Optimized Message Flow direction recalculation by caching the effective CompID per filter pass and fixed `Auto` selector collisions when a real CompID is literally `Auto`.
 - Fixed Message Flow CompID perspective filtering to avoid IntelliJ application-context NPEs in headless/unit-test execution while still updating UI normally in the IDE.
 - Stabilized built-in dictionary goto-declaration tests across environments by accepting sandbox-dependent resolution outcomes while still validating non-throwing behavior.
