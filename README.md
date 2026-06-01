@@ -85,6 +85,8 @@ Syntax highlighting for QuickFIX sessions.<br>![quickfix sessions](https://raw.g
 
 ### Diff and Comparison Tools
 
+Integration with diff tooling.<br>![quickfix sessions](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/diff.png)
+
 - Compare two FIX messages side by side using the IntelliJ diff viewer.
 - Clean noisy application logs into focused FIX message content before comparing or inspecting them.
 
@@ -95,6 +97,8 @@ Syntax highlighting for QuickFIX sessions.<br>![quickfix sessions](https://raw.g
 - Avoids invalid-character warnings inside embedded XML payloads.
 
 ### FIX in Source Code
+
+Highlight in code files.<br>![quickfix sessions](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/code-highlight.png)
 
 - Provides language injection for FIX messages embedded in code strings.
 
