@@ -1,16 +1,16 @@
 Note that this plugin has been written with the help of OpenAI's codex for adding features and solving some bugs.
-This has lead to some inconsistent styling (which is interesting). Please be aware of this when
+This has led to some inconsistent styling (which is interesting). Please be aware of this when
 reading!
 
 <!-- Plugin description -->
 
 # FIX Message Viewer Plugin for IntelliJ
 
-This is an intellij plugin for viewing FIX (Financial Information eXchange) (.fix) files.
+This is an IntelliJ plugin for viewing FIX (Financial Information eXchange) (`.fix`) files.
 
-This plugin provides rich syntax highlighting for FIX messages (`.fix` files), making complex trade messages easier to
-read and debug. Each field and value is colour-coded for clarity, with support for message types, tags, values, and
-separators, helping users spot issues quickly. Incorrect checksums are highlighted and can be automatically corrected.
+This plugin provides rich syntax highlighting for FIX messages, making complex trade messages easier to read and debug.
+Each field and value is color-coded for clarity, with support for message types, tags, values, and separators, helping
+users spot issues quickly. Incorrect checksums are highlighted and can be automatically corrected.
 
 Users can also view these messages in a transposed table view, which is much easier than scrolling horizontally. The
 same fields for different messages will be shown in the same row, making comparison easier.
@@ -19,105 +19,92 @@ There is also a tree view, to show the message structure, and a communications v
 
 ## Features
 
-### Syntax highlighting Text View
+### Syntax Highlighting Text View
 
-Full Syntax highlighting, with tooltips for fields (based on a selectable dictionary) <br>![Syntax highlighting](docs/images/marketplace/syntax-highlighting.png) <br>and checksum correction <br>![checksum](docs/images/marketplace/checksum-correction.png)
+Full syntax highlighting, with tooltips for fields based on the selected dictionary.
+<br>![Syntax highlighting](docs/images/marketplace/syntax-highlighting.png)
+<br>Checksum validation and quick-fix correction.
+<br>![checksum](docs/images/marketplace/checksum-correction.png)
 
+- Color-coded tags, values, message types, and delimiters.
+- Live checksum validation for the `10=` tag, with quick-fix correction.
+- Invalid characters and invalid FIX type values are highlighted in the editor.
+- Tooltips show tag and enum descriptions, for example `35=8` as *Execution Report*.
+- Clean log extraction strips non-FIX prefixes and suffixes so wrapped log lines can be inspected as pure FIX messages.
 
 ### Transposed Table View
 
-FIX message in the transposed table view<br>![Table View screenshot placeholder](docs/images/marketplace/table-view.png)
+FIX message in the transposed table view.<br>![Table View screenshot placeholder](docs/images/marketplace/table-view.png)
+
+- Compare multiple FIX messages by aligning the same fields on the same rows.
+- Filter fields, select visible columns, and hide messages when working with large files.
+- Enumerated values are suggested directly in the table.
 
 ### Tree View
 
-Component hierarchy and repeating groups in the tree view.**<br>![Tree View screenshot placeholder](docs/images/marketplace/tree-view.png)
+Component hierarchy and repeating groups in the tree view.<br>![Tree View screenshot placeholder](docs/images/marketplace/tree-view.png)
+
+- Navigate message structure by components, repeating groups, and fields.
+- Jump from field nodes to the active dictionary definition.
 
 ### Message Flow View
 
-Message flow view with direction indicator<br>![Message Flow screenshot placeholder](docs/images/marketplace/message-flow.png)
+Message flow view with direction indicator.<br>![Message Flow screenshot placeholder](docs/images/marketplace/message-flow.png)
 
-### Dictionary Viewer 
+- Inspect message sequences with incoming and outgoing direction indicators.
+- Choose a perspective CompID so arrows are calculated relative to a selected `SenderCompID(49)` or `TargetCompID(56)`.
+- Use the `Auto` perspective for mixed logs.
+- Jump from expanded summary fields to dictionary definitions.
 
-View quickfix dictionaries with component navigation between fields in messages and this dictionary viewer.<br>![Dictionary Viewer screenshot placeholder](docs/images/marketplace/dictionary-viewer.png)
+### Dictionary Viewer
+
+View QuickFIX dictionaries with component navigation between fields in messages and the dictionary viewer.<br>![Dictionary Viewer screenshot placeholder](docs/images/marketplace/dictionary-viewer.png)
+
+- Use bundled QuickFIX dictionaries or configure custom dictionaries per FIX version.
+- Switch active dictionaries from the FIX viewers.
+- See whether the current FIX version is using a default or custom dictionary.
+- Open QuickFIX dictionary XML files in a dedicated FIX Dictionary view.
+- Navigate between message fields, component references, and canonical dictionary definitions.
+- Ctrl+Click or Go To Declaration from FIX tags jumps to the active dictionary.
 
 ### Field Lookup
 
-Field lookup tool window with tag descriptions<br>![Field Lookup](docs/images/marketplace/field-lookup.png)
+Field lookup tool window with tag descriptions.<br>![Field Lookup](docs/images/marketplace/field-lookup.png)
 
-### QuickFix Session Config Editor
+- Search FIX tags and field names without opening a dictionary file.
+- Read field descriptions from the FIX 5.0 SP2 phrase data.
 
-Syntax highlighting for quickfix sessions<br>![quickfix sessions](docs/images/marketplace/session.png)
+### QuickFIX Session Config Editor
 
+Syntax highlighting for QuickFIX sessions.<br>![quickfix sessions](docs/images/marketplace/session.png)
 
-## Other features
+- Automatically recognizes common QuickFIX session config filenames such as `*.fix.cfg` and `*.quickfix.cfg`.
+- Highlights QuickFIX session config keys and values.
+- Shows tooltips for configuration keys, accepted values, and defaults.
+- Validates known QuickFIX/J values, including host lists, IP addresses, and IANA timezone IDs without editor-time network lookups.
 
+### Diff and Comparison Tools
 
-- **Syntax highlighting** for FIX messages with clear colour-coding of tags, values, and delimiters
-- **Live checksum validation and highlighting** for the `10=` tag
-- **Quick-fix actions** to autocorrect invalid checksums
-- **Annotate invalid characters** when included in a FIX message.
-- **Syntax highlighting** for invalid values for FIX types. e.g. INT cannot contain non-numbers and CHAR must be a
-  single character.
-- **Locale-safe FIX type validation** so value highlighting remains correct under non-English locales.
-- **Cleaner log extraction** that skips empty lines when splitting or filtering FIX messages.
-- **Tooltips** showing tag descriptions (e.g., `35=8` → *Execution Report*)
-- **Transposed View** to make reading messages easier including filtering and field selection
-- **Tree View** to navigate message structure including groups
-- **Message Flow CompID perspective selector** to compute incoming/outgoing arrows relative to a chosen `SenderCompID(49)` / `TargetCompID(56)`, including an `Auto` option for mixed logs.
-- **Message Hiding** in the transposed view for large message files
-- **Enumerated Values** suggested as items in the table view
-- **Override Dictionaries** with bespoke ones. Standard Quickfix dictionaries are used.
-- **QuickFIX session config auto-association** now recognizes multi-part filenames like `*.fix.cfg` and `*.quickfix.cfg` automatically, with dedicated highlighting plus content-based fallback detection.
-- **QuickFIX session config tooltips** that describe configuration keys, accepted values, and defaults from the QuickFIX/J reference.
-- **QuickFIX session config value validation** that flags invalid settings based on the QuickFIX/J valid-values list.
-- **QuickFIX session network value validation** now accepts IPv4, IPv6, hostnames, and comma-separated address lists for InetAddress-based settings.
-- **Offline-safe config validation** avoids DNS/network lookups during editor inspections.
-- **Improved timezone validation** normalizes and verifies IANA zone IDs used in session configuration values.
-- **Validator quality hardening** includes static-analysis-friendly functional Optional handling in QuickFIX config validation logic.
-- **Dictionary selector** lists bundled and custom dictionaries per FIX version so you can switch parsing dynamically from the viewers.
-- **FIX message → dictionary navigation** lets Ctrl+Click / Go To Declaration on FIX tags jump into the active dictionary and focus the matching field within the current message type (for example `35=AE`).
-- **In-view dictionary navigation from viewer tabs** adds dictionary jumps from Text View, double-click/right-click in Transposed Table Tag/Name rows, and right-click navigation in Tree View and Message Flow field nodes.
-- **Message Flow summary-tree navigation** now supports both double-click and right-click dictionary jumps on expanded field rows in the Summary column.
-- **Tree and Message Flow double-click hardening** now triggers dictionary navigation reliably on expanded field rows, with matching right-click behavior preserved.
-- **Message Flow navigation safety guard** now ignores double-click/right-click events that do not resolve to a tree row, preventing intermittent null-path navigation errors.
-- **Built-in dictionary declaration support** now enables Ctrl+Click/Go To Declaration even when using bundled FIX dictionaries (no custom path required).
-- **Built-in dictionary test coverage** now documents default-configuration behavior while keeping sandbox-safe expectations in restricted test VFS environments.
-- **Cross-environment goto test stability** now keeps built-in dictionary declaration tests robust across differing IntelliJ sandbox VFS constraints.
-- **Message Flow constructor compatibility** preserves no-project initialization paths used by tests and non-navigation contexts while keeping project-aware dictionary navigation enabled.
-- **Dictionary Indicator** shows whether each FIX version uses the default or a modified dictionary directly in the viewers and lets you mark defaults per FIX version.
-- **QuickFIX dictionary XML detection** automatically recognizes dictionary-style XML files (`<fix>` root plus key dictionary sections).
-- **FIX Dictionary editor tab** adds a dedicated `FIX Dictionary` view while preserving the standard XML editor.
-- **Dictionary-aware field navigation** resolves message-level field references (for example `<message><field name=\"SettlInstReqID\"/>`) to canonical definitions under `<fields>`.
-- **Ctrl+Click dictionary navigation** jumps directly from `<message><field name=\"...\"/>` to the matching `<fields><field .../>` definition in QuickFIX dictionary XML.
-- **Goto Declaration support for dictionaries** adds explicit IntelliJ declaration handling for XML field references so Ctrl+Click/Go To Declaration resolves consistently.
-- **Right-click dictionary navigation action** adds `Go to FIX Field Definition` in the editor context menu for message/group field references.
-- **Visible FIX Dictionary view header** clearly indicates when the custom dictionary editor tab is active.
-- **Dictionary navigation debug logging** writes editor acceptance/navigation traces to IntelliJ logs to diagnose configuration or caret-resolution issues.
-- **Actionable dictionary log traces** now emit warning-level entries from editor-selection and navigation handlers so diagnostics are visible in standard IDE logs.
-- **Caret-offset fallback resolution** for Go To Declaration retries adjacent PSI elements when IntelliJ reports a non-value token under caret.
-- **XmlTag fallback navigation recovery** attempts resolution from the enclosing `<field ...>` tag when no direct XML attribute-value PSI is available at caret.
-- **Tag-first declaration resolution** now prioritizes caret-near `<field>` tags (outside `<fields>`) for more reliable Ctrl+Click in message/header/trailer/component contexts.
-- **Context-menu visibility hardening** now shows `Go to FIX Field Definition` reliably in the editor popup by resolving PSI from the active editor document when popup PSI context is missing.
-- **Component reference navigation** now resolves `<component name="..."/>` usages (for example `Instrument`) to canonical definitions under `<components>`.
-- **Safer dictionary detection** now requires the document root element to be `<fix>` (not just any nested `<fix>` substring).
-- **Reference-provider correctness hardening** now validates the direct parent `<field>` tag before checking its containing `<message>` context.
-- **Modern FileEditor API compatibility** ensures the dictionary editor integrates cleanly with current IntelliJ platform expectations.
-- **Side-by-side diff viewer** for comparing two messages
-- **Log cleanup button** to strip non-FIX prefixes/suffixes and keep pure FIX messages in the editor
-- **Language injection** for FIX messages embedded in code strings
-- **Markdown-safe language injection** keeps FIX examples in `README.md` and other Markdown docs from being inspected as live FIX content.
-- **FpML Detection** for XML embedded in tags 351 and 213
-- **QuickFIX/J 3.0.0 compatibility** with parser updates for the latest QuickFIX validation API and stable handling of encoded XML data tags 350/351.
-- **Embedded XML split robustness** for both `XmlDataLen/XmlData` (`212/213`) and `EncodedSecurityDescLen/EncodedSecurityDesc` (`350/351`) across multi-line, multi-message payloads.
-- **Mixed-quality log parsing** keeps extracting valid FIX messages even when malformed messages appear in the same input block.
-- **Malformed FIX resilience** in multi-message logs so invalid checksum lines do not block parsing of following valid messages.
-- **Lexer support** for multi-line FpML blocks
-- **Unlimited IDE compatibility** so the plugin can install on newer IntelliJ versions without a capped build range
-- **Configurable verification IDE** so CI can pin plugin verification to a stable IntelliJ build
-- **Verification IDE override property** to control plugin verifier targets independently of compilation
-- **Updated Gradle wrapper** to keep CI builds compatible with newer Java runtimes
-- **Gradle wrapper Java fallback** to keep builds working when newer JDKs are installed
-- **Explicit plugin verifier IDE registration** to keep verification aligned with configured IDE builds
+- Compare two FIX messages side by side using the IntelliJ diff viewer.
+- Clean noisy application logs into focused FIX message content before comparing or inspecting them.
+
+### Embedded FpML and XML
+
+- Detects embedded XML and FpML payloads in `XmlData(213)` and `EncodedSecurityDesc(351)`.
+- Keeps multi-line embedded XML payloads together when splitting multi-message FIX logs.
+- Avoids invalid-character warnings inside embedded XML payloads.
+
+### FIX in Source Code
+
+- Provides language injection for FIX messages embedded in code strings.
+
+### Supported Protocols and Inputs
+
+- FIX 4.0 through FIX 5.0 SP2.
+- FIXT.1.1 transport dictionaries.
+- Custom QuickFIX dictionaries.
+- QuickFIX session configuration files.
+- Multi-message logs, including mixed-quality logs where malformed messages should not block valid ones.
 
 ---
 
@@ -133,11 +120,11 @@ or reporting a trade execution.
 
 ### Example FIX Message
 
-``` 
+```text
 8=FIX.4.4|9=112|35=D|49=CLIENT12|56=BROKER34|55=IBM|54=1|38=100|40=2|10=113|
 ```
 
-This plugin brings the power of IntelliJ’s developer tooling to this domain, helping users work more confidently and
+This plugin brings the power of IntelliJ's developer tooling to this domain, helping users work more confidently and
 efficiently with FIX-formatted data.
 
 <!-- Plugin description end -->

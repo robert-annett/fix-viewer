@@ -6,7 +6,8 @@
 
 ### Added
 
-- Added Marketplace documentation with a screenshot checklist, placeholder image references, and a feature matrix.
+- Reorganized README feature documentation into user-facing sections and removed duplicate implementation-detail bullets.
+- Added Marketplace documentation with a screenshot checklist and placeholder image references.
 
 ### Fixed
 
