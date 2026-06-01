@@ -22,9 +22,9 @@ There is also a tree view, to show the message structure, and a communications v
 ### Syntax Highlighting Text View
 
 Full syntax highlighting, with tooltips for fields based on the selected dictionary.
-<br>![Syntax highlighting](docs/images/marketplace/syntax-highlighting.png)
+<br>![Syntax highlighting](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/syntax-highlighting.png)
 <br>Checksum validation and quick-fix correction.
-<br>![checksum](docs/images/marketplace/checksum-correction.png)
+<br>![checksum](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/checksum-correction.png)
 
 - Color-coded tags, values, message types, and delimiters.
 - Live checksum validation for the `10=` tag, with quick-fix correction.
@@ -34,7 +34,7 @@ Full syntax highlighting, with tooltips for fields based on the selected diction
 
 ### Transposed Table View
 
-FIX message in the transposed table view.<br>![Table View screenshot placeholder](docs/images/marketplace/table-view.png)
+FIX message in the transposed table view.<br>![Table View screenshot placeholder](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/table-view.png)
 
 - Compare multiple FIX messages by aligning the same fields on the same rows.
 - Filter fields, select visible columns, and hide messages when working with large files.
@@ -42,14 +42,14 @@ FIX message in the transposed table view.<br>![Table View screenshot placeholder
 
 ### Tree View
 
-Component hierarchy and repeating groups in the tree view.<br>![Tree View screenshot placeholder](docs/images/marketplace/tree-view.png)
+Component hierarchy and repeating groups in the tree view.<br>![Tree View screenshot placeholder](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/tree-view.png)
 
 - Navigate message structure by components, repeating groups, and fields.
 - Jump from field nodes to the active dictionary definition.
 
 ### Message Flow View
 
-Message flow view with direction indicator.<br>![Message Flow screenshot placeholder](docs/images/marketplace/message-flow.png)
+Message flow view with direction indicator.<br>![Message Flow screenshot placeholder](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/message-flow.png)
 
 - Inspect message sequences with incoming and outgoing direction indicators.
 - Choose a perspective CompID so arrows are calculated relative to a selected `SenderCompID(49)` or `TargetCompID(56)`.
@@ -58,7 +58,7 @@ Message flow view with direction indicator.<br>![Message Flow screenshot placeho
 
 ### Dictionary Viewer
 
-View QuickFIX dictionaries with component navigation between fields in messages and the dictionary viewer.<br>![Dictionary Viewer screenshot placeholder](docs/images/marketplace/dictionary-viewer.png)
+View QuickFIX dictionaries with component navigation between fields in messages and the dictionary viewer.<br>![Dictionary Viewer screenshot placeholder](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/dictionary-viewer.png)
 
 - Use bundled QuickFIX dictionaries or configure custom dictionaries per FIX version.
 - Switch active dictionaries from the FIX viewers.
@@ -69,14 +69,14 @@ View QuickFIX dictionaries with component navigation between fields in messages 
 
 ### Field Lookup
 
-Field lookup tool window with tag descriptions.<br>![Field Lookup](docs/images/marketplace/field-lookup.png)
+Field lookup tool window with tag descriptions.<br>![Field Lookup](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/field-lookup.png)
 
 - Search FIX tags and field names without opening a dictionary file.
 - Read field descriptions from the FIX 5.0 SP2 phrase data.
 
 ### QuickFIX Session Config Editor
 
-Syntax highlighting for QuickFIX sessions.<br>![quickfix sessions](docs/images/marketplace/session.png)
+Syntax highlighting for QuickFIX sessions.<br>![quickfix sessions](https://raw.githubusercontent.com/robert-annett/fix-viewer/main/docs/images/marketplace/session.png)
 
 - Automatically recognizes common QuickFIX session config filenames such as `*.fix.cfg` and `*.quickfix.cfg`.
 - Highlights QuickFIX session config keys and values.
