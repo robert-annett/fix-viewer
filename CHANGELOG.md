@@ -6,12 +6,17 @@
 
 ### Added
 
+### Fixed
+
+
+## [0.0.24] - 2026-06-01
+
+### Added
+
 - Reorganized README feature documentation into user-facing sections and removed duplicate implementation-detail bullets.
 - Added Marketplace documentation with a screenshot checklist and placeholder image references.
 
 ### Fixed
-
-- Detect self-closing FIX dictionary section tags when deciding whether to open the dedicated dictionary editor.
 
 ## [0.0.23] - 2026-05-30
 
