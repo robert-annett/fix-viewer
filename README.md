@@ -17,8 +17,40 @@ same fields for different messages will be shown in the same row, making compari
 
 There is also a tree view, to show the message structure, and a communications view to show messages between two sources.
 
-
 ## Features
+
+### Syntax highlighting Text View
+
+Full Syntax highlighting, with tooltips for fields (based on a selectable dictionary) <br>![Syntax highlighting](docs/images/marketplace/syntax-highlighting.png) <br>and checksum correction <br>![checksum](docs/images/marketplace/checksum-correction.png)
+
+
+### Transposed Table View
+
+FIX message in the transposed table view<br>![Table View screenshot placeholder](docs/images/marketplace/table-view.png)
+
+### Tree View
+
+Component hierarchy and repeating groups in the tree view.**<br>![Tree View screenshot placeholder](docs/images/marketplace/tree-view.png)
+
+### Message Flow View
+
+Message flow view with direction indicator<br>![Message Flow screenshot placeholder](docs/images/marketplace/message-flow.png)
+
+### Dictionary Viewer 
+
+View quickfix dictionaries with component navigation between fields in messages and this dictionary viewer.<br>![Dictionary Viewer screenshot placeholder](docs/images/marketplace/dictionary-viewer.png)
+
+### Field Lookup
+
+Field lookup tool window with tag descriptions<br>![Field Lookup](docs/images/marketplace/field-lookup.png)
+
+### QuickFix Session Config Editor
+
+Syntax highlighting for quickfix sessions<br>![quickfix sessions](docs/images/marketplace/session.png)
+
+
+## Other features
+
 
 - **Syntax highlighting** for FIX messages with clear colour-coding of tags, values, and delimiters
 - **Live checksum validation and highlighting** for the `10=` tag

@@ -6,7 +6,7 @@
 
 ### Added
 
-- Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
+- Added Marketplace documentation with a screenshot checklist, placeholder image references, and a feature matrix.
 
 ### Fixed
 
