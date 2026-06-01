@@ -6,6 +6,21 @@
 
 ### Added
 
+- Reorganized README feature documentation into user-facing sections and removed duplicate implementation-detail bullets.
+- Added Marketplace documentation with a screenshot checklist and placeholder image references.
+
+### Fixed
+
+- Detect self-closing FIX dictionary section tags when deciding whether to open the dedicated dictionary editor.
+
+## [0.0.23] - 2026-05-30
+
+### Added
+
+- Added enum-value tooltips to FIX Dictionary Message Tree field nodes.
+- Added double-click navigation from FIX Dictionary Message Tree field nodes to their source dictionary field definitions.
+- Added FIX Dictionary Message Tree ordering controls for dictionary order, message name, and message type while preserving child field/component order.
+- Added a Message Tree tab to the FIX Dictionary editor, expanding top-level dictionary messages through groups, components, and terminal fields.
 - Added a `Perspective CompID` selector to the Message Flow view so direction arrows are recalculated relative to the selected CompID (with Auto detection and unknown `?` routing state).
 
 ### Fixed
