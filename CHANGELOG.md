@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Coalesced FIX dictionary Message Tree refreshes while editing source XML to avoid repeated full reparses during typing.
 
 ## [0.0.24] - 2026-06-01
 

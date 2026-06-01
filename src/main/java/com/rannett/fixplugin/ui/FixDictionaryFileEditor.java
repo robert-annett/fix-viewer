@@ -20,12 +20,14 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JPanel;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FixDictionaryFileEditor extends UserDataHolderBase implements FileEditor {
     private static final int SOURCE_TAB_INDEX = 0;
+    private static final int MESSAGE_TREE_TAB_INDEX = 1;
 
     private final TextEditor delegate;
     private final VirtualFile file;
@@ -33,28 +35,29 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
     private final FixDictionaryTreePanel treePanel;
     private final Document document;
     private final DocumentListener documentListener;
+    private final ChangeListener tabSelectionListener;
     private final JBTabbedPane tabbedPane;
+    private boolean dictionaryTreeDirty;
+    private int dictionaryTreeRefreshGeneration;
 
     public FixDictionaryFileEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.file = file;
         this.delegate = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
         this.document = delegate.getEditor().getDocument();
         this.treePanel = new FixDictionaryTreePanel(document.getText(), this::navigateToFieldDefinition);
-        this.documentListener = new DocumentListener() {
-            @Override
-            public void documentChanged(@NotNull DocumentEvent event) {
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    if (!project.isDisposed()) {
-                        treePanel.updateDictionaryText(document.getText());
-                    }
-                });
-            }
-        };
-        document.addDocumentListener(documentListener);
-
         tabbedPane = new JBTabbedPane();
         tabbedPane.addTab("Source", delegate.getComponent());
         tabbedPane.addTab("Message Tree", treePanel);
+        this.tabSelectionListener = event -> scheduleDictionaryTreeRefresh(project);
+        tabbedPane.addChangeListener(tabSelectionListener);
+        this.documentListener = new DocumentListener() {
+            @Override
+            public void documentChanged(@NotNull DocumentEvent event) {
+                dictionaryTreeDirty = true;
+                scheduleDictionaryTreeRefresh(project);
+            }
+        };
+        document.addDocumentListener(documentListener);
 
         this.panel = new JPanel(new BorderLayout());
         this.panel.add(tabbedPane, BorderLayout.CENTER);
@@ -73,6 +76,24 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
     @Override
     public @NotNull String getName() {
         return "FIX Dictionary";
+    }
+
+    private void scheduleDictionaryTreeRefresh(@NotNull Project project) {
+        if (tabbedPane.getSelectedIndex() != MESSAGE_TREE_TAB_INDEX) {
+            return;
+        }
+
+        int refreshGeneration = ++dictionaryTreeRefreshGeneration;
+        ApplicationManager.getApplication().invokeLater(() -> {
+            if (project.isDisposed()
+                    || refreshGeneration != dictionaryTreeRefreshGeneration
+                    || !dictionaryTreeDirty
+                    || tabbedPane.getSelectedIndex() != MESSAGE_TREE_TAB_INDEX) {
+                return;
+            }
+            dictionaryTreeDirty = false;
+            treePanel.updateDictionaryText(document.getText());
+        });
     }
 
     private void navigateToFieldDefinition(String fieldName) {
@@ -163,6 +184,7 @@ public class FixDictionaryFileEditor extends UserDataHolderBase implements FileE
     @Override
     public void dispose() {
         document.removeDocumentListener(documentListener);
+        tabbedPane.removeChangeListener(tabSelectionListener);
         delegate.dispose();
     }
 }
